@@ -1,0 +1,12 @@
+{
+    "method": "NFG_SVRG",
+    "seed": 4,
+    "eta": 0.16976979494630956,
+    "reg_lambda": 0.01,
+    "K": 7311,
+    "epochs": 60,
+    "batch_size": 1,
+    "N_train": 7311,
+    "N_test": 813,
+    "f_star": 0.23286199341523722
+}

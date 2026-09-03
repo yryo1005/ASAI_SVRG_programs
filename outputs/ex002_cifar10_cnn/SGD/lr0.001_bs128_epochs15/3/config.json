@@ -1,0 +1,7 @@
+{
+    "method": "SGD",
+    "seed": 3,
+    "learning_rate": 0.001,
+    "batch_size": 128,
+    "epochs": 15
+}

@@ -1,0 +1,11 @@
+{
+    "method": "NFG",
+    "seed": 1,
+    "learning_rate": 0.01,
+    "batch_size": 128,
+    "lambda1": 0.0005,
+    "lambda2": 0.0005,
+    "epochs": 30,
+    "N_train": 50000,
+    "N_test": 10000
+}

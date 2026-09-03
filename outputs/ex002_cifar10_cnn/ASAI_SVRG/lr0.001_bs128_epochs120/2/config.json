@@ -1,0 +1,9 @@
+{
+    "method": "ASAI_SVRG",
+    "seed": 2,
+    "learning_rate": 0.001,
+    "batch_size": 128,
+    "epochs": 120,
+    "N_train": 50000,
+    "N_test": 10000
+}

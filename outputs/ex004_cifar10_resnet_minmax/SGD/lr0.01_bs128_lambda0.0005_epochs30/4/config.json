@@ -1,0 +1,12 @@
+{
+    "method": "SGD",
+    "seed": 4,
+    "learning_rate": 0.01,
+    "batch_size": 128,
+    "lambda1": 0.0005,
+    "lambda2": 0.0005,
+    "epochs": 30,
+    "m_workers": 5,
+    "N_train": 50000,
+    "N_test": 10000
+}

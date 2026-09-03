@@ -1,0 +1,5 @@
+TorchのOptimizeを陽に使わないというのはtorch.optim.SGDを使わない，という意図でした
+全てのOptimizerはtorch.optim.Optimizerのサブクラスとして実装してください
+また，共通の部分があることは認識していますが，全部のOptimizerを陽に実装してください
+
+この条件のもとEx001を再実装してください

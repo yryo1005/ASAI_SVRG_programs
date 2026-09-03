@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "tanomai-backup",
+  "private_key_id": "e067d940f5ffe008bc731eedaccdb75ebc0787dc",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC2VmcJUxSQ4Qc5\nXAyC2ML2J+hU3z12CR0kFU+UHCfolY2x3jaKPBTUmoZtGdR/hgDMtJyR7CdLvLU+\na8zwocu5KH5ogtXyX8VS1YTphCmdP/cWV6DrOmv4Fkn1qmSZI3XZrKVMa1qCELSt\nLv9Lu9gRs7tHugvE27rKL7wDWTYhzxiJjAh4aYixbRiTo/cUaUR/R0qC7JkTsQ2V\naOb5xsaSlVdsEHbWPiCF2tWQeAkX0q0EptHS+lYo2eN5q6MH5BcTJiGzqcZTsZOI\nntmBcYOQ1+3412GU6H09DekQJ3+hm8nKau1vOa2HKin81B+lhX6nQ3eIM6Fmm8fw\njV9cyN2LAgMBAAECggEAAj0y79Lukyo1lNWD+yYGDfscJEMco/1scEv+soGwOm/w\nJytWZMjWF1B8PP6EGIGvFmKo88QAScEGs9rAJS2ndAFmSxiy36fYv7HDwp85oV+1\n0n5NpeebpHomCT6WTXAAl+x6tH8yw6lzTMIFGMQ0+WACMi6Cy5kPmkEdXLZ/Z5Bq\nB6+Cp/j880ko1/RMd32zInfE1vqMpB5fRdV8GCzvIJFHj+3hcw41RRUZptUcr6Sy\ncMVLai17wbD461JYKrtn+xLcVP6x4FrDkgBvCtYVLPFGgb6EhxTUtrjOU1v4Tmaw\n6TNDIvzxVRpzV+A9hcNwv0tOOFgXe/1RDMy6TJFh4QKBgQDven7sKtCq7FRg7NMn\ntEDSWM9UhzOglLhdo/m7JUfQEOHrGDEfIlXWk0srC60VBlZGTsaGtPEPrrC4m1n6\nE8eEAo5QI/5VtmncnNJYbfJjEYmthDIZFfqu9rSgbebgunDpGXAbnG/MGFw7ec8p\nE2aaHAl8FLDd/avHmk6O33QykQKBgQDC6rjPswr7lY8CcI1PP4R16gZfNp+/6LfG\nvtPR2FbkW1Qp9Hprcf4rbGrQ0XWbttjM4khJ3xWzvfePyha6CTTpgZGuVVe/8m7v\neeHfpIu9vKBR8eYNxlohjBhFJx/SSCdQjkl+ylDmiwsBmZh4Y8u90e8ZtiRXlVuu\n79o6W7akWwKBgFAySmzWTbjfmcY3qOLD9205tnzNJhnhk/gv4IKukmT4Ml/jYxfV\nDL/l5adNqrG+xIeY+9zCnXOuAZpg0/nuQ8NOg9AMrbCQfNUXY02fzCsnBV8pRQmn\nlaKgFY8gHtAlP4igLy3f7oR/p+t2+Ev+Jj73oql92FkPCUa3wxUPeb8xAoGAcyyJ\nGcl88t4Ty+g/x5ULqzUmoLpBOP/FH/4AYd3IslS47bWVZMnN21DL6SnrqaAoiSAo\ngOX+B+B3WRKbzT/FcTjroSyyliwlmwHVEvZC0FGWFfWu73LGLU5/xNTye6nA+Vuq\nV+4qUZ/VWBOvQWwOptJWy0WSQeJyc3Ms6xDoYkMCgYAWXzudakz3fnwdx0VdsZVI\nPSvVvVjrymkzl9jL584XzcbogJl+s5gFgYJnbXlEwwF7IDlBxEHD++8mh+GrbF0w\nvwWp3aBAYATevAIP0oPLaEC4nyZcB75hpMy+8qnt1SRINCI6J4ia6fgcyFajdCfu\ngvAXBZ4A1aI7PEXZbEb+1A==\n-----END PRIVATE KEY-----\n",
+  "client_email": "tanomai-backup-uploader@tanomai-backup.iam.gserviceaccount.com",
+  "client_id": "109908124625524432263",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/tanomai-backup-uploader%40tanomai-backup.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
