@@ -149,3 +149,46 @@ def test_set_model_params_overwrites_values():
 
     for p_target, p_source in zip(target_model.parameters(), source_values):
         assert torch.allclose(p_target, p_source)
+
+
+def test_set_model_params_syncs_bn_buffers_from_source_model():
+    """`.orders/order_010.md` で報告されたバグの修正確認：set_model_paramsが，
+    source_model指定時にBatch Normalizationのバッファ（running_mean，running_var等）も
+    source_modelの現在値で同期することを確認する．"""
+    trained_model = MinMaxResNet18(num_classes=10)
+    snapshot_model = MinMaxResNet18(num_classes=10)
+
+    trained_model.train()
+    x = torch.randn(8, 3, 32, 32)
+    trained_model(x)  # forwardによりBNのrunning_mean/running_varを更新する
+
+    trained_buffers = [b.detach().clone() for b in trained_model.buffers()]
+    snapshot_buffers_before = [b.detach().clone() for b in snapshot_model.buffers()]
+    assert not all(
+        torch.allclose(a, b) for a, b in zip(trained_buffers, snapshot_buffers_before)
+    ), "事前条件: trained_modelとsnapshot_modelのBNバッファが既に一致してしまっている"
+
+    param_values = [p.detach().clone() for p in trained_model.parameters()]
+    set_model_params(snapshot_model, param_values, source_model=trained_model)
+
+    for b_snapshot, b_trained in zip(snapshot_model.buffers(), trained_model.buffers()):
+        assert torch.allclose(b_snapshot, b_trained), (
+            "source_model指定時にBNバッファがsource_modelの値と同期されていない．"
+        )
+
+
+def test_set_model_params_does_not_touch_buffers_without_source_model():
+    """set_model_paramsが，source_model省略時（Noneのまま）は従来通りバッファへ触れず，
+    パラメータのみを上書きすることを確認する（既存呼び出し箇所との後方互換性の確認）．"""
+    model = MinMaxResNet18(num_classes=10)
+    model.train()
+    x = torch.randn(8, 3, 32, 32)
+    model(x)  # BNバッファを初期値から動かす
+
+    buffers_before = [b.detach().clone() for b in model.buffers()]
+    other_model = MinMaxResNet18(num_classes=10)
+    param_values = [p.detach().clone() for p in other_model.parameters()]
+    set_model_params(model, param_values)
+
+    for b_before, b_after in zip(buffers_before, model.buffers()):
+        assert torch.allclose(b_before, b_after)

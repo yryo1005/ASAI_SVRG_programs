@@ -170,15 +170,27 @@ def load_model(ModelClass=MinMaxResNet18, weight_path: str = None, seed: int = 0
     return model
 
 
-def set_model_params(model: nn.Module, param_values: list):
+def set_model_params(model: nn.Module, param_values: list, source_model: nn.Module = None):
     """
     概要: モデルのパラメータを，指定したテンソル列の値で上書きする．
         SVRG系手法におけるスナップショット専用モデルのパラメータを更新する際に用いる．
+        `source_model` が指定された場合，Batch Normalizationの移動平均統計量
+        （running_mean，running_var等）のバッファも `source_model` の現在値で同期する．
+        `param_values`（`optimizer.get_snapshot_params()`）はSVRG系手法が追跡する学習可能な
+        パラメータ（w，sigma）のみを対象とし，バッファは含まないため，`set_model_params` を
+        `param_values` のみで呼び出すと，`snapshot_model` のBatch Normalizationバッファが
+        独立した学習履歴のまま古くなる（`.orders/order_010.md` で報告されたバグ）．バッファの
+        同期はこの引数を通じて別途行う必要がある．
     引数:
         model (torch.nn.Module)．上書き対象のモデル．
         param_values (list of torch.Tensor)．`model.parameters()` と同じ順序・形状の値．
+        source_model (torch.nn.Module) = None．バッファの同期元となるモデル．Noneの場合は
+            バッファの同期を行わない．
     戻り値: なし
     """
     with torch.no_grad():
         for p, v in zip(model.parameters(), param_values):
             p.copy_(v)
+        if source_model is not None:
+            for b, b_src in zip(model.buffers(), source_model.buffers()):
+                b.copy_(b_src)

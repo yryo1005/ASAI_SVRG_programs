@@ -1,37 +1,69 @@
-CIFAR-10データセットに対するResNet-18モデルの学習において、SVRGおよびASAI SVRGにおける補正勾配の発散・不安定化が「`snapshot_model`におけるBatch Normalization (BN) 統計量（`running_mean` / `running_var`）のドリフト」に起因するかを検証するため、以下の実験を実施し、スクリプト作成から実験実行、結果の保存までを行ってください。
+以下、リポジトリの実装・2本の論文（`ASAI_SVRG_paper.pdf` と `No_Full_Grad_SVRG.pdf`）・すでに蓄積されている `.orders`/`.reports` の調査記録（report_007〜009）を突き合わせて確認した結果です。
 
-### 1. 実験目的
-`snapshot_model` の BN 統計量を固定（`eval()` モード指定）および再較正（Recalibration）した場合に、補正勾配の爆発や収束の不安定化が抑制されるかを検証し、分散低減手法（SVRG, ASAI SVRG）と BN 構造の相互作用を明らかにします。
+## 結論（要約）
 
-### 2. ディレクトリ構成・実装・出力指定
-* **プログラム配置先**: `programs/ex005_eval_snapshot_bn/`
-* **出力結果保存先**: `outputs/ex005_eval_snapshot_bn/{method}/{condition}/{lr}/{seed}/`
-  （規約に従い、`ResultLogger` を用いて JSON/CSV 等でメトリクスを保存すること）
+`programs/optimizers/optimizers.py` のアルゴリズム実装自体（`NFGSVRGFinalPoint` など）は、論文の Algorithm 1 の擬似コードと1行ずつ突き合わせても忠実で、バグは見当たりません。再現できない原因は主に次の2つです。
 
-### 3. 実験条件とハイパーパラメータ
-* **データセット**: CIFAR-10
-  * 通常学習時データ増強: Standard Normalize + RandomCrop + RandomHorizontalFlip
-  * Recalibration時: Augmentation なし（標準 Normalize のみ、EvalTransform）
-* **モデル構造**: `ResNet-18`
-* **分散模擬環境**: $M = 5$ ワーカーの分散模擬環境
-* **対象手法**:
-  1. `SGD`（ベースライン）
-  2. `SVRG`
-  3. `ASAI SVRG`
-* **比較条件（`snapshot_model` の動作制御）**:
-  * **`Control`（従来設定）**: `snapshot_model` を `train()` モードで保持し、補正勾配計算時にも BN 統計量が更新される状態。
-  * **`Treatment`（提案設定・再較正+固定）**: スナップショット作成時、訓練データから無作為抽出した10バッチ（Augmentationなし、`EvalTransform`）を `torch.no_grad()` かつ `snapshot_model.train()` の状態で順伝播させ、`running_mean` と `running_var` のみを再較正（Recalibration）した上で、`snapshot_model.eval()` に移行して統計量を完全固定する。
-* **学習率**: メイン検証 $\gamma = 0.01$、補助検証 $\gamma = 0.001$
-* **Seed数**: `seed = 42, 43, 44`（計3試行）
-* **Epoch数**: 100 epoch
-  * 安全策として Loss > 50 となった場合は発散と判定し、ログを記録して当該試行を早期終了してください。
+1. **実装上の小さいバグを1つ発見**：`model.py` の `set_model_params()` が `snapshot_model` の BatchNorm バッファ（`running_mean`/`running_var`）を一切同期していない
+2. **本質的な原因（こちらが主犯の可能性が高い）**：NFG SVRGの補正項が、非凸・非凹の min-max（敵対的摂動）構造と BatchNorm を持つ ResNet-18 の組み合わせにおいて本質的に不安定であり、これは貴チームの `report_007`〜`009` の系統的な実験結果そのものが裏付けています
 
-### 4. 記録・出力メトリクス
-各エポックで以下の数値を記録してください。
-1. エポック数、累計総勾配計算回数（`grad_evals`）
-2. 訓練損失 (Train Loss)、テスト精度 (Test Accuracy)
-3. 補正勾配ノルム $\|\nabla f_i(w) - \nabla f_i(z)\|$
-4. 補正勾配と真の全勾配とのコサイン類似度
-5. スナップショット更新時の BN 統計量（`running_mean`）の L2 変化量
+---
 
-以上の実験を自動実行し、結果を正しく指定フォルダに保存してください。
+## 1. 発見したバグ：`set_model_params()` がBNバッファを同期していない
+
+```python
+def set_model_params(model: nn.Module, param_values: list):
+    with torch.no_grad():
+        for p, v in zip(model.parameters(), param_values):
+            p.copy_(v)
+```
+
+これは `model.parameters()`（学習可能パラメータ）のみを上書きし、`model.buffers()`（BNの `running_mean`/`running_var`）には一切触れません。`train.py` ではエポック境界で
+
+```python
+snapshot_params = optimizer.get_snapshot_params()
+set_model_params(snapshot_model, snapshot_params)
+```
+
+としているため、`snapshot_model` の重み（w, σ）は新しいスナップショット値に更新される一方、BN統計量は**それ以前の何百ステップ分もの独立した学習履歴のまま**残ります。
+
+- 学習中の勾配計算（`model.train()`）はミニバッチ統計量を使うため、この不整合は補正勾配自体には直接影響しません。
+- しかし `test_metrics = epoch(snapshot_model, test_dataloader, ..., optimizer=None)`（`model.eval()`）はこの古いバッファを使ってしまうため、**報告される検証精度が不当に信頼できない**状態になっています（ASAI/NFGの精度がランダム水準10%に張り付く一因はこれかもしれません）。
+
+これは直しておくべきバグですが、後述の理由から、目的関数値そのものが `1e15`〜`1e24` に発散する現象の主因ではなさそうです（そちらは `model.train()` 経由で計算されており、実際にパラメータ自体が発散していることを示しています）。
+
+## 2. 本質的な原因：SVRG系補正項と min-max・BN構造の相性
+
+`report_007`〜`009` の実験結果を並べると、非常に明快なパターンが見えます。
+
+| 設定 | SGD | SVRG（真のフル勾配，e_s=0） | NFG | ASAI |
+|---|---|---|---|---|
+| バッチ128・単一プロセス（Ex003） | 安定 | 安定 | 不安定化 | 発散 |
+| バッチ1（order_008） | 安定 | **1エポック目で発散** | 発散 | 発散 |
+| M=5ワーカー分割（Ex004） | 安定 | **1エポック目でNaN** | さらに悪化 | さらに悪化 |
+
+ポイントは、**近似誤差が理論上ゼロのはずの「正しい」古典的SVRG」までもが、設定を原論文の記述に近づけるほど発散する**ことです。これはNFG/ASAI固有の近似誤差の問題ではなく、SVRG系全体に共通する補正項
+
+$$v = \nabla f(w) - \nabla f(z) + g_s$$
+
+自体がこの問題設定で本質的に不安定であることを示しています。理由として考えられるのは：
+
+- **min-max（敵対的摂動）は非凸・非凹の鞍点問題**であり、原論文もこれを変分不等式として定式化していますが、実際に使っているのは素朴な同時勾配降下・上昇（simultaneous GDA）です。同時GDAは非凸非凹の鞍点問題では発散・振動しやすいことがよく知られており（Extragradientなどの安定化手法が本来必要）、原論文が引用する他の関連研究も「シャッフリング+VI」にはExtragradientを使っています。
+- SVRGの補正項は「wとzが近ければ勾配差が小さい」という前提に依存しますが、鞍点構造＋BatchNorm（ミニバッチが小さいほど統計量のノイズが増大）の下ではこの前提が崩れやすく、補正項がむしろ発散を増幅する方向に働き得ます。
+- 原論文自体（Appendix A.1, ijcnn1/a9aでの実験）で、**NFG SVRGの理論的収束率は古典SVRGより「1桁悪い」と明記されており**、論文が示す良好な収束曲線は「理論的ステップ幅」ではなく別途チューニングした「tuned」ステップ幅によるものです。Section 7（ResNet-18実験）では全手法に同じ γ=0.01 を使ったとしか書かれておらず、SVRG系だけ個別にチューニングされたかは論文からは分かりません。
+
+さらに、原論文はAppendix A.2で「M=5ワーカーで分散環境を模擬した」とだけ書いており、**各ワーカーが独立したBN統計量を持つモデルレプリカなのか、単一モデルのミニバッチをM分割しているだけなのか**が明記されていません。実際、`order_009`/Ex004で試した「単一モデルをM分割」の解釈は、むしろSVRGまで即座に発散させる結果になっており、この解釈が誤りである可能性が高いです。
+
+## 3. 次に試す価値がある切り分け実験
+
+`order_010.md`（BN再較正+固定）はまだ未実行のようですが、それに加えて次を推奨します：
+
+- **σ（敵対的摂動）を外した純粋な分類問題**でNFG/ASAIが安定するか確認する（min-max構造自体が主因かどうかの最も直接的な切り分け）。ちなみに、あなたの提案手法側の論文（`ASAI_SVRG_paper.pdf`）が使う実験は3層CNN・L2正則化なし・min-maxなしの単純な多値分類（Ex002相当）であり、こちらは比較的うまく再現できていたはずです。
+- SVRG系手法だけ学習率を下げる（w とσで別々の学習率にする、いわゆる two-time-scale GDA も検討）。
+- BatchNormをGroupNorm等に置き換えて、正規化層の統計量ノイズが発散に寄与しているかを切り分ける。
+- 上記1のバグ（`set_model_params`のBNバッファ未同期）を先に修正する。
+
+
+# 実装指示
+* `set_model_params`のBNバッファ未同期を実装してください
+* σ（敵対的摂動）を外した純粋なCifar10分類問題をResNet18で学習をex005として実装してください

@@ -492,7 +492,7 @@ def train_variance_reduced(
 
         optimizer.end_epoch()
         snapshot_params = optimizer.get_snapshot_params()
-        set_model_params(snapshot_model, snapshot_params)
+        set_model_params(snapshot_model, snapshot_params, source_model=model)
 
         if method == "SVRG":
             snapshot_grad, train_metrics = compute_full_gradient_and_metrics(

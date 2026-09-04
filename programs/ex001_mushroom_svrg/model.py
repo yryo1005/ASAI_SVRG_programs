@@ -129,15 +129,25 @@ def compute_accuracy(model: nn.Module, X: torch.Tensor, y: torch.Tensor) -> floa
     return accuracy
 
 
-def set_model_params(model: nn.Module, param_values: list):
+def set_model_params(model: nn.Module, param_values: list, source_model: nn.Module = None):
     """
     概要: モデルのパラメータを，指定したテンソル列の値で上書きする．
         スナップショット専用モデルのパラメータを z_{s+1} で更新する際に用いる．
+        `source_model` が指定された場合，Batch Normalizationの移動平均統計量
+        （running_mean，running_var等）のバッファも `source_model` の現在値で同期する．
+        `param_values`（`optimizer.get_snapshot_params()`）はSVRG系手法が追跡する学習可能な
+        パラメータのみを対象とし，バッファは含まないため，バッファの同期はこの引数を通じて
+        別途行う必要がある．
     引数:
         model (torch.nn.Module)．上書き対象のモデル．
         param_values (list of torch.Tensor)．`model.parameters()` と同じ順序・形状の値．
+        source_model (torch.nn.Module) = None．バッファの同期元となるモデル．Noneの場合は
+            バッファの同期を行わない．
     戻り値: なし
     """
     with torch.no_grad():
         for p, v in zip(model.parameters(), param_values):
             p.copy_(v)
+        if source_model is not None:
+            for b, b_src in zip(model.buffers(), source_model.buffers()):
+                b.copy_(b_src)

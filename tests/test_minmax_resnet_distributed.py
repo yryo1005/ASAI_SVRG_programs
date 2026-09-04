@@ -9,7 +9,9 @@ import importlib.util
 import os
 import sys
 
+import numpy as np
 import torch
+from torch.utils.data import DataLoader, TensorDataset
 
 _PROGRAMS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "programs")
 sys.path.insert(0, os.path.join(_PROGRAMS_DIR, "ex004_cifar10_resnet_minmax"))
@@ -33,6 +35,8 @@ _TRAIN_PATH = os.path.join(_PROGRAMS_DIR, "ex004_cifar10_resnet_minmax", "train.
 _spec2 = importlib.util.spec_from_file_location("ex004_train", _TRAIN_PATH)
 ex004_train = importlib.util.module_from_spec(_spec2)
 _spec2.loader.exec_module(ex004_train)
+
+from machine_learning_utils import ResultLogger  # noqa: E402
 
 MinMaxResNet18 = ex004_model.MinMaxResNet18
 
@@ -128,3 +132,72 @@ def test_distributed_backward_runs_in_train_mode_with_uneven_batch():
     assert outputs.shape == (13, 10)
     assert model.sigma.grad is not None
     assert all(p.grad is not None for p in model.resnet.parameters())
+
+
+def test_snapshot_model_bn_buffers_stay_synced_after_epoch(tmp_path):
+    """`.orders/order_010.md` で報告されたバグの修正確認：train_variance_reducedを実行した
+    場合，各エポック境界で snapshot_model のBatch Normalizationバッファ（running_mean，
+    running_var）が，実際に学習した model の現在のバッファ値と一致する（同期されずに
+    独立した学習履歴のまま古くなることがない）ことを一気通貫で確認する．"""
+    torch.manual_seed(0)
+    rng = np.random.default_rng(0)
+    N_SAMPLES = 20
+    X = torch.tensor(rng.standard_normal((N_SAMPLES, 3, 32, 32)), dtype=torch.float32)
+    y = torch.tensor(rng.integers(0, 10, size=N_SAMPLES), dtype=torch.long)
+    dataset = TensorDataset(X, y)
+
+    def _make_dataloader(seed, batch_size):
+        generator = torch.Generator().manual_seed(seed)
+        train_dataloader = DataLoader(
+            dataset, batch_size=batch_size, shuffle=True, generator=generator
+        )
+        test_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+        return train_dataloader, test_dataloader
+
+    # train_variance_reducedはload_modelを2回呼び出し，1回目が現在のパラメータを保持するmodel，
+    # 2回目がスナップショットを保持するsnapshot_modelである．load_modelをスパイして両者への
+    # 参照を取得する．
+    created_models = []
+    original_load_model = ex004_train.load_model
+
+    def spy_load_model(ModelClass, weight_path=None, seed=0):
+        model = original_load_model(ModelClass, weight_path=weight_path, seed=seed)
+        created_models.append(model)
+        return model
+
+    ex004_train.load_model = spy_load_model
+    try:
+        logger = ResultLogger()
+        logger.set_names(
+            "epoch", "oracle_calls", "elapsed_time", "train_loss", "test_accuracy", "approx_error"
+        )
+        device = torch.device("cpu")
+        ex004_train.train_variance_reduced(
+            "ASAI_SVRG",
+            str(tmp_path),
+            MinMaxResNet18,
+            _make_dataloader,
+            epochs=1,
+            batch_size=10,
+            device=device,
+            seed=0,
+            logger=logger,
+        )
+    finally:
+        ex004_train.load_model = original_load_model
+
+    model, snapshot_model = created_models[0], created_models[1]
+    trained_buffer_names = [
+        name for name, _ in model.named_buffers()
+        if "running_mean" in name or "running_var" in name
+    ]
+    assert len(trained_buffer_names) > 0, "MinMaxResNet18にBatch Normalization層が見当たらない．"
+
+    for (name_m, b_model), (name_s, b_snapshot) in zip(
+        model.named_buffers(), snapshot_model.named_buffers()
+    ):
+        assert name_m == name_s
+        if "running_mean" in name_m or "running_var" in name_m:
+            assert torch.allclose(b_model, b_snapshot), (
+                f"{name_m}: エポック終了後にsnapshot_modelのBNバッファがmodelと同期されていない．"
+            )

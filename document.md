@@ -28,6 +28,11 @@ Methods Do Not Need to Compute Full Gradients: Improved Efficiency through Shuff
 簡略化，フル勾配計算時のBatch Normalization統計量の破損，sigmaの正則化勾配のスケール）を修正した
 Ex004を実施した．詳細は`.reports/report_009.md`を参照．
 
+`.orders/order_010.md` の指示に基づき，(1) `model.py` の `set_model_params()` が
+Batch Normalizationのバッファ（`running_mean`，`running_var`）を同期していなかったバグを
+Ex001〜Ex004すべてに対して修正し，(2) min-max構造（敵対的摂動sigma）を取り除いた純粋な
+CIFAR-10多値分類問題をEx005として実装した．詳細は`.reports/report_010.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -42,8 +47,10 @@ Ex004を実施した．詳細は`.reports/report_009.md`を参照．
 │   │   └── raw/                        # CIFAR-10データセットの生データ（自動ダウンロード）
 │   ├── ex003_cifar10_resnet_minmax/
 │   │   └── raw/                        # CIFAR-10データセットの生データ（ex002からコピー）
-│   └── ex004_cifar10_resnet_minmax/
-│       └── raw/                        # CIFAR-10データセットの生データ（ex003からコピー）
+│   ├── ex004_cifar10_resnet_minmax/
+│   │   └── raw/                        # CIFAR-10データセットの生データ（ex003からコピー）
+│   └── ex005_cifar10_resnet_classification/
+│       └── raw/                        # CIFAR-10データセットの生データ（ex004からコピー）
 ├── programs/
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -63,14 +70,22 @@ Ex004を実施した．詳細は`.reports/report_009.md`を参照．
 │   │   ├── data.py                     # CIFAR-10データセットの取得・前処理・DataLoader構築
 │   │   ├── model.py                    # ResNet-18（CIFAR向け）+ min-max敵対的摂動sigma
 │   │   └── train.py                    # 4手法 x 5Seedの学習を実行するスクリプト（本体）
-│   └── ex004_cifar10_resnet_minmax/
+│   ├── ex004_cifar10_resnet_minmax/
+│   │   ├── data.py                     # CIFAR-10データセットの取得・前処理・DataLoader構築
+│   │   │                                # （ex003と同一，パスのみex004向けに変更）
+│   │   ├── model.py                    # ResNet-18 + min-max敵対的摂動sigma（ex003と同一）．
+│   │   │                                # set_model_paramsのBNバッファ同期修正済み（order_010）
+│   │   └── train.py                    # Ex003の3点の修正（M_WORKERS分割によるBatch
+│   │                                    # Normalization挙動の模擬，フル勾配計算のeval()化，
+│   │                                    # sigma正則化勾配のスケール整合）を反映した学習
+│   │                                    # スクリプト（order_009，本体）
+│   └── ex005_cifar10_resnet_classification/
 │       ├── data.py                     # CIFAR-10データセットの取得・前処理・DataLoader構築
-│       │                                # （ex003と同一，パスのみex004向けに変更）
-│       ├── model.py                    # ResNet-18 + min-max敵対的摂動sigma（ex003と同一）
-│       └── train.py                    # Ex003の3点の修正（M_WORKERS分割によるBatch
-│                                        # Normalization挙動の模擬，フル勾配計算のeval()化，
-│                                        # sigma正則化勾配のスケール整合）を反映した学習
-│                                        # スクリプト（order_009，本体）
+│       │                                # （ex004と同一，パスのみex005向けに変更）
+│       ├── model.py                    # ResNet-18のみ（sigma・min-max構造を除去）．
+│       │                                # set_model_paramsのBNバッファ同期を最初から実装
+│       └── train.py                    # Ex004からsigma・min-max構造を取り除いた，純粋な
+│                                        # 多値分類問題の学習スクリプト（order_010，本体）
 ├── outputs/
 │   ├── ex001_mushroom_svrg/
 │   │   └── {method}/{hyperparams}/{seed}/
@@ -83,6 +98,8 @@ Ex004を実施した．詳細は`.reports/report_009.md`を参照．
 │   │   └── {method}/{hyperparams}/{seed}/  # 同上の構成
 │   ├── ex004_cifar10_resnet_minmax/
 │   │   └── {method}/{hyperparams}/{seed}/  # 同上の構成
+│   ├── ex005_cifar10_resnet_classification/
+│   │   └── {method}/{hyperparams}/{seed}/  # 同上の構成
 │   └── order_006_archive/              # order_006検証（NFG_SVRG_FinalPoint）の実験結果．
 │                                        # order_007によりEx002本体からは切り離して保存
 ├── tests/
@@ -94,10 +111,12 @@ Ex004を実施した．詳細は`.reports/report_009.md`を参照．
 │   │                                    # （order_005，pytest）
 │   ├── test_minmax_resnet.py           # Ex003のResNet-18・min-max定式化（符号反転の正しさ）
 │   │                                    # の単体テスト（order_007，pytest）
-│   └── test_minmax_resnet_distributed.py  # Ex004のM_WORKERS分割による勾配集約，フル勾配計算の
-│                                        # Batch Normalization統計量固定の単体テスト
-│                                        # （order_009，pytest）
-├── visualize_result.ipynb              # 実験結果の可視化ノートブック（ルート直下，Ex001〜Ex004
+│   ├── test_minmax_resnet_distributed.py  # Ex004のM_WORKERS分割による勾配集約，フル勾配計算の
+│   │                                    # Batch Normalization統計量固定，snapshot_modelのBN
+│   │                                    # バッファ同期（order_009／order_010）の単体テスト
+│   └── test_resnet_classification.py   # Ex005のResNet18（sigmaなし），M_WORKERS分割勾配，
+│                                        # BNバッファ同期の単体テスト（order_010，pytest）
+├── visualize_result.ipynb              # 実験結果の可視化ノートブック（ルート直下，Ex001〜Ex005
 │                                        # 共通．横軸「勾配計算回数」は，各条件のconfig.jsonに
 │                                        # 記録されたN_trainで除算し，#grad/N（SGDの1エポック
 │                                        # 相当の計算量）として表示する，order_005での修正を反映）
@@ -111,8 +130,10 @@ Ex004を実施した．詳細は`.reports/report_009.md`を参照．
 │   ├── report_006.md                   # NFG SVRG原論文との比較検証（order_006）
 │   ├── report_007.md                   # Ex003：NFG SVRG原論文の実験の再現（order_007）
 │   ├── report_008.md                   # Ex003のミニバッチサイズ1での再検証（order_008）
-│   └── report_009.md                   # Ex004：M_WORKERS分割・BN固定・sigma勾配スケールの
-│                                        # 3点修正による再検証（order_009）
+│   ├── report_009.md                   # Ex004：M_WORKERS分割・BN固定・sigma勾配スケールの
+│   │                                    # 3点修正による再検証（order_009）
+│   └── report_010.md                   # set_model_paramsのBNバッファ同期バグ修正，および
+│                                        # Ex005：min-max構造を除いた純粋な多値分類問題（order_010）
 ├── requirements_pytorch.txt
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
 └── document.md                         # 本ファイル
@@ -242,6 +263,28 @@ SVRG系3手法は，`step()` に加えて外部ループの境界で呼び出す
   Ex003との比較のため，比較手法・Seed数・ハイパーパラメータ（学習率，lambda1，lambda2，
   ミニバッチサイズ128）はEx003と同一に保っている．
 
+- **`set_model_params()` のBatch Normalizationバッファ同期バグの修正（`.orders/order_010.md`）**：
+  `set_model_params()` は，従来 `model.parameters()`（学習可能パラメータ）のみを上書きし，
+  Batch Normalizationの移動平均統計量（`model.buffers()`）には触れていなかった．そのため，
+  `train.py` がエポック境界で `snapshot_model` のパラメータを更新しても，そのBN統計量は
+  それ以前の独立した学習履歴のまま古くなっていた．`set_model_params(model, param_values,
+  source_model=None)` に `source_model` 引数を追加し，指定時は `model.buffers()` を
+  `source_model.buffers()`（実際に学習した `model` の現在値）で同期するよう修正した．
+  Ex001〜Ex004の全 `model.py`／`train.py`（呼び出し箇所を `source_model=model` に変更）に
+  同一の修正を適用し，Ex005は最初からこの修正済みの実装で構築した．ただし，`outputs/`
+  以下の既存のEx001〜Ex004の実験結果は，この修正が適用される**前**に生成されたものである点に
+  注意（詳細は`.reports/report_010.md` 3.3節）．
+
+- **`programs/ex005_cifar10_resnet_classification/`（`.orders/order_010.md`）**：Ex004から
+  min-max構造（敵対的摂動 `sigma`，および正則化項 $ -(\lambda_2/2)\|\sigma\|^2 $）のみを
+  取り除いた，純粋な多値分類問題の実験．`model.py` は Ex003/Ex004の `ResNet18` クラスをそのまま
+  流用し（`MinMaxResNet18` は定義しない），`train.py` は `backward_minmax_objective(_distributed)`
+  から `backward_objective(_distributed)` に改名した上でsigma関連の処理を除去している．
+  M_WORKERS分割によるBatch Normalization挙動の模擬，フル勾配計算時の `model.eval()` 化は
+  min-max構造に依存しないためEx004からそのまま引き継いでいる．データセット・モデル構造・
+  学習率・`lambda1`・ミニバッチサイズ・エポック数・Seed数はEx004と同一に揃え，min-max構造の
+  有無のみを比較可能にしている．
+
 ## 4. 外部モジュールとの依存関係
 
 - PyTorch（`torch`）：パラメータの保持・演算，および `torch.autograd` による勾配計算．
@@ -272,24 +315,33 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # Ex003の学習実行（4手法 x 5Seed = 20条件を4プロセス並列で実行．GPU使用，既に完了した条件はスキップ）
 .venv_pytorch/bin/python programs/ex003_cifar10_resnet_minmax/train.py
 
+# Ex004の学習実行（4手法 x 5Seed = 20条件を4プロセス並列で実行．GPU使用，既に完了した条件はスキップ）
+.venv_pytorch/bin/python programs/ex004_cifar10_resnet_minmax/train.py
+
+# Ex005の学習実行（4手法 x 5Seed = 20条件を4プロセス並列で実行．GPU使用，既に完了した条件はスキップ）
+.venv_pytorch/bin/python programs/ex005_cifar10_resnet_classification/train.py
+
 # 単体テスト
 .venv_pytorch/bin/python -m pytest tests/ -v
 
 # 結果の可視化（Jupyter上で実行，またはnbconvertで一括実行．先頭セルのEXPERIMENT変数で
-# "ex001_mushroom_svrg"／"ex002_cifar10_cnn"／"ex003_cifar10_resnet_minmax" を切り替える）
+# "ex001_mushroom_svrg"／"ex002_cifar10_cnn"／"ex003_cifar10_resnet_minmax"／
+# "ex004_cifar10_resnet_minmax"／"ex005_cifar10_resnet_classification" を切り替える）
 .venv_pytorch/bin/jupyter nbconvert --to notebook --execute --inplace visualize_result.ipynb
 ```
 
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex001_mushroom_svrg,ex002_cifar10_cnn,ex003_cifar10_resnet_minmax}/{method}/{hyperparams}/{seed}/`
-- 可視化結果（グラフ画像）：`outputs/{ex001_mushroom_svrg,ex002_cifar10_cnn,ex003_cifar10_resnet_minmax}/` 直下
+  `outputs/{ex001_mushroom_svrg,ex002_cifar10_cnn,ex003_cifar10_resnet_minmax,ex004_cifar10_resnet_minmax,ex005_cifar10_resnet_classification}/{method}/{hyperparams}/{seed}/`
+- 可視化結果（グラフ画像）：上記各実験ディレクトリ直下
 - レポート：`.reports/report_001.md`（Ex001の実験結果），`.reports/report_002.md`（最適化手法
   クラスの設計），`.reports/report_003.md`（勾配計算方式の変更），`.reports/report_004.md`
   （Ex002の実験結果，初回），`.reports/report_005.md`（Ex002の再実験），`.reports/report_006.md`
   （NFG SVRG原論文との比較検証），`.reports/report_007.md`（Ex003：原論文実験の再現），
-  `.reports/report_008.md`（Ex003：ミニバッチサイズ1での再検証）
+  `.reports/report_008.md`（Ex003：ミニバッチサイズ1での再検証），`.reports/report_009.md`
+  （Ex004：M_WORKERS分割・BN固定・sigma勾配スケールの3点修正），`.reports/report_010.md`
+  （`set_model_params`のBNバッファ同期バグ修正，Ex005：min-max構造を除いた純粋な多値分類問題）
 
 ## 8. 必要なAPIキーや設定ファイル
 

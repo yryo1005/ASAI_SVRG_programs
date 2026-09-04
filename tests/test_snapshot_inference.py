@@ -96,9 +96,9 @@ def _run_with_instrumentation(method: str, epochs: int, tmp_path):
 
     original_set_model_params = ex002_train.set_model_params
 
-    def spy_set_model_params(model, param_values):
+    def spy_set_model_params(model, param_values, source_model=None):
         snapshot_updates.append([v.clone() for v in param_values])
-        original_set_model_params(model, param_values)
+        original_set_model_params(model, param_values, source_model=source_model)
 
     original_iteration = ex002_train.iteration
 

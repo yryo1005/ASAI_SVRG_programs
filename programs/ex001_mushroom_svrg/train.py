@@ -275,7 +275,7 @@ def run_variance_reduced(
 
         optimizer.end_epoch()
         snapshot_params = optimizer.get_snapshot_params()
-        set_model_params(snapshot_model, snapshot_params)
+        set_model_params(snapshot_model, snapshot_params, source_model=model)
 
         if method == "SVRG":
             snapshot_grad = compute_gradient(snapshot_model, X_train, y_train, reg_lambda)
