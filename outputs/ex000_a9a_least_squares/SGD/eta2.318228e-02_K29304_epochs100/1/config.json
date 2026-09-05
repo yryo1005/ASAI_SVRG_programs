@@ -1,0 +1,18 @@
+{
+    "experiment": "ex000_a9a_least_squares",
+    "method": "SGD",
+    "seed": 1,
+    "eta": 0.023182277883812604,
+    "eta_rule": "1/(20L)",
+    "eta_description": "NFG SVRG原論文 Theorem 1 の上界 1/(20Ln) から データ数 n による縮小を除いた値",
+    "K": 29304,
+    "epochs": 100,
+    "batch_size": 1,
+    "sampling": "random_reshuffle",
+    "L_individual": 2.1568199747494745,
+    "L_average": 0.9686935764271645,
+    "N_train": 29304,
+    "N_test": 3257,
+    "d": 123,
+    "f_star_reference": 0.10326611805256056
+}

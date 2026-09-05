@@ -1,0 +1,22 @@
+{
+    "experiment": "ex001_mushroom_logistic",
+    "method": "ASAI_SVRG",
+    "seed": 1,
+    "eta": 0.0015905560986755026,
+    "eta_rule": "eta_c=1/(20L)",
+    "eta_description": "実験0で安定した収束を示した学習率規則の踏襲",
+    "reg_lambda": 0.9155984380710358,
+    "lambda_ratio": 0.03,
+    "K": 7311,
+    "epochs": 100,
+    "batch_size": 1,
+    "sampling": "random_reshuffle",
+    "L": 31.43554637377223,
+    "mu": 0.9155984380710358,
+    "condition_number": 0.02912621359223301,
+    "rho": 0.6399087059252644,
+    "N_train": 7311,
+    "N_test": 813,
+    "d": 22,
+    "f_star": 0.5514920407813806
+}

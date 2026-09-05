@@ -1,0 +1,22 @@
+{
+    "experiment": "ex001_mushroom_logistic",
+    "method": "SGD",
+    "seed": 3,
+    "eta": 0.010497670251258317,
+    "eta_rule": "eta_a_near_upper_bound",
+    "eta_description": "0.99/(3L)．補題3の上界近傍",
+    "reg_lambda": 0.9155984380710358,
+    "lambda_ratio": 0.03,
+    "K": 7311,
+    "epochs": 100,
+    "batch_size": 1,
+    "sampling": "random_reshuffle",
+    "L": 31.43554637377223,
+    "mu": 0.9155984380710358,
+    "condition_number": 0.02912621359223301,
+    "rho": 298.42306666721566,
+    "N_train": 7311,
+    "N_test": 813,
+    "d": 22,
+    "f_star": 0.5506725882091091
+}

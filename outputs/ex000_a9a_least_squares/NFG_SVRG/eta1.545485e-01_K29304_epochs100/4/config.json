@@ -1,0 +1,18 @@
+{
+    "experiment": "ex000_a9a_least_squares",
+    "method": "NFG_SVRG",
+    "seed": 4,
+    "eta": 0.15454851922541735,
+    "eta_rule": "1/(3L)",
+    "eta_description": "ASAI SVRG論文 式(28) の c_1 = 2η(1 - 3ηL) > 0 を満たす上界",
+    "K": 29304,
+    "epochs": 100,
+    "batch_size": 1,
+    "sampling": "random_reshuffle",
+    "L_individual": 2.1568199747494745,
+    "L_average": 0.9686935764271645,
+    "N_train": 29304,
+    "N_test": 3257,
+    "d": 123,
+    "f_star_reference": 0.10374082553414121
+}

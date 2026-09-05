@@ -1,0 +1,22 @@
+{
+    "experiment": "ex001_mushroom_logistic",
+    "method": "NFG_SVRG",
+    "seed": 0,
+    "eta": 0.001105363616263384,
+    "eta_rule": "eta_b_rho=0.5",
+    "eta_description": "rho(eta)=0.5を満たす学習率（数値的に逆算，大きい方の解）",
+    "reg_lambda": 0.9155984380710358,
+    "lambda_ratio": 0.03,
+    "K": 7311,
+    "epochs": 100,
+    "batch_size": 1,
+    "sampling": "random_reshuffle",
+    "L": 31.43554637377223,
+    "mu": 0.9155984380710358,
+    "condition_number": 0.02912621359223301,
+    "rho": 0.4999999999991358,
+    "N_train": 7311,
+    "N_test": 813,
+    "d": 22,
+    "f_star": 0.552022386099835
+}
