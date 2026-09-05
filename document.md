@@ -33,6 +33,11 @@ Batch Normalizationのバッファ（`running_mean`，`running_var`）を同期�
 Ex001〜Ex004すべてに対して修正し，(2) min-max構造（敵対的摂動sigma）を取り除いた純粋な
 CIFAR-10多値分類問題をEx005として実装した．詳細は`.reports/report_010.md`を参照．
 
+`.orders/order_011.md` の指示に基づき，NFG SVRG原論文（`references/No_Full_Grad_SVRG.pdf`）の
+7節（ResNet-18・CIFAR-10）の再現は断念し，同論文の付録A.1（LEAST SQUARES REGRESSION，式(8)の
+非線形最小二乗回帰問題）をa9aデータセットで再現するEx006を実装した．詳細は`.reports/report_011.md`
+を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -49,8 +54,10 @@ CIFAR-10多値分類問題をEx005として実装した．詳細は`.reports/rep
 │   │   └── raw/                        # CIFAR-10データセットの生データ（ex002からコピー）
 │   ├── ex004_cifar10_resnet_minmax/
 │   │   └── raw/                        # CIFAR-10データセットの生データ（ex003からコピー）
-│   └── ex005_cifar10_resnet_classification/
-│       └── raw/                        # CIFAR-10データセットの生データ（ex004からコピー）
+│   ├── ex005_cifar10_resnet_classification/
+│   │   └── raw/                        # CIFAR-10データセットの生データ（ex004からコピー）
+│   └── ex006_a9a_least_squares/
+│       └── raw/                        # a9aデータセットの生データ（LIBSVM Data，自動ダウンロード）
 ├── programs/
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -79,13 +86,19 @@ CIFAR-10多値分類問題をEx005として実装した．詳細は`.reports/rep
 │   │                                    # Normalization挙動の模擬，フル勾配計算のeval()化，
 │   │                                    # sigma正則化勾配のスケール整合）を反映した学習
 │   │                                    # スクリプト（order_009，本体）
-│   └── ex005_cifar10_resnet_classification/
-│       ├── data.py                     # CIFAR-10データセットの取得・前処理・DataLoader構築
-│       │                                # （ex004と同一，パスのみex005向けに変更）
-│       ├── model.py                    # ResNet-18のみ（sigma・min-max構造を除去）．
-│       │                                # set_model_paramsのBNバッファ同期を最初から実装
-│       └── train.py                    # Ex004からsigma・min-max構造を取り除いた，純粋な
-│                                        # 多値分類問題の学習スクリプト（order_010，本体）
+│   ├── ex005_cifar10_resnet_classification/
+│   │   ├── data.py                     # CIFAR-10データセットの取得・前処理・DataLoader構築
+│   │   │                                # （ex004と同一，パスのみex005向けに変更）
+│   │   ├── model.py                    # ResNet-18のみ（sigma・min-max構造を除去）．
+│   │   │                                # set_model_paramsのBNバッファ同期を最初から実装
+│   │   └── train.py                    # Ex004からsigma・min-max構造を取り除いた，純粋な
+│   │                                    # 多値分類問題の学習スクリプト（order_010，本体）
+│   └── ex006_a9a_least_squares/
+│       ├── data.py                     # a9aデータセット（LIBSVM Data）の取得・前処理・
+│       │                                # DataLoader構築．標準化等は行わず0/1の特徴量をそのまま使用
+│       ├── model.py                    # 非線形最小二乗回帰モデル（切片なし線形結合+シグモイド）．
+│       │                                # 勾配は自動微分で計算
+│       └── train.py                    # 4手法 x 5Seedの学習を実行するスクリプト（本体，order_011）
 ├── outputs/
 │   ├── ex001_mushroom_svrg/
 │   │   └── {method}/{hyperparams}/{seed}/
@@ -100,6 +113,8 @@ CIFAR-10多値分類問題をEx005として実装した．詳細は`.reports/rep
 │   │   └── {method}/{hyperparams}/{seed}/  # 同上の構成
 │   ├── ex005_cifar10_resnet_classification/
 │   │   └── {method}/{hyperparams}/{seed}/  # 同上の構成
+│   ├── ex006_a9a_least_squares/
+│   │   └── {method}/{hyperparams}/{seed}/  # 同上の構成（best_model.pthは保存しない）
 │   └── order_006_archive/              # order_006検証（NFG_SVRG_FinalPoint）の実験結果．
 │                                        # order_007によりEx002本体からは切り離して保存
 ├── tests/
@@ -114,9 +129,11 @@ CIFAR-10多値分類問題をEx005として実装した．詳細は`.reports/rep
 │   ├── test_minmax_resnet_distributed.py  # Ex004のM_WORKERS分割による勾配集約，フル勾配計算の
 │   │                                    # Batch Normalization統計量固定，snapshot_modelのBN
 │   │                                    # バッファ同期（order_009／order_010）の単体テスト
-│   └── test_resnet_classification.py   # Ex005のResNet18（sigmaなし），M_WORKERS分割勾配，
-│                                        # BNバッファ同期の単体テスト（order_010，pytest）
-├── visualize_result.ipynb              # 実験結果の可視化ノートブック（ルート直下，Ex001〜Ex005
+│   ├── test_resnet_classification.py   # Ex005のResNet18（sigmaなし），M_WORKERS分割勾配，
+│   │                                    # BNバッファ同期の単体テスト（order_010，pytest）
+│   └── test_least_squares_regression.py  # Ex006の非線形最小二乗回帰モデル・平滑性定数計算・
+│                                        # 4手法のスモークテスト（order_011，pytest）
+├── visualize_result.ipynb              # 実験結果の可視化ノートブック（ルート直下，Ex001〜Ex006
 │                                        # 共通．横軸「勾配計算回数」は，各条件のconfig.jsonに
 │                                        # 記録されたN_trainで除算し，#grad/N（SGDの1エポック
 │                                        # 相当の計算量）として表示する，order_005での修正を反映）
@@ -132,8 +149,10 @@ CIFAR-10多値分類問題をEx005として実装した．詳細は`.reports/rep
 │   ├── report_008.md                   # Ex003のミニバッチサイズ1での再検証（order_008）
 │   ├── report_009.md                   # Ex004：M_WORKERS分割・BN固定・sigma勾配スケールの
 │   │                                    # 3点修正による再検証（order_009）
-│   └── report_010.md                   # set_model_paramsのBNバッファ同期バグ修正，および
-│                                        # Ex005：min-max構造を除いた純粋な多値分類問題（order_010）
+│   ├── report_010.md                   # set_model_paramsのBNバッファ同期バグ修正，および
+│   │                                    # Ex005：min-max構造を除いた純粋な多値分類問題（order_010）
+│   └── report_011.md                   # Ex006：NFG SVRG原論文 付録A.1（LEAST SQUARES
+│                                        # REGRESSION）の再現実験（order_011）
 ├── requirements_pytorch.txt
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
 └── document.md                         # 本ファイル
@@ -285,13 +304,39 @@ SVRG系3手法は，`step()` に加えて外部ループの境界で呼び出す
   学習率・`lambda1`・ミニバッチサイズ・エポック数・Seed数はEx004と同一に揃え，min-max構造の
   有無のみを比較可能にしている．
 
+- **`programs/ex006_a9a_least_squares/`（`.orders/order_011.md`）**：NFG SVRG原論文
+  （`references/No_Full_Grad_SVRG.pdf`）付録A.1（LEAST SQUARES REGRESSION）の再現実験．
+  `data.py` はLIBSVM Dataのa9aデータセット（32561サンプル，特徴量次元数123，値は0/1の
+  One-Hotベクトル）を取得し，9:1に分割する．原論文の式(8) $ f(x) = (1/n)\sum_i(y_i-h_i)^2 $，
+  $ h_i = 1/(1+\exp(-A_i\cdot x)) $ は標準化に言及していないため，Ex001とは異なり
+  `StandardScaler` 等の前処理は行わず，特徴量を無加工のまま用いる．`model.py` の
+  `LeastSquaresSigmoidModel` は，式(8)通り切片なし（`bias=False`）の線形結合にシグモイド
+  関数を適用し，二乗誤差を損失とする．正則化項も式(8)には現れないため付加していない．
+
+  比較手法は`SGD`，原論文Algorithm 1に忠実な`SVRGFinalPoint`，`NFGSVRGFinalPoint`，
+  ASAI SVRG論文自身のスナップショット構成を用いる`ASAISVRG`の4手法（Ex003〜Ex005と同じ選択）．
+  学習率は，原論文Theorem 1（非凸設定，Algorithm 1）の学習率上界 $ \gamma \le 1/(20Ln) $ の
+  半分の値を4手法共通に用いる．平滑性定数 $ L $ は，1サンプル分の損失
+  $ l_i(x) = (y_i - \sigma(A_i\cdot x))^2 $ のヘッセ行列が
+  $ \kappa_{\max}\cdot A_i A_i^\top $（$ \kappa_{\max} $はzに関する2階微分の絶対値の上界，
+  数値的な格子探索で算出）で上から抑えられることを用い，
+  $ L = \kappa_{\max}\cdot\lambda_{\max}(A^\top A/N) $ として計算する（`compute_smoothness_constant`）．
+  原論文はAppendix A.1で「理論的なステップ幅では，チューニング済み（tuned）のステップ幅と比べて
+  収束が劣ることが予想される」と述べており，`.orders/order_011.md` の指示によりtuned版は実装
+  していない．評価指標は，原論文Figure 3・4と同じ「真のフル勾配のノルムの2乗
+  $ \|\nabla f(z_s)\|^2 $」（`grad_norm_sq`）を主軸とし，目的関数の値・分類精度（補助指標）・
+  NFG/ASAI SVRGのフル勾配の近似誤差 $ \|e_s\|^2 $ もあわせて記録する．目的関数 $ f(x) $ は
+  非凸であるため，`scipy.optimize.minimize`（L-BFGS-B）で得られる$ f(x^*) $ は大域的最適値の
+  保証がなく，参考値として`config.json`にのみ記録する（グラフの縦軸には用いない）．
+
 ## 4. 外部モジュールとの依存関係
 
 - PyTorch（`torch`）：パラメータの保持・演算，および `torch.autograd` による勾配計算．
 - torchvision：CIFAR-10データセットの取得・前処理（Ex002）．
 - scikit-learn：データ分割（`train_test_split`），前処理（`OrdinalEncoder`，`StandardScaler`，Ex001）．
 - scipy：最適解 `w*` および最適値 `f(w*)` を求めるための `scipy.optimize.minimize`（L-BFGS-B，Ex001）．
-- pandas, requests：マッシュルームデータセットの取得・読み込み（Ex001）．
+- pandas, requests：マッシュルームデータセットの取得・読み込み（Ex001）．requestsはa9a
+  データセットの取得（Ex006）にも用いる．
 
 ## 5. Python環境の構築方法
 
@@ -321,19 +366,23 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # Ex005の学習実行（4手法 x 5Seed = 20条件を4プロセス並列で実行．GPU使用，既に完了した条件はスキップ）
 .venv_pytorch/bin/python programs/ex005_cifar10_resnet_classification/train.py
 
+# Ex006の学習実行（4手法 x 5Seed = 20条件をCPUでマルチプロセス並列実行．既に完了した条件はスキップ）
+.venv_pytorch/bin/python programs/ex006_a9a_least_squares/train.py
+
 # 単体テスト
 .venv_pytorch/bin/python -m pytest tests/ -v
 
 # 結果の可視化（Jupyter上で実行，またはnbconvertで一括実行．先頭セルのEXPERIMENT変数で
 # "ex001_mushroom_svrg"／"ex002_cifar10_cnn"／"ex003_cifar10_resnet_minmax"／
-# "ex004_cifar10_resnet_minmax"／"ex005_cifar10_resnet_classification" を切り替える）
+# "ex004_cifar10_resnet_minmax"／"ex005_cifar10_resnet_classification"／
+# "ex006_a9a_least_squares" を切り替える）
 .venv_pytorch/bin/jupyter nbconvert --to notebook --execute --inplace visualize_result.ipynb
 ```
 
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex001_mushroom_svrg,ex002_cifar10_cnn,ex003_cifar10_resnet_minmax,ex004_cifar10_resnet_minmax,ex005_cifar10_resnet_classification}/{method}/{hyperparams}/{seed}/`
+  `outputs/{ex001_mushroom_svrg,ex002_cifar10_cnn,ex003_cifar10_resnet_minmax,ex004_cifar10_resnet_minmax,ex005_cifar10_resnet_classification,ex006_a9a_least_squares}/{method}/{hyperparams}/{seed}/`
 - 可視化結果（グラフ画像）：上記各実験ディレクトリ直下
 - レポート：`.reports/report_001.md`（Ex001の実験結果），`.reports/report_002.md`（最適化手法
   クラスの設計），`.reports/report_003.md`（勾配計算方式の変更），`.reports/report_004.md`
@@ -341,13 +390,17 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
   （NFG SVRG原論文との比較検証），`.reports/report_007.md`（Ex003：原論文実験の再現），
   `.reports/report_008.md`（Ex003：ミニバッチサイズ1での再検証），`.reports/report_009.md`
   （Ex004：M_WORKERS分割・BN固定・sigma勾配スケールの3点修正），`.reports/report_010.md`
-  （`set_model_params`のBNバッファ同期バグ修正，Ex005：min-max構造を除いた純粋な多値分類問題）
+  （`set_model_params`のBNバッファ同期バグ修正，Ex005：min-max構造を除いた純粋な多値分類問題），
+  `.reports/report_011.md`（Ex006：NFG SVRG原論文 付録A.1，LEAST SQUARES REGRESSIONの再現実験）
 
 ## 8. 必要なAPIキーや設定ファイル
 
-Ex001（UCI Machine Learning Repository）・Ex002／Ex003（CIFAR-10，torchvision経由）とも公開
-データセットのみを用いるため，APIキーは不要である．`tokens.json`（Gemini，Hugging Face Hub用）
-はプロジェクトルートに存在し，`.gitignore` で管理対象外としている．
+Ex001（UCI Machine Learning Repository）・Ex002／Ex003（CIFAR-10，torchvision経由）・
+Ex006（a9a，LIBSVM Data経由）とも公開データセットのみを用いるため，APIキーは不要である．
+`tokens.json`（Gemini，Hugging Face Hub用）は`.gitignore`で管理対象外としているが，本セッションの
+作業ディレクトリには暗号化済みバックアップ（`tokens.json.enc`）のみが存在し，復号済みの
+`tokens.json`自体は存在しない．本リポジトリの実験はいずれも外部APIを使用しないため実行には
+影響しないが，`tokens.json`を必要とする作業を行う場合は復号が必要である旨をユーザーに警告する．
 
 ## 9. Git管理上の注意事項
 

@@ -1,0 +1,11 @@
+{
+    "method": "SGD",
+    "seed": 1,
+    "eta": 8.806973369973607e-07,
+    "K": 29304,
+    "epochs": 150,
+    "batch_size": 1,
+    "N_train": 29304,
+    "N_test": 3257,
+    "f_star_reference": 0.1032661179686497
+}
