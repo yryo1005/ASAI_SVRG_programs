@@ -178,6 +178,29 @@ SVRGに対し劣位**となった．NFG SVRGで確認されてきた「近似誤
 ASAI SVRGにも条件次第で生じることが本実験で初めて確認された．詳細は`.reports/report_025.md`
 を参照．
 
+### 1.7 `.orders/order_026.md` による実験ex0023（GroupNorm・学習率0.001固定での長期エポック学習）
+
+ex0022は，学習率0.001では全条件で発散が生じないことを示したが，バッチサイズ32では
+ASAI SVRGがSVRGに劣位となることも報告していた．`.orders/order_026.md` は，学習率0.01を
+対象から外し学習率0.001に絞った上で，エポック数をex0022比で約4倍（バッチサイズ512, 128, 32
+についてそれぞれ192, 48, 12エポック）に延長し，近似誤差・分類精度がプラトーに達するまで
+観察するよう指示している．`programs/ex0023_cifar10_alexnet_groupnorm_longrun/` に
+`programs/ex0022_cifar10_alexnet_groupnorm/` を複製する形で実装した．ex0022の内部
+Optimizer状態（running average等）はディスクに保存されていないため学習を再開できず，
+全60条件（4手法×3バッチサイズ×5Seed）をゼロから再学習した．
+
+結果は，**バッチサイズ512, 128ではASAI SVRGの精度が明確にプラトーに達しSGD・SVRGとほぼ
+同水準（74%前後）まで収束**し，実験1（`.reports/report_021.md`）で確認された「誤差床は
+transientである」という強凸設定での知見が非凸CNN設定でも成立することを示した．一方，
+**NFG SVRGは192エポックに至っても一度もプラトーに達せず，32〜47%の範囲で慢性的に振動**し
+続け，恒久的な不安定性を示した．さらに重要な新規知見として，**バッチサイズ32ではNFG SVRG・
+ASAI SVRGの全5Seedが学習開始から早い段階（エポック2〜3）で近似誤差爆発を起こし，分類精度が
+チャンスレベルに固定される恒久的な崩壊状態に陥った**．訓練損失は非有限値化しなかったため
+NaN検知による早期打ち切りは作動せず，「損失は有限のままモデルが機能不全に陥る」という
+見えにくい崩壊モードを新たに確認した．ex0022でバッチサイズ32・学習率0.001が示した
+「劣位」（NFG 43.2%，ASAI 50.8%，3エポックで打ち切り）は，実際にはこの崩壊が始まる直前で
+たまたま観測を止めていた結果であったことが判明した．詳細は`.reports/report_026.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -253,15 +276,24 @@ ASAI SVRGにも条件次第で生じることが本実験で初めて確認さ�
 │                                        # ごとに総イテレーション数が揃うようエポック数を調整
 │                                        # （128:12, 256:24, 512:48）．正規化層の第4パターン
 │                                        # SpectralConv2d（order_024）も含む
-│   └── ex0022_cifar10_alexnet_groupnorm/  # 実験ex0022：GroupNorm下での4手法比較
-│       ├── data.py                     # ex0021と同一（EXPERIMENT_NAMEのみ変更）
-│       ├── model.py                    # ex0021と同一（GroupNorm固定で使用）
-│       └── train.py                    # 4手法（SGD, SVRG, NFG SVRG, ASAI SVRG）x 3バッチ
-│                                        # サイズ(512,128,32) x 2学習率(0.01,0.001) x 5Seed =
-│                                        # 120条件の学習を実行するスクリプト（本体，order_025）．
-│                                        # うち学習率0.001・バッチサイズ512,128のNFG SVRG・
-│                                        # ASAI SVRG計20条件はex0021の結果をコピーして再利用
-│                                        # （reuse_ex0021_results関数）
+│   ├── ex0022_cifar10_alexnet_groupnorm/  # 実験ex0022：GroupNorm下での4手法比較
+│   │   ├── data.py                     # ex0021と同一（EXPERIMENT_NAMEのみ変更）
+│   │   ├── model.py                    # ex0021と同一（GroupNorm固定で使用）
+│   │   └── train.py                    # 4手法（SGD, SVRG, NFG SVRG, ASAI SVRG）x 3バッチ
+│   │                                    # サイズ(512,128,32) x 2学習率(0.01,0.001) x 5Seed =
+│   │                                    # 120条件の学習を実行するスクリプト（本体，order_025）．
+│   │                                    # うち学習率0.001・バッチサイズ512,128のNFG SVRG・
+│   │                                    # ASAI SVRG計20条件はex0021の結果をコピーして再利用
+│   │                                    # （reuse_ex0021_results関数）
+│   └── ex0023_cifar10_alexnet_groupnorm_longrun/  # 実験ex0023：学習率0.001固定・長期学習
+│       ├── data.py                     # ex0022と同一（EXPERIMENT_NAMEのみ変更）
+│       ├── model.py                    # ex0022と同一
+│       └── train.py                    # 4手法 x 3バッチサイズ(512,128,32) x 5Seed = 60条件
+│                                        # （学習率0.001固定，本体，order_026）．エポック数は
+│                                        # ex0022比で約4倍（512:192, 128:48, 32:12）．
+│                                        # `compute_trailing_relative_change`関数でプラトー
+│                                        # 判定を行う．訓練損失が非有限値化した場合は学習を
+│                                        # 打ち切る（is_run_completedもこれを完了済みとして扱う）
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -334,11 +366,17 @@ ASAI SVRGにも条件次第で生じることが本実験で初めて確認さ�
 │   │       ├── log.json                # ResultLoggerによる評価指標の履歴
 │   │       ├── config.json             # バッチサイズ・正規化層・K・総イテレーション数等
 │   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
-│   └── ex0022_cifar10_alexnet_groupnorm/
+│   ├── ex0022_cifar10_alexnet_groupnorm/
+│   │   └── {method}/{lr,bs,norm,lambda,epochs}/{seed}/
+│   │       ├── log.json                # ResultLoggerによる評価指標の履歴（コピー再利用分は
+│   │       │                            # ex0021からそのままコピーされたもの）
+│   │       ├── config.json             # 再利用分は experiment/reused_from フィールドを追記
+│   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
+│   └── ex0023_cifar10_alexnet_groupnorm_longrun/
 │       └── {method}/{lr,bs,norm,lambda,epochs}/{seed}/
-│           ├── log.json                # ResultLoggerによる評価指標の履歴（コピー再利用分は
-│           │                            # ex0021からそのままコピーされたもの）
-│           ├── config.json             # 再利用分は experiment/reused_from フィールドを追記
+│           ├── log.json                # ResultLoggerによる評価指標の履歴．崩壊により打ち
+│           │                            # 切られた場合は記録数がepochs+1未満
+│           ├── config.json             # collapsedフィールドで崩壊の有無を明示
 │           └── best_model.pth          # 検証精度が最高となったエポックの重み
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
@@ -382,12 +420,19 @@ ASAI SVRGにも条件次第で生じることが本実験で初めて確認さ�
 │                                        # 勾配評価が完全に決定論的であること（必須テスト），
 │                                        # power iterationのバーンイン後の収束，L2正則化の
 │                                        # 二重計上防止，パラメータ数の公平性を検証
-│   └── test_ex0022_cifar10_alexnet_groupnorm.py  # 実験ex0022．ex0021とのモデル初期値・
-│                                        # データローダー初期順序の一致（コピー再利用の前提，
-│                                        # order_025必須項目），4手法のスモークテスト，
-│                                        # オラクル呼び出し回数（SGD:N, NFG/ASAI:2N, SVRG:3N），
-│                                        # elapsed_timeからNFG/ASAIの診断専用フル勾配計算時間が
-│                                        # 除外されること（人為的遅延によるモック検証）を確認
+│   ├── test_ex0022_cifar10_alexnet_groupnorm.py  # 実験ex0022．ex0021とのモデル初期値・
+│   │                                    # データローダー初期順序の一致（コピー再利用の前提，
+│   │                                    # order_025必須項目），4手法のスモークテスト，
+│   │                                    # オラクル呼び出し回数（SGD:N, NFG/ASAI:2N, SVRG:3N），
+│   │                                    # elapsed_timeからNFG/ASAIの診断専用フル勾配計算時間が
+│   │                                    # 除外されること（人為的遅延によるモック検証）を確認
+│   └── test_ex0023_cifar10_alexnet_groupnorm_longrun.py  # 実験ex0023．4手法のスモーク
+│                                        # テスト，オラクル呼び出し回数，elapsed_timeの
+│                                        # 診断専用フル勾配計算除外（ex0022からの踏襲確認），
+│                                        # compute_trailing_relative_change（プラトー判定）の
+│                                        # 正しさ，学習率を極端に大きくして人為的に崩壊させた
+│                                        # 場合に学習が打ち切られること，打ち切られたログを
+│                                        # is_run_completedが完了済みとして扱うことを検証
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -441,10 +486,14 @@ ASAI SVRGにも条件次第で生じることが本実験で初めて確認さ�
 │   │                                    # よるNFG SVRG・ASAI SVRGの安定性の検証（order_023）
 │   ├── report_024.md                   # 実験ex0021 追加検証：スペクトル正規化によるメカニズム
 │   │                                    # 解明（活性化正規化 vs リプシッツ定数抑制，order_024）
-│   └── report_025.md                   # 実験ex0022：GroupNorm下での4手法比較，分散削減の
-│                                        # 効率性検証（order_025）．実験2・ex0021の実装上の
-│                                        # 食い違い（SVRG系Optimizerクラスの選択，elapsed_time
-│                                        # の計上方法）の発見・対応も記載
+│   ├── report_025.md                   # 実験ex0022：GroupNorm下での4手法比較，分散削減の
+│   │                                    # 効率性検証（order_025）．実験2・ex0021の実装上の
+│   │                                    # 食い違い（SVRG系Optimizerクラスの選択，elapsed_time
+│   │                                    # の計上方法）の発見・対応も記載
+│   └── report_026.md                   # 実験ex0023：GroupNorm・学習率0.001固定での長期
+│                                        # エポック学習，誤差床の収束観察（order_026）．
+│                                        # transient vs 恒久的誤差床の判定，バッチサイズ32での
+│                                        # 新規崩壊の発見を記載
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -542,6 +591,16 @@ ASAI SVRGにも条件次第で生じることが本実験で初めて確認さ�
   NFG SVRG・ASAI SVRGの近似誤差算出専用のフル勾配計算時間が `elapsed_time` に誤って
   計上されていたバグを修正し，SVRGの（アルゴリズムに必要な）フル勾配計算時間とを区別する．
   GPU（`.venv_pytorch_gpu`）を用い，8プロセスを `chunksize=1` で並列実行する．
+- `programs/ex0023_cifar10_alexnet_groupnorm_longrun/data.py`／`model.py`：`programs/
+  ex0022_cifar10_alexnet_groupnorm/` の同名ファイルと同一（`EXPERIMENT_NAME` のみ変更）．
+- `programs/ex0023_cifar10_alexnet_groupnorm_longrun/train.py`：ex0022と同一の
+  Optimizerクラス・`elapsed_time`計上方法を踏襲する．学習率0.001に固定し，バッチサイズ
+  512, 128, 32のエポック数をex0022比で約4倍（192, 48, 12）に延長する．ex0022の内部
+  Optimizer状態は保存されていないため学習を再開できず，全60条件をゼロから再学習する
+  （既存結果のコピー再利用は行わない）．`compute_trailing_relative_change` 関数で，
+  末尾複数エポックの相対変化の最大値によりプラトー到達を数値的に判定する．訓練損失が
+  非有限値化した場合（崩壊）は学習を打ち切り，`is_run_completed` はこれを完了済みとして
+  扱う．GPU（`.venv_pytorch_gpu`）を用い，8プロセスを `chunksize=1` で並列実行する．
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -786,6 +845,10 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # 条件はスキップ）
 .venv_pytorch_gpu/bin/python programs/ex0022_cifar10_alexnet_groupnorm/train.py
 
+# 実験ex0023の学習実行（学習率0.001固定，4手法 x 3バッチサイズ x 5Seed = 60条件を全て新規に
+# GPUで8プロセス並列実行．既に完了した条件（崩壊による打ち切りを含む）はスキップ）
+.venv_pytorch_gpu/bin/python programs/ex0023_cifar10_alexnet_groupnorm_longrun/train.py
+
 # --- 事前実験（.orders/order_011.md まで）---
 
 # Ex001の学習実行（4手法 x 5Seed = 20条件をマルチプロセスで並列実行．既に完了した条件はスキップ）
@@ -824,7 +887,7 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm}/{method}/{hyperparams}/{seed}/`
+  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun}/{method}/{hyperparams}/{seed}/`
   （論文掲載用），
   `outputs_old/{ex001_mushroom_svrg,...,ex006_a9a_least_squares}/{method}/{hyperparams}/{seed}/`（事前実験）
 - 可視化結果（グラフ画像）：上記各実験ディレクトリ直下
