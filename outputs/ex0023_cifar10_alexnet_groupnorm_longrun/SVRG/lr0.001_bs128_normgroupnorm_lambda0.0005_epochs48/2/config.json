@@ -1,0 +1,15 @@
+{
+    "experiment": "ex0023_cifar10_alexnet_groupnorm_longrun",
+    "method": "SVRG",
+    "seed": 2,
+    "learning_rate": 0.001,
+    "batch_size": 128,
+    "norm_type": "groupnorm",
+    "reg_lambda": 0.0005,
+    "epochs": 48,
+    "K": 391,
+    "total_iterations": 18768,
+    "N_train": 50000,
+    "N_test": 10000,
+    "collapsed": false
+}

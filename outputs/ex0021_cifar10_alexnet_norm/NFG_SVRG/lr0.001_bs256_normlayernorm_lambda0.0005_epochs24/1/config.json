@@ -1,0 +1,14 @@
+{
+    "experiment": "ex0021_cifar10_alexnet_norm",
+    "method": "NFG_SVRG",
+    "seed": 1,
+    "learning_rate": 0.001,
+    "batch_size": 256,
+    "norm_type": "layernorm",
+    "reg_lambda": 0.0005,
+    "epochs": 24,
+    "K": 196,
+    "total_iterations": 4704,
+    "N_train": 50000,
+    "N_test": 10000
+}

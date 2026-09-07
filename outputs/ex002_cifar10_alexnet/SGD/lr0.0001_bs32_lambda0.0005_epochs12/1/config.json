@@ -1,0 +1,12 @@
+{
+    "experiment": "ex002_cifar10_alexnet",
+    "method": "SGD",
+    "seed": 1,
+    "learning_rate": 0.0001,
+    "batch_size": 32,
+    "reg_lambda": 0.0005,
+    "epochs": 12,
+    "K": 1563,
+    "N_train": 50000,
+    "N_test": 10000
+}

@@ -1,0 +1,14 @@
+{
+    "experiment": "ex0022_cifar10_alexnet_groupnorm",
+    "method": "ASAI_SVRG",
+    "seed": 4,
+    "learning_rate": 0.01,
+    "batch_size": 128,
+    "norm_type": "groupnorm",
+    "reg_lambda": 0.0005,
+    "epochs": 12,
+    "K": 391,
+    "total_iterations": 4692,
+    "N_train": 50000,
+    "N_test": 10000
+}

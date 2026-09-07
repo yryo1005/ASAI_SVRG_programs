@@ -1,0 +1,12 @@
+{
+    "experiment": "ex002_cifar10_alexnet",
+    "method": "SVRG",
+    "seed": 4,
+    "learning_rate": 0.01,
+    "batch_size": 128,
+    "reg_lambda": 0.0005,
+    "epochs": 12,
+    "K": 391,
+    "N_train": 50000,
+    "N_test": 10000
+}
