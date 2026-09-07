@@ -1,0 +1,15 @@
+{
+    "experiment": "ex003_tinyshakespeare_transformer",
+    "method": "SGD",
+    "seed": 0,
+    "learning_rate": 0.01,
+    "batch_size": 128,
+    "reg_lambda": 0.0005,
+    "epochs": 12,
+    "K": 61,
+    "total_iterations": 732,
+    "N_train": 7781,
+    "N_test": 864,
+    "vocab_size": 65,
+    "collapsed": false
+}

@@ -201,6 +201,75 @@ NaN検知による早期打ち切りは作動せず，「損失は有限のま�
 「劣位」（NFG 43.2%，ASAI 50.8%，3エポックで打ち切り）は，実際にはこの崩壊が始まる直前で
 たまたま観測を止めていた結果であったことが判明した．詳細は`.reports/report_026.md`を参照．
 
+### 1.8 `.orders/order_027.md` による実験3（Tiny Shakespeare・Transformer）Stage A
+
+`.orders/order_020.md` が定める実験3（Tiny Shakespeare，Transformer）に着手する．
+SVRG系分散削減手法が系列データ（自然言語）にも適用可能かを検証するとともに，実験0〜
+ex0023の知見がTransformerアーキテクチャでも成立するかを確認する．実験2が正規化層なしの
+モデルでいきなり本比較を実施し9条件中7条件で発散したという教訓（`.reports/report_022.md`）
+を踏まえ，`.orders/order_027.md` は最初から段階的に実施するよう指示している．Stage A
+（本レポート対応）はNFG SVRG・ASAI SVRGの2手法に絞った安定性探索，Stage B（別途オーダー
+作成予定）はSGD・SVRGを含めた4手法比較・長期学習である．
+
+`programs/ex003_tinyshakespeare_transformer/` に，文字レベル言語モデリング用の
+Decoder-only Transformer（4層，隠れ次元128，パラメータ数826,433）を実装した．Dropout・
+BatchNormalizationは使用せず，LayerNorm（Pre-LN構成，各トークンごとに正規化されるため
+SVRG系手法の理論的前提と両立する）を用いる．データセットはTiny Shakespeare（1,115,394
+文字，語彙サイズ65）を，固定長128トークンの非重複チャンク（学習用7,781チャンク，検証用
+864チャンク）に分割する．
+
+Stage A（NFG SVRG・ASAI SVRG×バッチサイズ{512,128,32}×学習率{0.01,0.001}×3Seed，計36
+条件，12エポック）の結果，**36条件全てで発散（NaN）が皆無**であった．これは
+正規化層なしで実施した実験2の初回グリッド（9条件中7条件が発散）と著しく対照的であり，
+LayerNormを最初から採用したことが主因と考えられる．近似誤差の爆発パターン（実験2以降
+繰り返し観察）や，ex0023で確認された「損失は有限のままモデルが機能不全に陥る」見えない
+崩壊も，本Stage Aでは一切観察されなかった．この結果を踏まえ，Stage Bの条件案
+（バッチサイズ128・32を中心に，学習率0.01を中心としつつより大きい学習率での安定性限界の
+探索も検討，エポック数をex0023同等の総イテレーション数まで延長）を提案した．詳細は
+`.reports/report_027.md`を参照．
+
+### 1.9 `.orders/order_028.md` による実験3 Stage B（SGD・SVRGを含めた4手法比較）
+
+Stage Aと完全に同一のモデル・データセット・グリッドのまま，SGD・SVRGを比較対象に加えた
+4手法比較を行う．NFG SVRG・ASAI SVRGの36条件はStage Aの結果をそのまま再利用し（`is_run_
+completed` による自動スキップ），`programs/ex003_tinyshakespeare_transformer/train.py` に
+SGD・SVRGの学習ループ（`run_sgd`，`run_variance_reduced`のSVRG分岐）を追加して新規36条件
+のみを学習した（計72条件）．
+
+結果は，**SGD・SVRGを含めた全72条件で発散が皆無**であり，Stage Aの安定性がそのまま
+維持されることを確認した．オラクル呼び出し回数を横軸とした効率性比較では，**探索した
+全6条件（バッチサイズ3種×学習率2種）でASAI SVRGが一貫してSVRGを上回り**（ex0022，
+`.reports/report_025.md`で確認されたGroupNorm下のCIFAR-10での知見がTransformer・系列
+データでも成立することを実証），特にバッチサイズ128・学習率0.001では約1.49倍の精度差と
+なった．一方，12エポックでは全条件で精度がまだ収束しておらず，長期学習（Stage C相当）の
+実施を推奨する結論に至った．詳細は`.reports/report_028.md`を参照．
+
+### 1.10 `.orders/order_029.md` による実験3 Stage C（長期学習によるASAI SVRGの効率性優位性の持続性検証）
+
+Stage Bで観察されたASAI SVRGの効率性優位性（最大約1.49倍）が学習途中の値に基づくもので
+あったこと，およびex0023で確認された遅延崩壊がTransformer設定でも起こりうることを踏まえ，
+学習率を0.01に絞った上でエポック数をStage Bの4倍（48エポック）に延長した長期学習を実施
+した．`.orders/order_029.md` 末尾の指示により，エポック数を区別しやすくするため実験
+ディレクトリ名を`ex0031_tinyshakespeare_transformer_longrun`とした（Stage A/Bの
+`ex003_tinyshakespeare_transformer`とは別ディレクトリ）．モデル・データセットはStage A/Bと
+完全に同一，全36条件（バッチサイズ3種×手法4種×Seed3）を新規に学習した（Optimizer内部
+状態非保存のため継続学習は不可，ex0023と同様）．
+
+結果は，**36条件全てで発散・遅延崩壊が皆無**であり，特にバッチサイズ32のNFG SVRG・
+ASAI SVRGの精度軌跡は48エポックを通じて滑らかに単調増加し，ex0023（CIFAR-10）で観察
+された「損失は有限のまま精度がチャンスレベルに固定される」崩壊は一切再現しなかった．
+オラクル呼び出し回数を揃えたASAI SVRG対SVRGの精度比は，**Stage B終了時点（12エポック
+相当）で最大約1.25倍（バッチサイズ512）に達した後，学習を継続すると急速に縮小し，以降は
+バッチサイズにより約1〜9%の小さいが正の水準で安定する**という推移を示した．すなわち，
+Stage Bで観測された大きな優位性は学習曲線が急峻な初期を切り取ったことによる過大評価
+だった可能性が高いが，優位性自体は消失せず，長期学習でも持続することが確認された．
+エポック数を揃えた（コストを揃えない）比較では48エポック時点の4手法の最終精度はいずれの
+バッチサイズでも0.05ポイント未満の差に収束しており，オラクル呼び出し回数という「コスト」
+を揃えて初めて優位性が可視化される点はStage Bと同様であった．プラトー判定（末尾6エポック
+の相対変化）により，48エポック時点でおおむねプラトーに到達していることを確認した．学習率
+0.001での追加の長期学習は，主要な結論を左右しないと判断し見送ることを提案した．詳細は
+`.reports/report_029.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -218,6 +287,14 @@ NaN検知による早期打ち切りは作動せず，「損失は有限のま�
 │   ├── ex002_cifar10_alexnet/
 │   │   └── raw/                        # CIFAR-10データセットの生データ（自動ダウンロード）
 │   │                                    # ★ order_022の論文掲載用の実験2
+│   ├── ex0021_cifar10_alexnet_norm/，ex0022_cifar10_alexnet_groupnorm/，
+│   │   ex0023_cifar10_alexnet_groupnorm_longrun/
+│   │   └── raw/                        # CIFAR-10データセットの生データ（自動ダウンロード，
+│   │                                    # または既存実験からコピー）
+│   ├── ex003_tinyshakespeare_transformer/，ex0031_tinyshakespeare_transformer_longrun/
+│   │   └── raw/                        # Tiny Shakespeareの生データ（input.txt，自動ダウン
+│   │                                    # ロード，またはex003からコピー）．
+│   │                                    # ★ order_027/028/029の論文掲載用の実験3
 │   ├── ex001_mushroom_svrg/
 │   │   └── raw/                        # UCI Mushroomデータセットの生データ（自動ダウンロード）
 │   ├── ex002_cifar10_cnn/
@@ -285,15 +362,41 @@ NaN検知による早期打ち切りは作動せず，「損失は有限のま�
 │   │                                    # うち学習率0.001・バッチサイズ512,128のNFG SVRG・
 │   │                                    # ASAI SVRG計20条件はex0021の結果をコピーして再利用
 │   │                                    # （reuse_ex0021_results関数）
-│   └── ex0023_cifar10_alexnet_groupnorm_longrun/  # 実験ex0023：学習率0.001固定・長期学習
-│       ├── data.py                     # ex0022と同一（EXPERIMENT_NAMEのみ変更）
-│       ├── model.py                    # ex0022と同一
-│       └── train.py                    # 4手法 x 3バッチサイズ(512,128,32) x 5Seed = 60条件
-│                                        # （学習率0.001固定，本体，order_026）．エポック数は
-│                                        # ex0022比で約4倍（512:192, 128:48, 32:12）．
-│                                        # `compute_trailing_relative_change`関数でプラトー
-│                                        # 判定を行う．訓練損失が非有限値化した場合は学習を
-│                                        # 打ち切る（is_run_completedもこれを完了済みとして扱う）
+│   ├── ex0023_cifar10_alexnet_groupnorm_longrun/  # 実験ex0023：学習率0.001固定・長期学習
+│   │   ├── data.py                     # ex0022と同一（EXPERIMENT_NAMEのみ変更）
+│   │   ├── model.py                    # ex0022と同一
+│   │   └── train.py                    # 4手法 x 3バッチサイズ(512,128,32) x 5Seed = 60条件
+│   │                                    # （学習率0.001固定，本体，order_026）．エポック数は
+│   │                                    # ex0022比で約4倍（512:192, 128:48, 32:12）．
+│   │                                    # `compute_trailing_relative_change`関数でプラトー
+│   │                                    # 判定を行う．訓練損失が非有限値化した場合は学習を
+│   │                                    # 打ち切る（is_run_completedもこれを完了済みとして扱う）
+│   ├── ex003_tinyshakespeare_transformer/  # 実験3 Stage A・Stage B：Tiny Shakespeare・
+│       │                                # Transformer
+│       ├── data.py                     # Tiny Shakespeare（自動ダウンロード）を文字レベルで
+│       │                                # トークナイズし，非重複チャンク（T=128）へ分割
+│       ├── model.py                    # DecoderOnlyTransformer（4層，隠れ次元128，
+│       │                                # 826,433パラメータ）．Dropout・BatchNorm不使用，
+│       │                                # LayerNorm（Pre-LN）・Causalマスク・学習可能な
+│       │                                # 位置埋め込みを使用
+│       └── train.py                    # 4手法（SGD, SVRG, NFG SVRG, ASAI SVRG）x 3バッチ
+│                                        # サイズ(512,128,32) x 2学習率(0.01,0.001) x 3Seed =
+│                                        # 72条件を実行するスクリプト（Stage A：NFG SVRG・
+│                                        # ASAI SVRG 36条件，order_027／Stage B：SGD・SVRG
+│                                        # 36条件を追加，order_028）．Stage Aの36条件は
+│                                        # `is_run_completed` により自動的に再利用（スキップ）
+│                                        # される．`is_stuck_near_chance`関数で見えない崩壊を検出
+│   └── ex0031_tinyshakespeare_transformer_longrun/  # 実験3 Stage C：学習率0.01固定・
+│       │                                # 48エポックへの長期学習（エポック数を区別しやすい
+│       │                                # よう order_029末尾の指示でex0031と命名）
+│       ├── data.py                     # ex003と同一（EXPERIMENT_NAMEのみ変更）
+│       ├── model.py                    # ex003と同一
+│       └── train.py                    # 4手法 x 3バッチサイズ(512,128,32) x 3Seed = 36条件
+│                                        # （学習率0.01固定・48エポック一律，本体，order_029）．
+│                                        # ex003 Stage Bの4手法学習ロジックと，ex0023由来の
+│                                        # `compute_trailing_relative_change`（プラトー判定）・
+│                                        # 崩壊時の学習打ち切りロジックを組み合わせる．
+│                                        # 全36条件を新規学習（継続学習は不可のため）
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -372,11 +475,23 @@ NaN検知による早期打ち切りは作動せず，「損失は有限のま�
 │   │       │                            # ex0021からそのままコピーされたもの）
 │   │       ├── config.json             # 再利用分は experiment/reused_from フィールドを追記
 │   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
-│   └── ex0023_cifar10_alexnet_groupnorm_longrun/
-│       └── {method}/{lr,bs,norm,lambda,epochs}/{seed}/
-│           ├── log.json                # ResultLoggerによる評価指標の履歴．崩壊により打ち
-│           │                            # 切られた場合は記録数がepochs+1未満
-│           ├── config.json             # collapsedフィールドで崩壊の有無を明示
+│   ├── ex0023_cifar10_alexnet_groupnorm_longrun/
+│   │   └── {method}/{lr,bs,norm,lambda,epochs}/{seed}/
+│   │       ├── log.json                # ResultLoggerによる評価指標の履歴．崩壊により打ち
+│   │       │                            # 切られた場合は記録数がepochs+1未満
+│   │       ├── config.json             # collapsedフィールドで崩壊の有無を明示
+│   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
+│   ├── ex003_tinyshakespeare_transformer/
+│   │   └── {method}/{lr,bs,lambda,epochs}/{seed}/
+│   │       ├── log.json                # ResultLoggerによる評価指標の履歴（次文字予測精度，
+│   │       │                            # 近似誤差等）
+│   │       ├── config.json             # collapsedフィールド，vocab_size等のメタデータ
+│   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
+│   └── ex0031_tinyshakespeare_transformer_longrun/
+│       └── {method}/{lr,bs,lambda,epochs}/{seed}/
+│           ├── log.json                # ResultLoggerによる評価指標の履歴（49エントリ，
+│           │                            # epoch0〜48）
+│           ├── config.json             # collapsedフィールド（全36条件でfalse）
 │           └── best_model.pth          # 検証精度が最高となったエポックの重み
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
@@ -426,13 +541,28 @@ NaN検知による早期打ち切りは作動せず，「損失は有限のま�
 │   │                                    # オラクル呼び出し回数（SGD:N, NFG/ASAI:2N, SVRG:3N），
 │   │                                    # elapsed_timeからNFG/ASAIの診断専用フル勾配計算時間が
 │   │                                    # 除外されること（人為的遅延によるモック検証）を確認
-│   └── test_ex0023_cifar10_alexnet_groupnorm_longrun.py  # 実験ex0023．4手法のスモーク
-│                                        # テスト，オラクル呼び出し回数，elapsed_timeの
-│                                        # 診断専用フル勾配計算除外（ex0022からの踏襲確認），
-│                                        # compute_trailing_relative_change（プラトー判定）の
-│                                        # 正しさ，学習率を極端に大きくして人為的に崩壊させた
-│                                        # 場合に学習が打ち切られること，打ち切られたログを
-│                                        # is_run_completedが完了済みとして扱うことを検証
+│   ├── test_ex0023_cifar10_alexnet_groupnorm_longrun.py  # 実験ex0023．4手法のスモーク
+│   │                                    # テスト，オラクル呼び出し回数，elapsed_timeの
+│   │                                    # 診断専用フル勾配計算除外（ex0022からの踏襲確認），
+│   │                                    # compute_trailing_relative_change（プラトー判定）の
+│   │                                    # 正しさ，学習率を極端に大きくして人為的に崩壊させた
+│   │                                    # 場合に学習が打ち切られること，打ち切られたログを
+│   │                                    # is_run_completedが完了済みとして扱うことを検証
+│   ├── test_ex003_tinyshakespeare_transformer.py  # 実験3 Stage A・Stage B．Dropout・
+│   │                                    # BatchNorm不使用の確認，モデルの決定論性，Causal
+│   │                                    # マスクが未来のトークンに依存しないこと，チャンク
+│   │                                    # 分割の非重複性，L2正則化がLayerNormを除外すること，
+│   │                                    # 4手法のスモークテスト，オラクル呼び出し回数
+│   │                                    # （SGD:N, NFG/ASAI:2N, SVRG:3N），elapsed_timeの
+│   │                                    # 診断専用フル勾配計算除外，is_stuck_near_chance
+│   │                                    # （見えない崩壊検出）の正しさ，Stage BのグリッドがStage
+│   │                                    # Aと一致すること（既存結果再利用の前提）を検証
+│   └── test_ex0031_tinyshakespeare_transformer_longrun.py  # 実験3 Stage C．Transformer構造
+│                                        # の性質（ex003と同様）に加え，compute_trailing_
+│                                        # relative_change（プラトー判定，ex0023から踏襲）の
+│                                        # 境界動作，崩壊時の学習早期打ち切り，打ち切られた
+│                                        # ログをis_run_completedが完了済みとして扱うこと，
+│                                        # EPOCHS==48・LEARNING_RATE==0.01等の実験条件定数を検証
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -490,10 +620,24 @@ NaN検知による早期打ち切りは作動せず，「損失は有限のま�
 │   │                                    # 効率性検証（order_025）．実験2・ex0021の実装上の
 │   │                                    # 食い違い（SVRG系Optimizerクラスの選択，elapsed_time
 │   │                                    # の計上方法）の発見・対応も記載
-│   └── report_026.md                   # 実験ex0023：GroupNorm・学習率0.001固定での長期
-│                                        # エポック学習，誤差床の収束観察（order_026）．
-│                                        # transient vs 恒久的誤差床の判定，バッチサイズ32での
-│                                        # 新規崩壊の発見を記載
+│   ├── report_026.md                   # 実験ex0023：GroupNorm・学習率0.001固定での長期
+│   │                                    # エポック学習，誤差床の収束観察（order_026）．
+│   │                                    # transient vs 恒久的誤差床の判定，バッチサイズ32での
+│   │                                    # 新規崩壊の発見を記載
+│   ├── report_027.md                   # 実験3 Stage A：Tiny Shakespeare・Transformerでの
+│   │                                    # 安定性探索（order_027）．36条件全てで発散が皆無
+│   │                                    # であった結果と考察，Stage Bの条件案を記載
+│   ├── report_028.md                   # 実験3 Stage B：SGD・SVRGを含めた4手法比較
+│   │                                    # （order_028）．全72条件で発散が皆無，ASAI SVRGが
+│   │                                    # 全6条件でオラクル呼び出し回数あたりSVRGを上回る
+│   │                                    # 結果と考察，Stage C（長期学習）実施の推奨を記載
+│   └── report_029.md                   # 実験3 Stage C：学習率0.01固定・48エポックへの長期
+│                                        # 学習（order_029）．全36条件で発散・遅延崩壊が皆無，
+│                                        # ASAI SVRGの効率性優位性はStage Bの最大約1.25倍
+│                                        # （バッチサイズ512）から学習継続で急速に縮小した後，
+│                                        # 小さいが正の水準（約1〜9%）で安定するという結論，
+│                                        # Stage B/C同一エポック時点での完全一致による整合性
+│                                        # 確認，学習率0.001長期学習の見送り提案を記載
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -601,6 +745,37 @@ NaN検知による早期打ち切りは作動せず，「損失は有限のま�
   末尾複数エポックの相対変化の最大値によりプラトー到達を数値的に判定する．訓練損失が
   非有限値化した場合（崩壊）は学習を打ち切り，`is_run_completed` はこれを完了済みとして
   扱う．GPU（`.venv_pytorch_gpu`）を用い，8プロセスを `chunksize=1` で並列実行する．
+- `programs/ex003_tinyshakespeare_transformer/data.py`：`urllib.request` でTiny
+  Shakespeareを自動ダウンロードし，文字レベルで語彙を構築する．コーパスの前方90%を
+  学習用，後方10%を検証用とし，それぞれ独立に固定長 $ T+1=129 $ の非重複チャンクへ
+  分割する（`_ChunkedTextDataset`）．チャンクは学習の全過程を通じて固定．
+- `programs/ex003_tinyshakespeare_transformer/model.py`：`machine_learning_utils.py` の
+  `set_seed` を利用する．Decoder-only Transformer（`DecoderOnlyTransformer`，4層，
+  隠れ次元128，826,433パラメータ）を定義する．Pre-LN構成のTransformerブロック
+  （`CausalSelfAttention` + Feed Forward）を用い，Dropout・BatchNormalizationは使用
+  しない．Causalマスクは `torch.tril` による決定論的なバッファ．位置エンコーディングは
+  学習可能な `nn.Embedding`．L2正則化は `nn.Linear`・`nn.Embedding` の重みのみに課し，
+  LayerNormのアフィンパラメータは対象外とする．
+- `programs/ex003_tinyshakespeare_transformer/train.py`：ex0022・ex0023と同一の
+  Optimizerクラス（`SGD`，`SVRG`，`NFGSVRG`，`ASAISVRG`）・`elapsed_time`計上方法を用いる．
+  Stage A（`.orders/order_027.md` 6節）として，NFG SVRG・ASAI SVRGの2手法×バッチサイズ
+  (512,128,32)×学習率(0.01,0.001)×3Seed＝36条件を12エポックで学習し，Stage B（`.orders/
+  order_028.md`）でSGD・SVRGを追加した4手法×同一グリッド＝72条件に拡張した（Stage Aの
+  36条件は`is_run_completed`により自動的に再利用）．`is_stuck_near_chance` 関数で，次文字
+  予測精度がチャンスレベル付近に張り付く「見えない崩壊」（`.reports/report_026.md` 5.1節）
+  の兆候を検出する．GPU（`.venv_pytorch_gpu`）を用い，8プロセスを `chunksize=1` で並列
+  実行する．
+- `programs/ex0031_tinyshakespeare_transformer_longrun/data.py`／`model.py`：
+  `programs/ex003_tinyshakespeare_transformer/` の同名ファイルと完全に同一
+  （`EXPERIMENT_NAME` のみ変更）．
+- `programs/ex0031_tinyshakespeare_transformer_longrun/train.py`：Stage C
+  （`.orders/order_029.md`）として，ex003 Stage Bの4手法学習ロジックを踏襲し，学習率を
+  0.01のみに固定，全バッチサイズ一律48エポック（Stage Bの4倍）で36条件（4手法×3バッチ
+  サイズ×3Seed）を学習する．ex0023由来の `compute_trailing_relative_change`（プラトー
+  判定）・崩壊時の学習打ち切りロジックを流用する．Optimizer内部状態が保存されないため，
+  Stage Bの12エポック分の結果からの継続学習は行わず，全36条件をゼロから再学習する
+  （既存結果のコピー再利用は行わない）．GPU（`.venv_pytorch_gpu`）を用い，8プロセスを
+  `chunksize=1` で並列実行する．
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -849,6 +1024,15 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # GPUで8プロセス並列実行．既に完了した条件（崩壊による打ち切りを含む）はスキップ）
 .venv_pytorch_gpu/bin/python programs/ex0023_cifar10_alexnet_groupnorm_longrun/train.py
 
+# 実験3 Stage A・Stage Bの学習実行（4手法 x 3バッチサイズ x 2学習率 x 3Seed = 72条件のうち，
+# Stage Aで完了済みの36条件はスキップし，Stage B新規36条件（SGD・SVRG）をGPUで8プロセス
+# 並列実行）
+.venv_pytorch_gpu/bin/python programs/ex003_tinyshakespeare_transformer/train.py
+
+# 実験3 Stage Cの学習実行（学習率0.01固定・48エポック一律，4手法 x 3バッチサイズ x 3Seed =
+# 36条件を全て新規にGPUで8プロセス並列実行．既に完了した条件はスキップ）
+.venv_pytorch_gpu/bin/python programs/ex0031_tinyshakespeare_transformer_longrun/train.py
+
 # --- 事前実験（.orders/order_011.md まで）---
 
 # Ex001の学習実行（4手法 x 5Seed = 20条件をマルチプロセスで並列実行．既に完了した条件はスキップ）
@@ -887,7 +1071,7 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun}/{method}/{hyperparams}/{seed}/`
+  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun}/{method}/{hyperparams}/{seed}/`
   （論文掲載用），
   `outputs_old/{ex001_mushroom_svrg,...,ex006_a9a_least_squares}/{method}/{hyperparams}/{seed}/`（事前実験）
 - 可視化結果（グラフ画像）：上記各実験ディレクトリ直下

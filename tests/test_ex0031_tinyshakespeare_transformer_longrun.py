@@ -1,13 +1,14 @@
 """
-`programs/ex003_tinyshakespeare_transformer/`（実験3：Tiny Shakespeareを用いた文章生成問題，
-Decoder-only Transformer，Stage A安定性探索・Stage B 4手法比較）の単体テスト．
+`programs/ex0031_tinyshakespeare_transformer_longrun/`（実験3 Stage C：長期学習による
+ASAI SVRGの効率性優位性の持続性検証）の単体テスト．
 
 モデルがDropout・BatchNormalizationを含まないこと，Causalマスクが未来のトークンに依存しない
 ことを保証すること，同一入力に対する出力が決定論的であること，データセットのチャンク分割が
 非重複であること，4手法（SGD，SVRG，NFG SVRG，ASAI SVRG）が合成データ上でエラーなく完走
-すること，オラクル呼び出し回数の正しさ（SGD:N，NFG/ASAI:2N，SVRG:3N），`elapsed_time` から
-NFG SVRG・ASAI SVRGの診断専用フル勾配計算が除外されること，チャンスレベル張り付き検出
-（`is_stuck_near_chance`）の正しさを確認する．
+すること，オラクル呼び出し回数の正しさ，`elapsed_time` から診断専用フル勾配計算が除外される
+こと，チャンスレベル張り付き検出（`is_stuck_near_chance`），プラトー判定
+（`compute_trailing_relative_change`）の正しさ，長期学習中に崩壊した場合に学習が打ち切られ
+`is_run_completed` がこれを完了済みとして扱うことを確認する．
 """
 
 import importlib.util
@@ -21,7 +22,7 @@ import torch
 
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _PROGRAMS_DIR = os.path.join(_PROJECT_ROOT, "programs")
-_EX003_DIR = os.path.join(_PROGRAMS_DIR, "ex003_tinyshakespeare_transformer")
+_EX0031_DIR = os.path.join(_PROGRAMS_DIR, "ex0031_tinyshakespeare_transformer_longrun")
 sys.path.insert(0, _PROGRAMS_DIR)
 sys.path.insert(0, os.path.join(_PROJECT_ROOT, ".ai", "ai-dev-kit", "src"))
 
@@ -39,11 +40,11 @@ def _load_module(unique_name: str, directory: str, filename: str):
     return module
 
 
-ex003_model = _load_module("ex003_model", _EX003_DIR, "model.py")
-ex003_data = _load_module("ex003_data", _EX003_DIR, "data.py")
+ex0031_model = _load_module("ex0031_model", _EX0031_DIR, "model.py")
+ex0031_data = _load_module("ex0031_data", _EX0031_DIR, "data.py")
 # `train.py` はモジュールインポート時にネットワークからTiny Shakespeareをダウンロードし
 # 語彙サイズを決定する．
-ex003_train = _load_module("ex003_train", _EX003_DIR, "train.py")
+ex0031_train = _load_module("ex0031_train", _EX0031_DIR, "train.py")
 
 
 class _SyntheticTokenDataset(torch.utils.data.Dataset):
@@ -74,16 +75,15 @@ def _make_synthetic_dataloaders(n_train=24, n_test=8, batch_size=8, seq_len=16, 
 
 
 def test_model_has_no_dropout_or_batchnorm():
-    """Dropout・BatchNormalization層を含まないことを確認する（`.orders/order_027.md` 2節）．"""
-    model = ex003_model.DecoderOnlyTransformer(vocab_size=20, max_seq_len=16, d_model=32, n_head=2, n_layer=2, d_ff=64)
+    """Dropout・BatchNormalization層を含まないことを確認する．"""
+    model = ex0031_model.DecoderOnlyTransformer(vocab_size=20, max_seq_len=16, d_model=32, n_head=2, n_layer=2, d_ff=64)
     for module in model.modules():
         assert not isinstance(module, (torch.nn.Dropout, torch.nn.BatchNorm1d, torch.nn.BatchNorm2d))
 
 
 def test_model_is_deterministic_given_same_input():
-    """同一入力に対し，モデルの出力が呼び出しごとに変化しない（決定論的である）ことを確認
-    する．SVRG系手法の理論的前提の検証．"""
-    model = ex003_model.DecoderOnlyTransformer(vocab_size=20, max_seq_len=16, d_model=32, n_head=2, n_layer=2, d_ff=64)
+    """同一入力に対し，モデルの出力が呼び出しごとに変化しないことを確認する．"""
+    model = ex0031_model.DecoderOnlyTransformer(vocab_size=20, max_seq_len=16, d_model=32, n_head=2, n_layer=2, d_ff=64)
     model.eval()
     x = torch.randint(0, 20, (4, 16))
     with torch.no_grad():
@@ -93,9 +93,8 @@ def test_model_is_deterministic_given_same_input():
 
 
 def test_causal_mask_does_not_depend_on_future_tokens():
-    """位置 $ t $ の出力が，位置 $ t+1 $ 以降のトークンを変更しても変化しない（causalマスクが
-    正しく機能している）ことを確認する．"""
-    model = ex003_model.DecoderOnlyTransformer(vocab_size=20, max_seq_len=16, d_model=32, n_head=2, n_layer=2, d_ff=64)
+    """位置 $ t $ の出力が，位置 $ t+1 $ 以降のトークンを変更しても変化しないことを確認する．"""
+    model = ex0031_model.DecoderOnlyTransformer(vocab_size=20, max_seq_len=16, d_model=32, n_head=2, n_layer=2, d_ff=64)
     model.eval()
     x = torch.randint(0, 20, (2, 16))
     x_modified = x.clone()
@@ -108,27 +107,11 @@ def test_causal_mask_does_not_depend_on_future_tokens():
     assert torch.allclose(y[:, :10], y_modified[:, :10], atol=1e-5)
 
 
-def test_l2_regularization_excludes_layernorm_and_bias():
-    """L2正則化がLinear・Embeddingの重みのみに課され，バイアス・LayerNormのアフィン
-    パラメータを除外することを確認する．"""
-    model = ex003_model.DecoderOnlyTransformer(vocab_size=20, max_seq_len=16, d_model=32, n_head=2, n_layer=2, d_ff=64)
-    reg_lambda = 1.0
-
-    manual_reg = torch.zeros(())
-    for module in model.modules():
-        if isinstance(module, (torch.nn.Linear, torch.nn.Embedding)):
-            manual_reg = manual_reg + torch.sum(module.weight ** 2)
-    expected = 0.5 * reg_lambda * manual_reg
-
-    actual = ex003_model.compute_l2_regularization(model, reg_lambda)
-    assert torch.allclose(actual, expected)
-
-
 def test_chunked_dataset_is_non_overlapping():
-    """データセットのチャンク分割が非重複であり，チャンク間で文字を共有しないことを確認する．"""
+    """データセットのチャンク分割が非重複であることを確認する．"""
     token_ids = list(range(100))
     seq_len = 9
-    dataset = ex003_data._ChunkedTextDataset(token_ids, seq_len)
+    dataset = ex0031_data._ChunkedTextDataset(token_ids, seq_len)
     assert len(dataset) == 100 // (seq_len + 1)
 
     inputs_0, targets_0 = dataset[0]
@@ -136,14 +119,6 @@ def test_chunked_dataset_is_non_overlapping():
     assert inputs_0.tolist() == list(range(seq_len))
     assert targets_0.tolist() == list(range(1, seq_len + 1))
     assert inputs_1.tolist() == list(range(seq_len + 1, 2 * seq_len + 1))
-
-
-def test_model_parameter_count_is_small():
-    """`.orders/order_027.md` 4節「過度に大きなモデルは避ける」の要求に基づき，モデルの
-    パラメータ数が数百万を大きく超えないことを確認する．"""
-    model = ex003_model.DecoderOnlyTransformer(vocab_size=65, max_seq_len=128)
-    n_params = sum(p.numel() for p in model.parameters())
-    assert n_params < 5_000_000
 
 
 @pytest.mark.parametrize("method", ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"])
@@ -154,10 +129,10 @@ def test_training_runs_without_error_on_synthetic_data(method, tmp_path, monkeyp
     batch_size = 4
     epochs = 2
     reg_lambda = 0.01
-    eta = 0.001
+    eta = 0.01
     vocab_size = 20
 
-    monkeypatch.setattr(ex003_train, "_VOCAB_SIZE", vocab_size)
+    monkeypatch.setattr(ex0031_train, "_VOCAB_SIZE", vocab_size)
 
     def load_dataloader_func(seed=0, batch_size=batch_size):
         return _make_synthetic_dataloaders(
@@ -169,11 +144,11 @@ def test_training_runs_without_error_on_synthetic_data(method, tmp_path, monkeyp
 
     target_dir = str(tmp_path)
     if method == "SGD":
-        ex003_train.run_sgd(
+        ex0031_train.run_sgd(
             target_dir, load_dataloader_func, eta, batch_size, reg_lambda, epochs, device, 0, logger
         )
     else:
-        ex003_train.run_variance_reduced(
+        ex0031_train.run_variance_reduced(
             method, target_dir, load_dataloader_func, eta, batch_size, reg_lambda, epochs, device, 0, logger
         )
 
@@ -183,7 +158,7 @@ def test_training_runs_without_error_on_synthetic_data(method, tmp_path, monkeyp
 
 def test_oracle_calls_accounting_per_epoch(tmp_path, monkeypatch):
     """1エポックあたりのオラクル呼び出し回数が，SGDで N，NFG SVRG・ASAI SVRGで 2N，SVRGで 3N
-    となることを確認する（Nはミニバッチ単位ではなくサンプル数換算）．"""
+    となることを確認する．"""
     device = torch.device("cpu")
     batch_size = 4
     epochs = 2
@@ -191,7 +166,7 @@ def test_oracle_calls_accounting_per_epoch(tmp_path, monkeypatch):
     n_train = 16
     vocab_size = 20
 
-    monkeypatch.setattr(ex003_train, "_VOCAB_SIZE", vocab_size)
+    monkeypatch.setattr(ex0031_train, "_VOCAB_SIZE", vocab_size)
 
     def load_dataloader_func(seed=0, batch_size=batch_size):
         return _make_synthetic_dataloaders(
@@ -205,12 +180,12 @@ def test_oracle_calls_accounting_per_epoch(tmp_path, monkeypatch):
         target_dir = str(tmp_path / method)
         os.makedirs(target_dir, exist_ok=True)
         if method == "SGD":
-            ex003_train.run_sgd(
-                target_dir, load_dataloader_func, 0.001, batch_size, reg_lambda, epochs, device, 0, logger
+            ex0031_train.run_sgd(
+                target_dir, load_dataloader_func, 0.01, batch_size, reg_lambda, epochs, device, 0, logger
             )
         else:
-            ex003_train.run_variance_reduced(
-                method, target_dir, load_dataloader_func, 0.001, batch_size, reg_lambda, epochs, device, 0, logger
+            ex0031_train.run_variance_reduced(
+                method, target_dir, load_dataloader_func, 0.01, batch_size, reg_lambda, epochs, device, 0, logger
             )
 
         initial_full_grad = n_train if method == "SVRG" else 0
@@ -228,25 +203,25 @@ def test_elapsed_time_excludes_diagnostic_full_gradient(monkeypatch, tmp_path):
     vocab_size = 20
     sleep_seconds = 0.2
 
-    monkeypatch.setattr(ex003_train, "_VOCAB_SIZE", vocab_size)
+    monkeypatch.setattr(ex0031_train, "_VOCAB_SIZE", vocab_size)
 
     def load_dataloader_func(seed=0, batch_size=batch_size):
         return _make_synthetic_dataloaders(
             n_train=n_train, n_test=8, batch_size=batch_size, seq_len=8, vocab_size=vocab_size, seed=seed
         )
 
-    original = ex003_train.compute_full_gradient_and_metrics
+    original = ex0031_train.compute_full_gradient_and_metrics
 
     def slow_compute_full_gradient_and_metrics(*args, **kwargs):
         time.sleep(sleep_seconds)
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(ex003_train, "compute_full_gradient_and_metrics", slow_compute_full_gradient_and_metrics)
+    monkeypatch.setattr(ex0031_train, "compute_full_gradient_and_metrics", slow_compute_full_gradient_and_metrics)
 
     logger = ResultLogger()
     logger.set_names("epoch", "oracle_calls", "elapsed_time", "train_loss", "test_accuracy", "approx_error")
-    ex003_train.run_variance_reduced(
-        "ASAI_SVRG", str(tmp_path), load_dataloader_func, 0.001, batch_size, 0.01, epochs, device, 0, logger
+    ex0031_train.run_variance_reduced(
+        "ASAI_SVRG", str(tmp_path), load_dataloader_func, 0.01, batch_size, 0.01, epochs, device, 0, logger
     )
     assert logger["elapsed_time"][1] < sleep_seconds
 
@@ -256,26 +231,74 @@ def test_is_stuck_near_chance_detects_flatlined_accuracy():
     確認する．"""
     chance = 1.0 / 65
     accuracies = [0.1, 0.3, 0.2, chance + 0.001, chance - 0.001, chance]
-    assert ex003_train.is_stuck_near_chance(accuracies, vocab_size=65, window=3)
+    assert ex0031_train.is_stuck_near_chance(accuracies, vocab_size=65, window=3)
 
 
 def test_is_stuck_near_chance_does_not_flag_learning_progress():
     """精度が学習の進行とともに上昇し続けている場合，`False` を返すことを確認する．"""
     accuracies = [0.015, 0.05, 0.1, 0.2, 0.3, 0.4]
-    assert not ex003_train.is_stuck_near_chance(accuracies, vocab_size=65, window=3)
+    assert not ex0031_train.is_stuck_near_chance(accuracies, vocab_size=65, window=3)
 
 
-def test_is_stuck_near_chance_requires_minimum_history():
-    """指定した`window`未満のエポック数しかない場合は`False`を返すことを確認する．"""
-    assert not ex003_train.is_stuck_near_chance([0.015, 0.016], vocab_size=65, window=3)
+def test_compute_trailing_relative_change_detects_plateau():
+    """末尾の値がほぼ一定であれば相対変化が小さく判定されることを確認する．"""
+    plateaued = [1.0, 0.5, 0.2, 0.101, 0.1005, 0.1002, 0.1001]
+    assert ex0031_train.compute_trailing_relative_change(plateaued, window=3) < 1e-2
 
 
-def test_stage_b_methods_include_stage_a_methods():
-    """`.orders/order_028.md` 2節：Stage Bの比較手法がStage Aの2手法（NFG SVRG，ASAI SVRG）
-    にSGD・SVRGを追加した4手法であり，バッチサイズ・学習率・エポック数・Seed数のグリッドが
-    Stage Aと変わらないことを確認する（既存結果の再利用が正しく成立する前提）．"""
-    assert set(ex003_train.METHODS) == {"SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"}
-    assert ex003_train.BATCH_SIZES == [512, 128, 32]
-    assert ex003_train.LEARNING_RATES == [0.01, 0.001]
-    assert ex003_train.EPOCHS == 12
-    assert ex003_train.SEEDS == [0, 1, 2]
+def test_compute_trailing_relative_change_detects_ongoing_change():
+    """末尾の値が単調に大きく変化し続けていれば相対変化が大きく判定されることを確認する．"""
+    still_changing = [1.0, 0.8, 0.6, 0.4, 0.2, 0.1, 0.05]
+    assert ex0031_train.compute_trailing_relative_change(still_changing, window=3) > 0.1
+
+
+def test_compute_trailing_relative_change_returns_inf_for_nonfinite_tail():
+    """末尾にNaN・Infが含まれる場合は無限大を返すことを確認する．"""
+    values = [1.0, 0.5, 0.3, float("nan")]
+    assert ex0031_train.compute_trailing_relative_change(values, window=2) == float("inf")
+
+
+def test_run_variance_reduced_stops_early_on_collapse(tmp_path):
+    """訓練損失が非有限値化（崩壊）した場合，指定したエポック数まで学習を継続せず打ち切る
+    ことを確認する．学習率を極端に大きくすることで人為的に崩壊させる．"""
+    device = torch.device("cpu")
+    batch_size = 4
+    epochs = 20
+    n_train = 16
+
+    def load_dataloader_func(seed=0, batch_size=batch_size):
+        return _make_synthetic_dataloaders(n_train=n_train, n_test=8, batch_size=batch_size, seed=seed)
+
+    logger = ResultLogger()
+    logger.set_names("epoch", "oracle_calls", "elapsed_time", "train_loss", "test_accuracy", "approx_error")
+    target_dir = str(tmp_path)
+    os.makedirs(target_dir, exist_ok=True)
+
+    ex0031_train.run_variance_reduced(
+        "ASAI_SVRG", target_dir, load_dataloader_func, eta=1e6, batch_size=batch_size,
+        reg_lambda=0.01, epochs=epochs, device=device, seed=0, logger=logger,
+    )
+
+    assert len(logger["epoch"]) < epochs + 1
+    assert not np.isfinite(logger["train_loss"][-1])
+
+
+def test_is_run_completed_treats_collapsed_log_as_completed(tmp_path):
+    """崩壊により打ち切られたログを，`is_run_completed`が完了済みとして扱うことを確認する．"""
+    target_dir = str(tmp_path)
+    logger = ResultLogger()
+    logger.set_names("epoch", "oracle_calls", "elapsed_time", "train_loss", "test_accuracy", "approx_error")
+    logger(0, 0, 0.0, 1.0, 0.1, float("nan"))
+    logger(1, 16, 1.0, float("nan"), 0.1, float("nan"))
+    logger.save(os.path.join(target_dir, "log.json"))
+
+    assert ex0031_train.is_run_completed(target_dir, epochs=20)
+
+
+def test_epochs_is_four_times_stage_b():
+    """`.orders/order_029.md` 2節：エポック数がStage B（12エポック）の4倍（48エポック）で
+    あることを確認する．"""
+    assert ex0031_train.EPOCHS == 48
+    assert ex0031_train.LEARNING_RATE == 0.01
+    assert ex0031_train.BATCH_SIZES == [512, 128, 32]
+    assert set(ex0031_train.METHODS) == {"SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"}

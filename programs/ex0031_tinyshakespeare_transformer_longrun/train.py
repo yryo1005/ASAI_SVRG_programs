@@ -1,31 +1,41 @@
 """
-実験3（Tiny Shakespeareを用いた文章生成問題，Decoder-only Transformer）Stage A（安定性
-探索）・Stage B（SGD・SVRGを含めた4手法比較）の学習ループを定義し，実験を実行するスクリプト．
+実験3 Stage C（長期学習によるASAI SVRGの効率性優位性の持続性検証）の学習ループを定義し，
+実験を実行するスクリプト．
 
-`.orders/order_027.md`（Stage A）・`.orders/order_028.md`（Stage B）に対応する．実験2
-（CIFAR-10）が正規化層なしのモデルでいきなり本比較を実施した結果，9条件中7条件でNFG SVRG・
-ASAI SVRGが発散するという想定外の結果に直面し，その後3段階（ex0021〜ex0023）の追加実験を
-要したという教訓を踏まえ，本実験3は最初から段階的に実施した．Stage Aでは，NFG SVRG・
-ASAI SVRGの2手法に絞った小規模なグリッド探索を短いエポック数で実施し，発散・崩壊が生じない
-条件を特定した（`.reports/report_027.md`，36条件全てで発散・崩壊が皆無）．Stage Bでは，
-Stage Aと完全に同一のモデル・データセット・ハイパーパラメータグリッドに，SGD・SVRGを比較
-対象として追加する（`.orders/order_028.md` 2節）．NFG SVRG・ASAI SVRGの36条件はStage Aの
-結果をそのまま再利用し（`is_run_completed` によるスキップ），新規に学習するのはSGD・SVRGの
-36条件のみである．
+`.orders/order_029.md` に対応する．Stage B（`.reports/report_028.md`）は，バッチサイズ
+512, 128, 32・学習率0.01, 0.001・12エポックのグリッドで，SGD・SVRG・NFG SVRG・ASAI SVRGの
+4手法を比較し，オラクル呼び出し回数を揃えた場合にASAI SVRGが全6条件で一貫してSVRGを上回る
+ことを示した．しかし，(a) いずれの条件でも精度がまだプラトーに達しておらず学習途中の値で
+あったこと，(b) ex0023（`.reports/report_026.md`）で確認された「短いエポック数での安定判定
+は崩壊直前で観測を止めていただけの可能性がある」という教訓，から，Stage Bの結果だけでは
+効率性優位性の持続性・安定性の頑健性を十分に検証できていなかった．
 
-## 比較手法（`.orders/order_027.md` 5節）
+本Stage Cは，`.orders/order_029.md` 3節の指示に基づき学習率を0.01に限定し，エポック数を
+Stage Bの4倍（全バッチサイズ一律48エポック）に延長する．オーダーの指示（末尾「実験は
+Epoch数を区別しやすいように ex0031 として実施してください」）に従い，本実験は
+`ex0031_tinyshakespeare_transformer_longrun` として実装する．
 
-`programs/ex0022_cifar10_alexnet_groupnorm/train.py`・`programs/
-ex0023_cifar10_alexnet_groupnorm_longrun/train.py` と同一の実装（`SGD`，`SVRG`／
-`NFGSVRG`，次のスナップショット点を内部ループのパラメータ列からランダムに選ぶ，ASAI SVRG
-論文Algorithm 4の理論解析に整合する版）をそのまま用いる．
+## 既存結果を再利用しない理由
 
-## 崩壊の検出（`.orders/order_027.md` 6.3節）
+`.orders/order_029.md` 2節の指示に基づき，Stage Bの12エポック分の結果からの継続学習は
+行わない．NFG SVRG・ASAI SVRGのOptimizer内部状態（running average・スナップショット等）は
+ディスクに保存されていないため学習を再開できないという制約は，ex0023（`.reports/
+report_026.md` 2.2節）と同様である．したがって本実験は全36条件（4手法×3バッチサイズ×
+3Seed）をゼロから再学習する．
 
-`.reports/report_026.md` 5.1節で確認された「損失はNaNにならないが，モデルが実質的に機能
-不全に陥る（次文字予測精度がチャンスレベルに固定される）」という見えない崩壊が本実験でも
-生じうる．`is_stuck_near_chance` 関数は，学習後半の次文字予測精度がチャンスレベル
-（$ 1/|\\text{vocab}| $）付近に留まっているかを判定する．
+## 比較手法とelapsed_timeの計上方法
+
+Stage A・Stage Bと同一の実装（`SGD`，`SVRG`／`NFGSVRG`，次のスナップショット点を内部ループの
+パラメータ列からランダムに選ぶ，ASAI SVRG論文Algorithm 4の理論解析に整合する版）をそのまま
+用いる．`elapsed_time`の計上方法（NFG SVRG・ASAI SVRGの診断専用フル勾配計算を除外する，
+`.reports/report_025.md` 2.2節の修正）も踏襲する．
+
+## 崩壊の検出とプラトー判定
+
+`is_stuck_near_chance` 関数（Stage Aで導入）で，次文字予測精度がチャンスレベルに張り付く
+「見えない崩壊」を検出する．`compute_trailing_relative_change` 関数（ex0023で導入，
+`.reports/report_026.md` 2.4節）で，末尾エポックの相対変化からプラトー到達を数値的に判定
+する．訓練損失が非有限値化した場合は学習を打ち切る（ex0023と同様）．
 """
 
 import itertools
@@ -57,15 +67,15 @@ from model import (  # noqa: E402
     set_model_params,
 )
 
-EXPERIMENT_NAME = "ex003_tinyshakespeare_transformer"
+EXPERIMENT_NAME = "ex0031_tinyshakespeare_transformer_longrun"
 OUTPUT_ROOT = os.path.join(_PROJECT_ROOT, "outputs", EXPERIMENT_NAME)
 
 SEEDS = [0, 1, 2]
 METHODS = ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"]
 BATCH_SIZES = [512, 128, 32]
-LEARNING_RATES = [0.01, 0.001]
+LEARNING_RATE = 0.01  # `.orders/order_029.md` 3節の指示により固定（0.001は対象外）
 REG_LAMBDA = 5e-4
-EPOCHS = 12
+EPOCHS = 48  # Stage B（12エポック）の4倍．全バッチサイズ一律
 
 _VOCAB_SIZE = len(build_vocabulary(_download_raw_text())[1])
 
@@ -76,23 +86,22 @@ _VARIANCE_REDUCED_OPTIMIZER_CLASSES = {
 }
 
 
-def hp_name(lr: float, batch_size: int, epochs: int) -> str:
+def hp_name(batch_size: int, epochs: int) -> str:
     """
     概要: ハイパーパラメータ条件名（ディレクトリ名）を構築する．
     引数:
-        lr (float)．学習率．
         batch_size (int)．ミニバッチサイズ．
         epochs (int)．エポック数．
     戻り値: name (str)．
     """
-    return f"lr{lr}_bs{batch_size}_lambda{REG_LAMBDA}_epochs{epochs}"
+    return f"lr{LEARNING_RATE}_bs{batch_size}_lambda{REG_LAMBDA}_epochs{epochs}"
 
 
 def is_stuck_near_chance(accuracies, vocab_size: int, window: int = 3, tolerance: float = 0.02) -> bool:
     """
-    概要: `.orders/order_027.md` 6.3節の指示に基づき，末尾 `window` エポックの次文字予測
-        精度がすべてチャンスレベル（$ 1/\\text{vocab\\_size} $）付近に留まっているかを判定
-        する．NaNにはならないがモデルが実質的に機能不全に陥る「見えない崩壊」の検出に用いる．
+    概要: 末尾 `window` エポックの次文字予測精度がすべてチャンスレベル
+        （$ 1/\\text{vocab\\_size} $）付近に留まっているかを判定する．NaNにはならないが
+        モデルが実質的に機能不全に陥る「見えない崩壊」の検出に用いる．
     引数:
         accuracies (Sequence[float])．エポックごとの次文字予測精度の列．
         vocab_size (int)．語彙サイズ．
@@ -107,6 +116,27 @@ def is_stuck_near_chance(accuracies, vocab_size: int, window: int = 3, tolerance
     chance = 1.0 / vocab_size
     tail = accuracies[-window:]
     return all(abs(a - chance) <= tolerance for a in tail)
+
+
+def compute_trailing_relative_change(values, window: int) -> float:
+    """
+    概要: 数値列の末尾 `window` 個について，連続する値の間の相対変化
+        $ |v^{(t)}-v^{(t-1)}|/|v^{(t-1)}| $ の最大値を計算する．プラトー（変化が十分小さく
+        なった状態）に達したかどうかを数値的に判定するために用いる
+        （`.orders/order_029.md` 4節3項，`.reports/report_026.md` 2.4節の方法論を踏襲）．
+    引数:
+        values (Sequence[float])．時系列の数値列（例：エポックごとの近似誤差・分類精度）．
+        window (int)．末尾から何個の値を対象にするか．`window + 1` 個以上の要素が必要．
+    戻り値: max_relative_change (float)．末尾`window`区間における相対変化の最大値．
+        非有限値（NaN・Inf）が含まれる場合は `float("inf")` を返す．
+    """
+    tail = np.asarray(values[-(window + 1):], dtype=np.float64)
+    if not np.all(np.isfinite(tail)):
+        return float("inf")
+    diffs = np.abs(tail[1:] - tail[:-1])
+    denom = np.abs(tail[:-1])
+    denom = np.where(denom == 0.0, np.finfo(np.float64).eps, denom)
+    return float(np.max(diffs / denom))
 
 
 def iteration(model, inputs, teacher_signals, reg_lambda, optimizer, snapshot_model=None) -> dict:
@@ -246,16 +276,7 @@ def _save_if_best(model, test_accuracy, best_accuracy, target_dir):
 def run_sgd(target_dir, load_dataloader_func, eta, batch_size, reg_lambda, epochs, device, seed, logger):
     """
     概要: SGDによる学習を実行し，各エポック終了時の評価指標を `logger` に記録する．
-    引数:
-        target_dir (str)．結果保存先ディレクトリ．
-        load_dataloader_func (func)．
-        eta (float)．学習率．
-        batch_size (int)．ミニバッチサイズ．
-        reg_lambda (float)．L2正則化係数．
-        epochs (int)．
-        device (torch.device)．
-        seed (int)．乱数シード．
-        logger (ResultLogger)．
+    引数: target_dir, load_dataloader_func, eta, batch_size, reg_lambda, epochs, device, seed, logger．
     戻り値: なし
     """
     train_dataloader, test_dataloader = load_dataloader_func(seed=seed, batch_size=batch_size)
@@ -306,19 +327,9 @@ def run_variance_reduced(
         評価指標を `logger` に記録する．SVRGのみ，スナップショット勾配 $ g_s $ が真のフル
         勾配であり，これを次エポックの学習に用いるため，その計算時間は `elapsed_time` に
         計上する．NFG SVRG・ASAI SVRGは評価指標（近似誤差）算出のためだけに真のフル勾配を
-        計算するため，この計算時間は `elapsed_time` から除外する（`.reports/report_025.md`
-        2.2節の修正を踏襲）．
-    引数:
-        method (str)．"SVRG"，"NFG_SVRG"，"ASAI_SVRG" のいずれか．
-        target_dir (str)．結果保存先ディレクトリ．
-        load_dataloader_func (func)．
-        eta (float)．学習率．
-        batch_size (int)．ミニバッチサイズ．
-        reg_lambda (float)．L2正則化係数．
-        epochs (int)．外部ループ数 $ S $．
-        device (torch.device)．
-        seed (int)．乱数シード．
-        logger (ResultLogger)．
+        計算するため，この計算時間は `elapsed_time` から除外する．
+    引数: method, target_dir, load_dataloader_func, eta, batch_size, reg_lambda, epochs, device,
+        seed, logger．
     戻り値: なし
     """
     assert method in _VARIANCE_REDUCED_OPTIMIZER_CLASSES
@@ -425,15 +436,15 @@ def is_run_completed(target_dir: str, epochs: int) -> bool:
 
 def run_single_experiment(args):
     """
-    概要: 1つの (手法, バッチサイズ, 学習率, Seed) の組に対する学習を実行し，結果を保存する．
-    引数: args (tuple)．(method, batch_size, eta, seed) のタプル．
+    概要: 1つの (手法, バッチサイズ, Seed) の組に対する学習を実行し，結果を保存する．
+    引数: args (tuple)．(method, batch_size, seed) のタプル．
     戻り値: なし
     """
-    method, batch_size, eta, seed = args
+    method, batch_size, seed = args
     torch.set_num_threads(1)
 
     epochs = EPOCHS
-    name = hp_name(eta, batch_size, epochs)
+    name = hp_name(batch_size, epochs)
     target_dir = os.path.join(OUTPUT_ROOT, method, name, str(seed))
     if is_run_completed(target_dir, epochs):
         print(f"[skip] {method}/{name}/{seed} は既に完了しています．", flush=True)
@@ -448,10 +459,10 @@ def run_single_experiment(args):
     logger.set_names("epoch", "oracle_calls", "elapsed_time", "train_loss", "test_accuracy", "approx_error")
 
     if method == "SGD":
-        run_sgd(target_dir, load_dataloader, eta, batch_size, REG_LAMBDA, epochs, device, seed, logger)
+        run_sgd(target_dir, load_dataloader, LEARNING_RATE, batch_size, REG_LAMBDA, epochs, device, seed, logger)
     else:
         run_variance_reduced(
-            method, target_dir, load_dataloader, eta, batch_size, REG_LAMBDA, epochs, device, seed, logger
+            method, target_dir, load_dataloader, LEARNING_RATE, batch_size, REG_LAMBDA, epochs, device, seed, logger
         )
 
     logger.save(os.path.join(target_dir, "log.json"))
@@ -461,7 +472,7 @@ def run_single_experiment(args):
         "experiment": EXPERIMENT_NAME,
         "method": method,
         "seed": seed,
-        "learning_rate": eta,
+        "learning_rate": LEARNING_RATE,
         "batch_size": batch_size,
         "reg_lambda": REG_LAMBDA,
         "epochs": epochs,
@@ -480,22 +491,17 @@ def run_single_experiment(args):
 
 def main():
     """
-    概要: 実験3 Stage A・Stage Bの全条件（4手法 × 3バッチサイズ × 2学習率 × 3Seed = 72条件）
-        をマルチプロセスで並列に学習する．うちNFG SVRG・ASAI SVRGの36条件はStage Aで取得済み
-        のため，`is_run_completed` により自動的にスキップされる（`.orders/order_028.md` 3節）．
+    概要: 実験3 Stage Cの全条件（4手法 × 3バッチサイズ × 3Seed = 36条件）をマルチプロセスで
+        並列に学習する．学習率0.01固定，`.orders/order_029.md` 2節の指示により全条件を
+        ゼロから再学習する（既存結果のコピー再利用は行わない）．
     引数: なし
     戻り値: なし
     """
-    print(
-        f"バッチサイズ = {BATCH_SIZES}, 学習率 = {LEARNING_RATES}, "
-        f"lambda = {REG_LAMBDA}, epochs = {EPOCHS}, vocab_size = {_VOCAB_SIZE}"
-    )
+    print(f"バッチサイズ = {BATCH_SIZES}, 学習率 = {LEARNING_RATE}, epochs = {EPOCHS}, vocab_size = {_VOCAB_SIZE}")
 
     tasks = [
-        (method, batch_size, eta, seed)
-        for method, batch_size, eta, seed in itertools.product(
-            METHODS, BATCH_SIZES, LEARNING_RATES, SEEDS
-        )
+        (method, batch_size, seed)
+        for method, batch_size, seed in itertools.product(METHODS, BATCH_SIZES, SEEDS)
     ]
 
     num_workers = min(8, len(tasks))
