@@ -1,0 +1,15 @@
+{
+    "experiment": "ex0031_tinyshakespeare_transformer_longrun",
+    "method": "ASAI_SVRG",
+    "seed": 0,
+    "learning_rate": 0.01,
+    "batch_size": 32,
+    "reg_lambda": 0.0005,
+    "epochs": 48,
+    "K": 244,
+    "total_iterations": 11712,
+    "N_train": 7781,
+    "N_test": 864,
+    "vocab_size": 65,
+    "collapsed": false
+}
