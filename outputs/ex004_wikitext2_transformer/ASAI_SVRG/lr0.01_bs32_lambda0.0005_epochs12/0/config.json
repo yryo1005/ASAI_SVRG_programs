@@ -1,0 +1,16 @@
+{
+    "experiment": "ex004_wikitext2_transformer",
+    "method": "ASAI_SVRG",
+    "seed": 0,
+    "learning_rate": 0.01,
+    "batch_size": 32,
+    "reg_lambda": 0.0005,
+    "epochs": 12,
+    "sequence_length": 64,
+    "K": 987,
+    "total_iterations": 11844,
+    "N_train": 31567,
+    "N_test": 3290,
+    "vocab_size": 33277,
+    "collapsed": false
+}

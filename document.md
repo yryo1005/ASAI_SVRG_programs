@@ -270,6 +270,35 @@ Stage Bで観測された大きな優位性は学習曲線が急峻な初期を�
 0.001での追加の長期学習は，主要な結論を左右しないと判断し見送ることを提案した．詳細は
 `.reports/report_029.md`を参照．
 
+### 1.11 `.orders/order_030.md` による実験4（WikiText-2・単語レベル言語モデリング）Stage A
+
+実験3（Tiny Shakespeare，文字レベル）の長期学習（`report_029.md`）で，全手法の最終精度が
+ほぼ同水準に収束するという結果が判明したことを受け，文字レベル・小規模コーパスというタスク
+難度の低さが分散削減の恩恵を限定的にしていた可能性を検証するため，単語レベル言語モデリング
+（WikiText-2，語彙サイズ約33,000）へ切り替えた．実験2・実験3と同様の教訓を踏まえ，Stage A
+（安定性探索，NFG SVRG・ASAI SVRGの2手法のみ，12エポック）から段階的に実施した．
+
+`programs/ex004_wikitext2_transformer/`に，PyTorch公式word language modelサンプルが配布
+する前処理済みWikiText-2（学習用語彙サイズ33,277，$N_{\text{train}}=31{,}567$）を用いる
+実装を追加した．モデルは実験3と同一のTransformer本体（4層，隠れ次元128）を維持しつつ，
+系列長を$T=64$に短縮し，パラメータ数は約935万（Token Embedding・出力射影層で全体の91.4%）
+となった．
+
+実装直後の学習実行で，バッチサイズ512の条件（出力層のロジットテンソルが1プロセスあたり
+約23.5GB要求）を8プロセス並列実行した際にGPU（WSL2のGPU仮想化層）が応答不能状態に陥る
+事象が発生した．原因は，VRAM実測を最小バッチサイズ（32）でのみ行っており，最悪ケース
+（バッチサイズ512）での実測を怠っていたことであった．並列数を2に制限することで解決し，
+以降は正常に学習が完了した（詳細・教訓は`.reports/report_030.md` 5.3節を参照）．
+
+結果は，**36条件全てで発散（NaN）は皆無**であった．一方，バッチサイズ512・学習率0.001の
+条件（両手法とも全3Seed）は，チャンスレベル張り付き判定に該当したが，精度が単調に増加して
+おり崩壊ではなく学習不足と判断した．学習実行中に**損失値が交差エントロピー損失ではなく
+L2正則化項（Token Embeddingの初期スケールに起因）に支配されている**ことが判明し，
+正則化係数$\lambda=5\times10^{-4}$（実験2・実験3から不変）が本実験のEmbedding層規模には
+過大であることが分かった．近似誤差の絶対水準は実験3と比べて多くの条件で同等かむしろ小さく，
+「タスクが簡単すぎた」という仮説を直接支持する結果は得られなかった．Stage Bの実施前に
+正則化係数の見直しが必須であるとの結論に至った．詳細は`.reports/report_030.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -295,6 +324,10 @@ Stage Bで観測された大きな優位性は学習曲線が急峻な初期を�
 │   │   └── raw/                        # Tiny Shakespeareの生データ（input.txt，自動ダウン
 │   │                                    # ロード，またはex003からコピー）．
 │   │                                    # ★ order_027/028/029の論文掲載用の実験3
+│   ├── ex004_wikitext2_transformer/
+│   │   └── raw/                        # WikiText-2の生データ（train.txt/valid.txt/test.txt，
+│   │                                    # PyTorch公式word_language_modelサンプルより自動
+│   │                                    # ダウンロード）．★ order_030の論文掲載用の実験4
 │   ├── ex001_mushroom_svrg/
 │   │   └── raw/                        # UCI Mushroomデータセットの生データ（自動ダウンロード）
 │   ├── ex002_cifar10_cnn/
@@ -386,7 +419,7 @@ Stage Bで観測された大きな優位性は学習曲線が急峻な初期を�
 │                                        # 36条件を追加，order_028）．Stage Aの36条件は
 │                                        # `is_run_completed` により自動的に再利用（スキップ）
 │                                        # される．`is_stuck_near_chance`関数で見えない崩壊を検出
-│   └── ex0031_tinyshakespeare_transformer_longrun/  # 実験3 Stage C：学習率0.01固定・
+│   ├── ex0031_tinyshakespeare_transformer_longrun/  # 実験3 Stage C：学習率0.01固定・
 │       │                                # 48エポックへの長期学習（エポック数を区別しやすい
 │       │                                # よう order_029末尾の指示でex0031と命名）
 │       ├── data.py                     # ex003と同一（EXPERIMENT_NAMEのみ変更）
@@ -397,6 +430,20 @@ Stage Bで観測された大きな優位性は学習曲線が急峻な初期を�
 │                                        # `compute_trailing_relative_change`（プラトー判定）・
 │                                        # 崩壊時の学習打ち切りロジックを組み合わせる．
 │                                        # 全36条件を新規学習（継続学習は不可のため）
+│   └── ex004_wikitext2_transformer/    # 実験4 Stage A：WikiText-2・単語レベル言語モデリング
+│       ├── data.py                     # WikiText-2（PyTorch公式word_language_modelサンプル
+│       │                                # より自動ダウンロード）を単語レベルでトークナイズし，
+│       │                                # 非重複チャンク（T=64）へ分割．公式train/valid分割
+│       │                                # をそのまま使用
+│       ├── model.py                    # ex003と同一のTransformer本体（4層，隠れ次元128）．
+│       │                                # vocab_size=33277によりパラメータ数は約935万
+│       │                                # （Token Embedding・出力射影層が全体の91.4%）
+│       └── train.py                    # 2手法（NFG SVRG, ASAI SVRG）x 3バッチサイズ
+│                                        # (512,128,32) x 2学習率(0.01,0.001) x 3Seed = 36条件
+│                                        # を実行するスクリプト（Stage A，order_030）．
+│                                        # `is_stuck_near_chance`の許容幅を本実験の語彙サイズ
+│                                        # 向けに再調整（0.001）．`num_workers=2`（バッチ
+│                                        # サイズ512のVRAM実測に基づく，report_030.md 5.3節）
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -487,11 +534,18 @@ Stage Bで観測された大きな優位性は学習曲線が急峻な初期を�
 │   │       │                            # 近似誤差等）
 │   │       ├── config.json             # collapsedフィールド，vocab_size等のメタデータ
 │   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
-│   └── ex0031_tinyshakespeare_transformer_longrun/
+│   ├── ex0031_tinyshakespeare_transformer_longrun/
+│   │   └── {method}/{lr,bs,lambda,epochs}/{seed}/
+│   │       ├── log.json                # ResultLoggerによる評価指標の履歴（49エントリ，
+│   │       │                            # epoch0〜48）
+│   │       ├── config.json             # collapsedフィールド（全36条件でfalse）
+│   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
+│   └── ex004_wikitext2_transformer/
 │       └── {method}/{lr,bs,lambda,epochs}/{seed}/
-│           ├── log.json                # ResultLoggerによる評価指標の履歴（49エントリ，
-│           │                            # epoch0〜48）
-│           ├── config.json             # collapsedフィールド（全36条件でfalse）
+│           ├── log.json                # ResultLoggerによる評価指標の履歴（次単語予測精度，
+│           │                            # 近似誤差等，13エントリ，epoch0〜12）
+│           ├── config.json             # collapsedフィールド（全36条件でfalse），
+│           │                            # sequence_length等のメタデータ
 │           └── best_model.pth          # 検証精度が最高となったエポックの重み
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
@@ -557,12 +611,21 @@ Stage Bで観測された大きな優位性は学習曲線が急峻な初期を�
 │   │                                    # 診断専用フル勾配計算除外，is_stuck_near_chance
 │   │                                    # （見えない崩壊検出）の正しさ，Stage BのグリッドがStage
 │   │                                    # Aと一致すること（既存結果再利用の前提）を検証
-│   └── test_ex0031_tinyshakespeare_transformer_longrun.py  # 実験3 Stage C．Transformer構造
-│                                        # の性質（ex003と同様）に加え，compute_trailing_
-│                                        # relative_change（プラトー判定，ex0023から踏襲）の
-│                                        # 境界動作，崩壊時の学習早期打ち切り，打ち切られた
-│                                        # ログをis_run_completedが完了済みとして扱うこと，
-│                                        # EPOCHS==48・LEARNING_RATE==0.01等の実験条件定数を検証
+│   ├── test_ex0031_tinyshakespeare_transformer_longrun.py  # 実験3 Stage C．Transformer構造
+│   │                                    # の性質（ex003と同様）に加え，compute_trailing_
+│   │                                    # relative_change（プラトー判定，ex0023から踏襲）の
+│   │                                    # 境界動作，崩壊時の学習早期打ち切り，打ち切られた
+│   │                                    # ログをis_run_completedが完了済みとして扱うこと，
+│   │                                    # EPOCHS==48・LEARNING_RATE==0.01等の実験条件定数を検証
+│   └── test_ex004_wikitext2_transformer.py  # 実験4 Stage A．Transformer構造の性質（ex003と
+│                                        # 同様）に加え，語彙構築の決定論性，検証用テキストが
+│                                        # 学習用語彙に対しOOVを持たないこと，パラメータ数が
+│                                        # 見積もり（約935万）と概ね一致すること，2手法
+│                                        # （NFG SVRG，ASAI SVRG）のスモークテスト，オラクル
+│                                        # 呼び出し回数（2N），elapsed_timeの診断専用フル勾配
+│                                        # 計算除外，is_stuck_near_chance（本実験用の許容幅
+│                                        # 0.001）が学習進行中の精度・最頻出単語縮退の双方を
+│                                        # 誤検知しないことを検証
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -631,13 +694,22 @@ Stage Bで観測された大きな優位性は学習曲線が急峻な初期を�
 │   │                                    # （order_028）．全72条件で発散が皆無，ASAI SVRGが
 │   │                                    # 全6条件でオラクル呼び出し回数あたりSVRGを上回る
 │   │                                    # 結果と考察，Stage C（長期学習）実施の推奨を記載
-│   └── report_029.md                   # 実験3 Stage C：学習率0.01固定・48エポックへの長期
-│                                        # 学習（order_029）．全36条件で発散・遅延崩壊が皆無，
-│                                        # ASAI SVRGの効率性優位性はStage Bの最大約1.25倍
-│                                        # （バッチサイズ512）から学習継続で急速に縮小した後，
-│                                        # 小さいが正の水準（約1〜9%）で安定するという結論，
-│                                        # Stage B/C同一エポック時点での完全一致による整合性
-│                                        # 確認，学習率0.001長期学習の見送り提案を記載
+│   ├── report_029.md                   # 実験3 Stage C：学習率0.01固定・48エポックへの長期
+│   │                                    # 学習（order_029）．全36条件で発散・遅延崩壊が皆無，
+│   │                                    # ASAI SVRGの効率性優位性はStage Bの最大約1.25倍
+│   │                                    # （バッチサイズ512）から学習継続で急速に縮小した後，
+│   │                                    # 小さいが正の水準（約1〜9%）で安定するという結論，
+│   │                                    # Stage B/C同一エポック時点での完全一致による整合性
+│   │                                    # 確認，学習率0.001長期学習の見送り提案を記載
+│   └── report_030.md                   # 実験4 Stage A：WikiText-2・単語レベル言語モデリング
+│                                        # （order_030）．全36条件で発散が皆無，バッチサイズ
+│                                        # 512×学習率0.001のみチャンス張付き判定に該当したが
+│                                        # 学習不足であり崩壊ではないと判断．8プロセス並列時に
+│                                        # VRAM総量超過でGPUが応答不能になった事象とnum_workers
+│                                        # =2への対応，損失値がL2正則化項（Token Embeddingの
+│                                        # 初期スケール由来）に支配されている問題の発見，
+│                                        # 近似誤差の絶対水準は実験3と同等かむしろ小さいという
+│                                        # 結果，正則化係数見直しを含むStage B提案を記載
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -776,6 +848,22 @@ Stage Bで観測された大きな優位性は学習曲線が急峻な初期を�
   Stage Bの12エポック分の結果からの継続学習は行わず，全36条件をゼロから再学習する
   （既存結果のコピー再利用は行わない）．GPU（`.venv_pytorch_gpu`）を用い，8プロセスを
   `chunksize=1` で並列実行する．
+- `programs/ex004_wikitext2_transformer/data.py`：PyTorch公式word_language_modelサンプル
+  が配布する前処理済みWikiText-2（単語分割済み，`<unk>`によるレア語処理済み）を
+  `urllib.request` で自動ダウンロードする．学習用テキストのみから語彙を構築し
+  （`sorted(set(...))` による決定論的な構築），公式train/valid分割をそのまま用いる．
+  チャンク分割ロジック（`_ChunkedTextDataset`）はex003と共通の設計．
+- `programs/ex004_wikitext2_transformer/model.py`：ex003の`model.py`と完全に同一の
+  Transformer本体（`DecoderOnlyTransformer`）を用いる．`vocab_size`（33,277）・
+  `max_seq_len`（64）のみが実際の使用時に異なる．
+- `programs/ex004_wikitext2_transformer/train.py`：Stage A（`.orders/order_030.md`）として，
+  NFG SVRG・ASAI SVRGの2手法×バッチサイズ(512,128,32)×学習率(0.01,0.001)×3Seed＝36条件を
+  12エポックで学習する．`is_stuck_near_chance`の許容幅を本実験の語彙サイズ向けに0.001へ
+  再調整している．GPU（`.venv_pytorch_gpu`）を用いるが，出力層のロジットテンソルが
+  バッチサイズ512で1プロセスあたり約23.5GBのVRAMを要求するため，`num_workers=2`に制限
+  している（8プロセス並列で実行した場合，最初にバッチサイズ512の条件が複数同時に実行され
+  VRAM総量を超過しGPUが応答不能になった事象を踏まえた対応，`.reports/report_030.md` 5.3節
+  参照）．
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -1033,6 +1121,10 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # 36条件を全て新規にGPUで8プロセス並列実行．既に完了した条件はスキップ）
 .venv_pytorch_gpu/bin/python programs/ex0031_tinyshakespeare_transformer_longrun/train.py
 
+# 実験4 Stage Aの学習実行（2手法 x 3バッチサイズ x 2学習率 x 3Seed = 36条件をGPUで2プロセス
+# 並列実行．バッチサイズ512のVRAM使用量が大きいため並列数を2に制限，既に完了した条件はスキップ）
+.venv_pytorch_gpu/bin/python programs/ex004_wikitext2_transformer/train.py
+
 # --- 事前実験（.orders/order_011.md まで）---
 
 # Ex001の学習実行（4手法 x 5Seed = 20条件をマルチプロセスで並列実行．既に完了した条件はスキップ）
@@ -1071,7 +1163,7 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun}/{method}/{hyperparams}/{seed}/`
+  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer}/{method}/{hyperparams}/{seed}/`
   （論文掲載用），
   `outputs_old/{ex001_mushroom_svrg,...,ex006_a9a_least_squares}/{method}/{hyperparams}/{seed}/`（事前実験）
 - 可視化結果（グラフ画像）：上記各実験ディレクトリ直下

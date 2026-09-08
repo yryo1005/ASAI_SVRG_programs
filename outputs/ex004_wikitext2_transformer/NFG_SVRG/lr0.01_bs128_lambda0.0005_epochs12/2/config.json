@@ -1,0 +1,16 @@
+{
+    "experiment": "ex004_wikitext2_transformer",
+    "method": "NFG_SVRG",
+    "seed": 2,
+    "learning_rate": 0.01,
+    "batch_size": 128,
+    "reg_lambda": 0.0005,
+    "epochs": 12,
+    "sequence_length": 64,
+    "K": 247,
+    "total_iterations": 2964,
+    "N_train": 31567,
+    "N_test": 3290,
+    "vocab_size": 33277,
+    "collapsed": false
+}
