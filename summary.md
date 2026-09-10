@@ -431,8 +431,7 @@ $$ f(w) = \frac{1}{N}\sum_{n=1}^N \ell_{\mathrm{CCE}}(y_n, \hat{y}_n(w)) + \frac
 - 正則化係数 $ \lambda $：0.0005
 - 内部ループ長 $ K $：16
 - エポック数：12
-- Seed数：NFG_SVRG: 3，ASAI_SVRG: 3
-- 未実施の手法：SGD，SVRG（実行時点で未完了のため対象外）
+- Seed数：SGD: 3，SVRG: 3，NFG_SVRG: 3，ASAI_SVRG: 3
 
 学習誤差の指標：目的関数の値（訓練誤差，train_loss）／検証指標：次文字予測精度（検証用データ）
 
@@ -454,6 +453,8 @@ $$ f(w) = \frac{1}{N}\sum_{n=1}^N \ell_{\mathrm{CCE}}(y_n, \hat{y}_n(w)) + \frac
 
 | 手法 | 最終学習誤差(平均±std) | 最良学習誤差 | 最終検証精度(平均±std) | 最良検証精度 | 最終近似誤差(平均±std) | 最良近似誤差 | 発散Seed数 |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| SGD | 9.7832e+00 ± 5.62e-02 | 9.7832e+00 | 0.1909 ± 0.0023 | 0.1909 | 対象外 | 対象外 | 0/3 |
+| SVRG | 9.7933e+00 ± 6.12e-02 | 9.7933e+00 | 0.1901 ± 0.0026 | 0.1901 | 0（定義上） | 0（定義上） | 0/3 |
 | NFG_SVRG | 9.8239e+00 ± 6.57e-02 | 9.8239e+00 | 0.1873 ± 0.0024 | 0.1873 | 3.0419e-04 ± 2.45e-04 | 3.5195e-05 | 0/3 |
 | ASAI_SVRG | 9.8294e+00 ± 6.02e-02 | 9.8294e+00 | 0.1869 ± 0.0018 | 0.1869 | 3.0717e-05 ± 2.28e-06 | 3.0717e-05 | 0/3 |
 
@@ -470,8 +471,7 @@ $$ f(w) = \frac{1}{N}\sum_{n=1}^N \ell_{\mathrm{CCE}}(y_n, \hat{y}_n(w)) + \frac
 - 正則化係数 $ \lambda $：0.0005
 - 内部ループ長 $ K $：61
 - エポック数：12
-- Seed数：NFG_SVRG: 3
-- 未実施の手法：SGD，SVRG，ASAI_SVRG（実行時点で未完了のため対象外）
+- Seed数：SGD: 3，SVRG: 3，NFG_SVRG: 3，ASAI_SVRG: 3
 
 学習誤差の指標：目的関数の値（訓練誤差，train_loss）／検証指標：次文字予測精度（検証用データ）
 
@@ -493,7 +493,50 @@ $$ f(w) = \frac{1}{N}\sum_{n=1}^N \ell_{\mathrm{CCE}}(y_n, \hat{y}_n(w)) + \frac
 
 | 手法 | 最終学習誤差(平均±std) | 最良学習誤差 | 最終検証精度(平均±std) | 最良検証精度 | 最終近似誤差(平均±std) | 最良近似誤差 | 発散Seed数 |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| SGD | 9.4394e+00 ± 3.89e-02 | 9.4394e+00 | 0.2369 ± 0.0008 | 0.2369 | 対象外 | 対象外 | 0/3 |
+| SVRG | 9.4462e+00 ± 4.15e-02 | 9.4462e+00 | 0.2364 ± 0.0008 | 0.2364 | 0（定義上） | 0（定義上） | 0/3 |
 | NFG_SVRG | 9.4689e+00 ± 4.24e-02 | 9.4689e+00 | 0.2349 ± 0.0007 | 0.2349 | 1.9777e-05 ± 1.72e-05 | 1.6720e-07 | 0/3 |
+| ASAI_SVRG | 9.4728e+00 ± 3.99e-02 | 9.4728e+00 | 0.2346 ± 0.0006 | 0.2346 | 1.8337e-07 ± 1.79e-08 | 1.6720e-07 | 0/3 |
+
+## ex003 / バッチサイズ = 32, 学習率 = 0.01
+
+条件ディレクトリ：`outputs/ex003_tinyshakespeare_transformer/{手法}/lr0.01_bs32_lambda0.0005_epochs12/`
+
+### 条件の仕様
+
+- モデル：4層Decoder-only Transformer（`DecoderOnlyTransformer`，$ d_{\text{model}}=128 $，Attention head数4，Feed Forward中間次元512）．Pre-LN構成のLayerNormを使用し，Dropout・BatchNormalizationは一切使用しない．位置エンコーディングは学習可能な埋め込み．
+- データセット：Tiny Shakespeare（文字レベル言語モデリング）．コーパスを系列長 $ T=128 $ の非重複チャンクに分割し，前方90%を学習用，後方10%を検証用とする．（$ N_{\text{train}}=7781 $, $ N_{\text{test}}=864 $）
+- バッチサイズ：32
+- 学習率：0.01
+- 正則化係数 $ \lambda $：0.0005
+- 内部ループ長 $ K $：244
+- エポック数：12
+- Seed数：SGD: 3，SVRG: 3，NFG_SVRG: 3，ASAI_SVRG: 3
+
+学習誤差の指標：目的関数の値（訓練誤差，train_loss）／検証指標：次文字予測精度（検証用データ）
+
+### グラフ
+
+![ex003_bs32_lr0.01_train_error_vs_epoch.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.01_train_error_vs_epoch.png)
+
+![ex003_bs32_lr0.01_accuracy_vs_epoch.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.01_accuracy_vs_epoch.png)
+
+![ex003_bs32_lr0.01_approx_error_vs_epoch.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.01_approx_error_vs_epoch.png)
+
+![ex003_bs32_lr0.01_train_error_vs_gradN.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.01_train_error_vs_gradN.png)
+
+![ex003_bs32_lr0.01_accuracy_vs_gradN.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.01_accuracy_vs_gradN.png)
+
+![ex003_bs32_lr0.01_approx_error_vs_gradN.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.01_approx_error_vs_gradN.png)
+
+### 数値サマリー
+
+| 手法 | 最終学習誤差(平均±std) | 最良学習誤差 | 最終検証精度(平均±std) | 最良検証精度 | 最終近似誤差(平均±std) | 最良近似誤差 | 発散Seed数 |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| SGD | 9.0609e+00 ± 2.81e-02 | 9.0609e+00 | 0.2508 ± 0.0022 | 0.2508 | 対象外 | 対象外 | 0/3 |
+| SVRG | 9.0698e+00 ± 3.16e-02 | 9.0698e+00 | 0.2503 ± 0.0018 | 0.2503 | 0（定義上） | 0（定義上） | 0/3 |
+| NFG_SVRG | 9.0994e+00 ± 3.42e-02 | 9.0994e+00 | 0.2489 ± 0.0016 | 0.2489 | 9.7758e-06 ± 5.84e-06 | 3.6064e-06 | 0/3 |
+| ASAI_SVRG | 9.1040e+00 ± 2.84e-02 | 9.1040e+00 | 0.2488 ± 0.0020 | 0.2488 | 3.8970e-06 ± 2.25e-07 | 3.6064e-06 | 0/3 |
 
 ## ex003 / バッチサイズ = 512, 学習率 = 0.001
 
@@ -508,8 +551,7 @@ $$ f(w) = \frac{1}{N}\sum_{n=1}^N \ell_{\mathrm{CCE}}(y_n, \hat{y}_n(w)) + \frac
 - 正則化係数 $ \lambda $：0.0005
 - 内部ループ長 $ K $：16
 - エポック数：12
-- Seed数：NFG_SVRG: 3，ASAI_SVRG: 3
-- 未実施の手法：SGD，SVRG（実行時点で未完了のため対象外）
+- Seed数：SGD: 3，SVRG: 3，NFG_SVRG: 3，ASAI_SVRG: 3
 
 学習誤差の指標：目的関数の値（訓練誤差，train_loss）／検証指標：次文字予測精度（検証用データ）
 
@@ -531,6 +573,8 @@ $$ f(w) = \frac{1}{N}\sum_{n=1}^N \ell_{\mathrm{CCE}}(y_n, \hat{y}_n(w)) + \frac
 
 | 手法 | 最終学習誤差(平均±std) | 最良学習誤差 | 最終検証精度(平均±std) | 最良検証精度 | 最終近似誤差(平均±std) | 最良近似誤差 | 発散Seed数 |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| SGD | 1.0698e+01 ± 6.58e-02 | 1.0698e+01 | 0.0437 ± 0.0079 | 0.0437 | 対象外 | 対象外 | 0/3 |
+| SVRG | 1.0704e+01 ± 6.80e-02 | 1.0704e+01 | 0.0427 ± 0.0083 | 0.0427 | 0（定義上） | 0（定義上） | 0/3 |
 | NFG_SVRG | 1.0720e+01 ± 6.76e-02 | 1.0720e+01 | 0.0393 ± 0.0077 | 0.0393 | 5.6620e-05 ± 1.74e-05 | 3.5195e-05 | 0/3 |
 | ASAI_SVRG | 1.0723e+01 ± 6.52e-02 | 1.0723e+01 | 0.0386 ± 0.0071 | 0.0386 | 3.5680e-05 ± 2.07e-06 | 3.4099e-05 | 0/3 |
 
@@ -547,8 +591,7 @@ $$ f(w) = \frac{1}{N}\sum_{n=1}^N \ell_{\mathrm{CCE}}(y_n, \hat{y}_n(w)) + \frac
 - 正則化係数 $ \lambda $：0.0005
 - 内部ループ長 $ K $：61
 - エポック数：12
-- Seed数：NFG_SVRG: 3
-- 未実施の手法：SGD，SVRG，ASAI_SVRG（実行時点で未完了のため対象外）
+- Seed数：SGD: 3，SVRG: 3，NFG_SVRG: 3，ASAI_SVRG: 3
 
 学習誤差の指標：目的関数の値（訓練誤差，train_loss）／検証指標：次文字予測精度（検証用データ）
 
@@ -570,5 +613,48 @@ $$ f(w) = \frac{1}{N}\sum_{n=1}^N \ell_{\mathrm{CCE}}(y_n, \hat{y}_n(w)) + \frac
 
 | 手法 | 最終学習誤差(平均±std) | 最良学習誤差 | 最終検証精度(平均±std) | 最良検証精度 | 最終近似誤差(平均±std) | 最良近似誤差 | 発散Seed数 |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| SGD | 1.0204e+01 ± 7.41e-02 | 1.0204e+01 | 0.1613 ± 0.0016 | 0.1613 | 対象外 | 対象外 | 0/3 |
+| SVRG | 1.0218e+01 ± 8.06e-02 | 1.0218e+01 | 0.1597 ± 0.0029 | 0.1597 | 0（定義上） | 0（定義上） | 0/3 |
 | NFG_SVRG | 1.0263e+01 ± 8.25e-02 | 1.0263e+01 | 0.1543 ± 0.0047 | 0.1543 | 4.0923e-04 ± 3.47e-04 | 1.6720e-07 | 0/3 |
+| ASAI_SVRG | 1.0273e+01 ± 7.44e-02 | 1.0273e+01 | 0.1533 ± 0.0034 | 0.1533 | 8.1281e-07 ± 9.57e-08 | 1.6720e-07 | 0/3 |
+
+## ex003 / バッチサイズ = 32, 学習率 = 0.001
+
+条件ディレクトリ：`outputs/ex003_tinyshakespeare_transformer/{手法}/lr0.001_bs32_lambda0.0005_epochs12/`
+
+### 条件の仕様
+
+- モデル：4層Decoder-only Transformer（`DecoderOnlyTransformer`，$ d_{\text{model}}=128 $，Attention head数4，Feed Forward中間次元512）．Pre-LN構成のLayerNormを使用し，Dropout・BatchNormalizationは一切使用しない．位置エンコーディングは学習可能な埋め込み．
+- データセット：Tiny Shakespeare（文字レベル言語モデリング）．コーパスを系列長 $ T=128 $ の非重複チャンクに分割し，前方90%を学習用，後方10%を検証用とする．（$ N_{\text{train}}=7781 $, $ N_{\text{test}}=864 $）
+- バッチサイズ：32
+- 学習率：0.001
+- 正則化係数 $ \lambda $：0.0005
+- 内部ループ長 $ K $：244
+- エポック数：12
+- Seed数：SGD: 3，SVRG: 3，NFG_SVRG: 3，ASAI_SVRG: 3
+
+学習誤差の指標：目的関数の値（訓練誤差，train_loss）／検証指標：次文字予測精度（検証用データ）
+
+### グラフ
+
+![ex003_bs32_lr0.001_train_error_vs_epoch.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.001_train_error_vs_epoch.png)
+
+![ex003_bs32_lr0.001_accuracy_vs_epoch.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.001_accuracy_vs_epoch.png)
+
+![ex003_bs32_lr0.001_approx_error_vs_epoch.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.001_approx_error_vs_epoch.png)
+
+![ex003_bs32_lr0.001_train_error_vs_gradN.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.001_train_error_vs_gradN.png)
+
+![ex003_bs32_lr0.001_accuracy_vs_gradN.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.001_accuracy_vs_gradN.png)
+
+![ex003_bs32_lr0.001_approx_error_vs_gradN.png](outputs/ex003_tinyshakespeare_transformer/summary_figures/ex003_bs32_lr0.001_approx_error_vs_gradN.png)
+
+### 数値サマリー
+
+| 手法 | 最終学習誤差(平均±std) | 最良学習誤差 | 最終検証精度(平均±std) | 最良検証精度 | 最終近似誤差(平均±std) | 最良近似誤差 | 発散Seed数 |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| SGD | 9.6656e+00 ± 4.69e-02 | 9.6656e+00 | 0.2084 ± 0.0024 | 0.2084 | 対象外 | 対象外 | 0/3 |
+| SVRG | 9.6727e+00 ± 5.02e-02 | 9.6727e+00 | 0.2070 ± 0.0022 | 0.2070 | 0（定義上） | 0（定義上） | 0/3 |
+| NFG_SVRG | 9.6968e+00 ± 5.23e-02 | 9.6968e+00 | 0.2030 ± 0.0020 | 0.2030 | 1.0676e-04 ± 9.74e-05 | 3.6064e-06 | 0/3 |
+| ASAI_SVRG | 9.7005e+00 ± 4.93e-02 | 9.7005e+00 | 0.2023 ± 0.0018 | 0.2023 | 3.1713e-06 ± 1.91e-07 | 3.1713e-06 | 0/3 |
 

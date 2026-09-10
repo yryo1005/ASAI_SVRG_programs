@@ -1,0 +1,275 @@
+"""
+実験4b（ex0041，正則化修正後のWikiText-2単語レベル言語モデリング）のモデルの定義に関する
+モジュール．
+
+`.orders/order_031.md` 3節の指示に基づき，`programs/ex004_wikitext2_transformer/model.py`
+のアーキテクチャ（Decoder-only Transformer，4層，隠れ次元128）はそのまま維持しつつ，
+Token Embedding層・出力射影層（`head`）の初期化を修正する．
+
+## 初期化修正の背景（`.orders/order_031.md` 3.1節）
+
+実験4（`.reports/report_030.md` 8.3節）では，`nn.Embedding`のデフォルト初期化
+（$ \\mathcal N(0,1) $，標準偏差1）を用いていたため，Token Embedding層（$ 33{,}277\\times128 $
+要素）だけで初期状態のL2正則化項が約1069.6に達し，訓練損失がほぼ全てこの正則化項に
+支配され，カテゴリカルクロスエントロピー損失（チャンスレベルで約10.4）の寄与が視認できない
+という問題が生じた．
+
+## 採用した初期化方式（`.orders/order_031.md` 3.2節）
+
+正則化係数 $ \\lambda=5\\times10^{-4} $ 自体は実験2〜4から変更せず維持する．代わりに，
+Token Embedding層・出力射影層（`head`）の重みを $ \\mathcal N(0,\\,1/\\sqrt d) $
+（$ d=128 $，隠れ次元）で初期化する．この方式は，Transformerの実装で一般的に用いられる
+スケール（例えばBERT・GPT系実装で採用される，隠れ次元の平方根に反比例させる初期化）に
+基づく．$ d=128 $ の場合，標準偏差は $ 1/\\sqrt{128}\\approx0.0884 $ となる．
+
+この修正により，Token Embedding層の初期L2正則化項は約8.32，出力射影層は約8.31となり，
+合計約16.6（Position Embedding等の小さな寄与を含めても20未満）となる．これは，チャンス
+レベルでの交差エントロピー損失の理論値 $ \\ln(33{,}277)\\approx10.41 $ と同程度のオーダー
+であり，正則化項が損失を支配しない状態が実現される（`.orders/order_031.md` 3.3節の要求，
+検証結果は`.reports/report_031.md`参照）．
+
+Transformer本体（`CausalSelfAttention`，`TransformerBlock`）・位置埋め込み
+（`position_embedding`）の初期化は実験4から変更していない．出力射影層のバイアス項も
+`nn.Linear`のデフォルト初期化（ゼロ）のまま変更していない．
+
+SVRG系手法の理論的前提（同一の $ n $・同一のパラメータ $ z_s $ に対する勾配評価が常に同じ
+値になること）を満たすため，Dropout・BatchNormalizationは一切使用しない．正規化には
+LayerNorm（Pre-LN構成）を用いる．
+"""
+
+import math
+import os
+import sys
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(_PROJECT_ROOT, ".ai", "ai-dev-kit", "src"))
+
+from machine_learning_utils import set_seed  # noqa: E402
+
+D_MODEL = 128
+N_HEAD = 4
+N_LAYER = 4
+D_FF = 512
+
+
+class CausalSelfAttention(nn.Module):
+    """
+    概要: Causalマスク付きのMulti-Head Self-Attention．Dropoutは使用しない．
+    """
+
+    def __init__(self, d_model: int, n_head: int, max_seq_len: int):
+        """
+        概要: Causal Self-Attention層を初期化する．
+        引数:
+            d_model (int)．特徴次元数．
+            n_head (int)．Attention headの数．
+            max_seq_len (int)．最大系列長（causalマスクのバッファサイズ）．
+        戻り値: なし
+        """
+        super().__init__()
+        assert d_model % n_head == 0
+        self.n_head = n_head
+        self.head_dim = d_model // n_head
+
+        self.qkv_proj = nn.Linear(d_model, 3 * d_model, bias=True)
+        self.out_proj = nn.Linear(d_model, d_model, bias=True)
+
+        causal_mask = torch.tril(torch.ones(max_seq_len, max_seq_len, dtype=torch.bool))
+        self.register_buffer("causal_mask", causal_mask, persistent=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        概要: Causal Self-Attentionを適用する．
+        引数: x (torch.Tensor)，形状 (B, T, d_model)．
+        戻り値: y (torch.Tensor)，形状 (B, T, d_model)．
+        """
+        B, T, C = x.shape
+        qkv = self.qkv_proj(x)
+        q, k, v = qkv.split(C, dim=2)
+        q = q.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
+        k = k.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
+        v = v.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
+
+        attn_scores = (q @ k.transpose(-2, -1)) / math.sqrt(self.head_dim)
+        mask = self.causal_mask[:T, :T]
+        attn_scores = attn_scores.masked_fill(~mask, float("-inf"))
+        attn_weights = F.softmax(attn_scores, dim=-1)
+
+        y = attn_weights @ v
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+        return self.out_proj(y)
+
+
+class TransformerBlock(nn.Module):
+    """
+    概要: Pre-LN構成のTransformerブロック（Self-Attention + Feed Forward）．Dropoutは
+        使用しない．
+    """
+
+    def __init__(self, d_model: int, n_head: int, d_ff: int, max_seq_len: int):
+        """
+        概要: Transformerブロックを初期化する．
+        引数:
+            d_model (int)．特徴次元数．
+            n_head (int)．Attention headの数．
+            d_ff (int)．Feed Forward層の中間次元数．
+            max_seq_len (int)．最大系列長．
+        戻り値: なし
+        """
+        super().__init__()
+        self.ln1 = nn.LayerNorm(d_model)
+        self.attn = CausalSelfAttention(d_model, n_head, max_seq_len)
+        self.ln2 = nn.LayerNorm(d_model)
+        self.mlp = nn.Sequential(
+            nn.Linear(d_model, d_ff),
+            nn.GELU(),
+            nn.Linear(d_ff, d_model),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        概要: Transformerブロックを適用する．
+        引数: x (torch.Tensor)，形状 (B, T, d_model)．
+        戻り値: y (torch.Tensor)，形状 (B, T, d_model)．
+        """
+        x = x + self.attn(self.ln1(x))
+        x = x + self.mlp(self.ln2(x))
+        return x
+
+
+class DecoderOnlyTransformer(nn.Module):
+    """
+    概要: 小規模なDecoder-only Transformer（単語レベル次単語予測）．Token Embedding・
+        出力射影層の初期化を，隠れ次元に応じてスケールする方式（モジュールdocstring参照）に
+        修正している．
+    """
+
+    def __init__(
+        self,
+        vocab_size: int,
+        max_seq_len: int = 64,
+        d_model: int = D_MODEL,
+        n_head: int = N_HEAD,
+        n_layer: int = N_LAYER,
+        d_ff: int = D_FF,
+    ):
+        """
+        概要: Decoder-only Transformerを初期化する．
+        引数:
+            vocab_size (int)．語彙サイズ（単語種数）．
+            max_seq_len (int) = 64．最大系列長 $ T $．
+            d_model (int) = 128．特徴次元数．
+            n_head (int) = 4．Attention headの数．
+            n_layer (int) = 4．Transformerブロックの層数．
+            d_ff (int) = 512．Feed Forward層の中間次元数．
+        戻り値: なし
+        """
+        super().__init__()
+        self.max_seq_len = max_seq_len
+        self.token_embedding = nn.Embedding(vocab_size, d_model)
+        self.position_embedding = nn.Embedding(max_seq_len, d_model)
+        self.blocks = nn.ModuleList(
+            [TransformerBlock(d_model, n_head, d_ff, max_seq_len) for _ in range(n_layer)]
+        )
+        self.ln_final = nn.LayerNorm(d_model)
+        self.head = nn.Linear(d_model, vocab_size, bias=True)
+
+        init_std = 1.0 / math.sqrt(d_model)
+        nn.init.normal_(self.token_embedding.weight, mean=0.0, std=init_std)
+        nn.init.normal_(self.head.weight, mean=0.0, std=init_std)
+
+    def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
+        """
+        概要: 次単語の予測ロジットを計算する．
+        引数: input_ids (torch.Tensor)，形状 (B, T)，dtype long．
+        戻り値: logits (torch.Tensor)，形状 (B, T, vocab_size)．
+        """
+        B, T = input_ids.shape
+        positions = torch.arange(T, device=input_ids.device)
+        x = self.token_embedding(input_ids) + self.position_embedding(positions)[None, :, :]
+        for block in self.blocks:
+            x = block(x)
+        x = self.ln_final(x)
+        return self.head(x)
+
+
+def load_model(ModelClass, weight_path: str = None, seed: int = 0, vocab_size: int = 33277, **kwargs):
+    """
+    概要: モデルをインスタンス化するための関数．
+    引数:
+        ModelClass (torch.nn.Moduleのクラス)．
+        weight_path (str) = None．
+        seed (int) = 0．
+        vocab_size (int) = 33277．語彙サイズ（WikiText-2の学習用テキストから構築した語彙）．
+        **kwargs．`ModelClass` に渡すその他の引数（`max_seq_len` 等）．
+    戻り値: model (torch.nn.Module)．
+    """
+    set_seed(seed)
+    model = ModelClass(vocab_size=vocab_size, **kwargs)
+    if weight_path is not None:
+        model.load_state_dict(torch.load(weight_path))
+    return model
+
+
+def compute_l2_regularization(model: nn.Module, reg_lambda: float) -> torch.Tensor:
+    """
+    概要: L2正則化項 $ \\frac\\lambda2\\|w\\|^2 $ を計算する．`nn.Linear`・`nn.Embedding`の
+        重み（バイアスを除く）を対象とし，`nn.LayerNorm`のアフィンパラメータは対象外とする．
+    引数:
+        model (torch.nn.Module)．
+        reg_lambda (float)．正則化係数 $ \\lambda $．
+    戻り値: reg (torch.Tensor)．スカラー．
+    """
+    reg = next(model.parameters()).new_zeros(())
+    for module in model.modules():
+        if isinstance(module, (nn.Linear, nn.Embedding)):
+            reg = reg + torch.sum(module.weight ** 2)
+    return 0.5 * reg_lambda * reg
+
+
+def loss_func(outputs: torch.Tensor, teacher_signals: torch.Tensor, model: nn.Module, reg_lambda: float) -> torch.Tensor:
+    """
+    概要: モデルの出力と教師信号のカテゴリカルクロスエントロピー誤差にL2正則化項を加えた
+        誤差を計算する．
+    引数:
+        outputs (torch.Tensor)，形状 (B, T, vocab_size)．モデルの出力（次単語予測ロジット）．
+        teacher_signals (torch.Tensor)，形状 (B, T)，dtype long．教師信号．
+        model (torch.nn.Module)．
+        reg_lambda (float)．L2正則化係数．
+    戻り値: loss (torch.Tensor)．スカラー．
+    """
+    B, T, V = outputs.shape
+    cce = F.cross_entropy(outputs.reshape(B * T, V), teacher_signals.reshape(B * T))
+    return cce + compute_l2_regularization(model, reg_lambda)
+
+
+def metrics_func(outputs: torch.Tensor, teacher_signals: torch.Tensor) -> dict:
+    """
+    概要: 次単語予測精度を計算する．
+    引数:
+        outputs (torch.Tensor)，形状 (B, T, vocab_size)．
+        teacher_signals (torch.Tensor)，形状 (B, T)．
+    戻り値: metrics_to_value (dict)．{"accuracy": float}．
+    """
+    predictions = torch.argmax(outputs, dim=-1)
+    accuracy = (predictions == teacher_signals).float().mean().item()
+    return {"accuracy": accuracy}
+
+
+def set_model_params(model: nn.Module, param_values, source_model: nn.Module = None) -> None:
+    """
+    概要: モデルのパラメータを指定した値で置き換える．
+    引数:
+        model (torch.nn.Module)．更新対象のモデル．
+        param_values (list of torch.Tensor)．`model.parameters()` と同じ順序・形状の値．
+        source_model (torch.nn.Module) = None．本モデルでは未使用（他モデルとの
+            インターフェース統一のために受け取る）．
+    戻り値: なし
+    """
+    with torch.no_grad():
+        for p, value in zip(model.parameters(), param_values):
+            p.copy_(value)

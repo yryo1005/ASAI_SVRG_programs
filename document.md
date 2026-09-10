@@ -299,6 +299,32 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 「タスクが簡単すぎた」という仮説を直接支持する結果は得られなかった．Stage Bの実施前に
 正則化係数の見直しが必須であるとの結論に至った．詳細は`.reports/report_030.md`を参照．
 
+### 1.12 `.orders/order_031.md` による実験4b（ex0041，正則化修正後のStage A再実行）
+
+実験4 Stage A（`report_030.md` 8.3節）で判明した「訓練損失がL2正則化項に支配され交差
+エントロピー損失の寄与が視認できない」問題を修正した上で，実験4 Stage Aと同一のグリッド
+（NFG SVRG・ASAI SVRG，バッチサイズ3種×学習率2種×3Seed，12エポック，36条件）を
+`programs/ex0041_wikitext2_transformer_fixedreg/`として再実行した．
+
+正則化係数$\lambda=5\times10^{-4}$自体は実験2〜4から変更せず，代わりにToken Embedding層・
+出力射影層の初期化を$\mathcal N(0,\,1/\sqrt d)$（$d=128$）へ変更した．修正後のモデルの
+初期状態でのL2正則化項は約19.0であり，チャンスレベル交差エントロピー理論値（約10.4）の
+1.83倍に収まることを学習開始前に検証した（`verify_regularization_is_not_dominant`関数）．
+`report_030.md` 5.3節の教訓（VRAM実測は最悪ケースのバッチサイズで行うこと）を踏まえ，
+最初から最大バッチサイズ（512）でVRAM使用量を実測し（約23.5GB，実験4と同一），
+`num_workers=2`を採用した結果，実験4で発生したGPU応答不能事象は再発しなかった．
+
+結果は，**36条件全てで発散・チャンスレベル張り付きが皆無**であった．訓練損失の絶対値は
+修正前（969〜1080）から修正後（約24.5〜29.2）へ大幅に縮小し，交差エントロピー損失を反映
+する妥当な値になった．**修正の効果が最も劇的に現れたのはバッチサイズ512・学習率0.001
+条件**で，修正前は「学習不足」（チャンスレベル付近に張り付き）だった最終精度が，修正後は
+約67〜71倍に改善し（0.0005→0.0357/0.0334），エポック6付近から明確な加速（S字型学習曲線）
+が観察された．また，バッチサイズ128・学習率0.001条件で報告されていた近似誤差の異常な増大
+（実験3比10〜50倍）も，修正後は他条件と比べて突出しない水準に解消した．一方，学習率0.01
+条件では，修正後の最終精度が修正前よりもやや低下するという副次的な現象が観察され，これは
+修正前の過大な初期化がたまたま短期的な学習に有利な多様な初期表現を与えていた可能性が
+考えられるとして考察した．詳細は`.reports/report_031.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -324,10 +350,11 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │   │   └── raw/                        # Tiny Shakespeareの生データ（input.txt，自動ダウン
 │   │                                    # ロード，またはex003からコピー）．
 │   │                                    # ★ order_027/028/029の論文掲載用の実験3
-│   ├── ex004_wikitext2_transformer/
+│   ├── ex004_wikitext2_transformer/，ex0041_wikitext2_transformer_fixedreg/
 │   │   └── raw/                        # WikiText-2の生データ（train.txt/valid.txt/test.txt，
 │   │                                    # PyTorch公式word_language_modelサンプルより自動
-│   │                                    # ダウンロード）．★ order_030の論文掲載用の実験4
+│   │                                    # ダウンロード，またはex004からコピー）．
+│   │                                    # ★ order_030/031の論文掲載用の実験4
 │   ├── ex001_mushroom_svrg/
 │   │   └── raw/                        # UCI Mushroomデータセットの生データ（自動ダウンロード）
 │   ├── ex002_cifar10_cnn/
@@ -430,7 +457,7 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │                                        # `compute_trailing_relative_change`（プラトー判定）・
 │                                        # 崩壊時の学習打ち切りロジックを組み合わせる．
 │                                        # 全36条件を新規学習（継続学習は不可のため）
-│   └── ex004_wikitext2_transformer/    # 実験4 Stage A：WikiText-2・単語レベル言語モデリング
+│   ├── ex004_wikitext2_transformer/    # 実験4 Stage A：WikiText-2・単語レベル言語モデリング
 │       ├── data.py                     # WikiText-2（PyTorch公式word_language_modelサンプル
 │       │                                # より自動ダウンロード）を単語レベルでトークナイズし，
 │       │                                # 非重複チャンク（T=64）へ分割．公式train/valid分割
@@ -444,6 +471,18 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │                                        # `is_stuck_near_chance`の許容幅を本実験の語彙サイズ
 │                                        # 向けに再調整（0.001）．`num_workers=2`（バッチ
 │                                        # サイズ512のVRAM実測に基づく，report_030.md 5.3節）
+│   └── ex0041_wikitext2_transformer_fixedreg/  # 実験4b：正則化修正後のStage A再実行
+│       ├── data.py                     # ex004と同一（EXPERIMENT_NAMEのみ変更）
+│       ├── model.py                    # ex004と同一のTransformer本体だが，Token Embedding・
+│       │                                # 出力射影層の初期化を$\mathcal N(0,1/\sqrt d)$
+│       │                                # （$d=128$）へ修正（order_031 3.2節）
+│       └── train.py                    # ex004と同一グリッド（2手法 x 3バッチサイズ x
+│                                        # 2学習率 x 3Seed = 36条件，Stage A再実行，
+│                                        # order_031）．学習開始前に
+│                                        # `verify_regularization_is_not_dominant`関数で
+│                                        # 正則化項がチャンスレベル交差エントロピーの10倍を
+│                                        # 超えないことを検証．最大バッチサイズ（512）で
+│                                        # VRAM実測を行った上で`num_workers=2`を採用
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -540,12 +579,18 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │   │       │                            # epoch0〜48）
 │   │       ├── config.json             # collapsedフィールド（全36条件でfalse）
 │   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
-│   └── ex004_wikitext2_transformer/
+│   ├── ex004_wikitext2_transformer/
+│   │   └── {method}/{lr,bs,lambda,epochs}/{seed}/
+│   │       ├── log.json                # ResultLoggerによる評価指標の履歴（次単語予測精度，
+│   │       │                            # 近似誤差等，13エントリ，epoch0〜12）
+│   │       ├── config.json             # collapsedフィールド（全36条件でfalse），
+│   │       │                            # sequence_length等のメタデータ
+│   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
+│   └── ex0041_wikitext2_transformer_fixedreg/
 │       └── {method}/{lr,bs,lambda,epochs}/{seed}/
-│           ├── log.json                # ResultLoggerによる評価指標の履歴（次単語予測精度，
-│           │                            # 近似誤差等，13エントリ，epoch0〜12）
-│           ├── config.json             # collapsedフィールド（全36条件でfalse），
-│           │                            # sequence_length等のメタデータ
+│           ├── log.json                # ResultLoggerによる評価指標の履歴（正則化修正後，
+│           │                            # 13エントリ，epoch0〜12）
+│           ├── config.json             # collapsedフィールド（全36条件でfalse）
 │           └── best_model.pth          # 検証精度が最高となったエポックの重み
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
@@ -617,15 +662,22 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │   │                                    # 境界動作，崩壊時の学習早期打ち切り，打ち切られた
 │   │                                    # ログをis_run_completedが完了済みとして扱うこと，
 │   │                                    # EPOCHS==48・LEARNING_RATE==0.01等の実験条件定数を検証
-│   └── test_ex004_wikitext2_transformer.py  # 実験4 Stage A．Transformer構造の性質（ex003と
-│                                        # 同様）に加え，語彙構築の決定論性，検証用テキストが
-│                                        # 学習用語彙に対しOOVを持たないこと，パラメータ数が
-│                                        # 見積もり（約935万）と概ね一致すること，2手法
-│                                        # （NFG SVRG，ASAI SVRG）のスモークテスト，オラクル
-│                                        # 呼び出し回数（2N），elapsed_timeの診断専用フル勾配
-│                                        # 計算除外，is_stuck_near_chance（本実験用の許容幅
-│                                        # 0.001）が学習進行中の精度・最頻出単語縮退の双方を
-│                                        # 誤検知しないことを検証
+│   ├── test_ex004_wikitext2_transformer.py  # 実験4 Stage A．Transformer構造の性質（ex003と
+│   │                                    # 同様）に加え，語彙構築の決定論性，検証用テキストが
+│   │                                    # 学習用語彙に対しOOVを持たないこと，パラメータ数が
+│   │                                    # 見積もり（約935万）と概ね一致すること，2手法
+│   │                                    # （NFG SVRG，ASAI SVRG）のスモークテスト，オラクル
+│   │                                    # 呼び出し回数（2N），elapsed_timeの診断専用フル勾配
+│   │                                    # 計算除外，is_stuck_near_chance（本実験用の許容幅
+│   │                                    # 0.001）が学習進行中の精度・最頻出単語縮退の双方を
+│   │                                    # 誤検知しないことを検証
+│   └── test_ex0041_wikitext2_transformer_fixedreg.py  # 実験4b．実験4と共通の検証項目に加え，
+│                                        # Token Embedding・出力射影層が$\mathcal N(0,1/\sqrt d)$
+│                                        # スケールで初期化されていること，初期状態でのL2正則化
+│                                        # 項がチャンスレベル交差エントロピーの10倍を超えない
+│                                        # こと，`verify_regularization_is_not_dominant`関数が
+│                                        # 妥当な設定で合格し極端な語彙サイズでは正しく
+│                                        # AssertionErrorを送出することを検証
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -701,15 +753,26 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │   │                                    # 小さいが正の水準（約1〜9%）で安定するという結論，
 │   │                                    # Stage B/C同一エポック時点での完全一致による整合性
 │   │                                    # 確認，学習率0.001長期学習の見送り提案を記載
-│   └── report_030.md                   # 実験4 Stage A：WikiText-2・単語レベル言語モデリング
-│                                        # （order_030）．全36条件で発散が皆無，バッチサイズ
-│                                        # 512×学習率0.001のみチャンス張付き判定に該当したが
-│                                        # 学習不足であり崩壊ではないと判断．8プロセス並列時に
-│                                        # VRAM総量超過でGPUが応答不能になった事象とnum_workers
-│                                        # =2への対応，損失値がL2正則化項（Token Embeddingの
-│                                        # 初期スケール由来）に支配されている問題の発見，
-│                                        # 近似誤差の絶対水準は実験3と同等かむしろ小さいという
-│                                        # 結果，正則化係数見直しを含むStage B提案を記載
+│   ├── report_030.md                   # 実験4 Stage A：WikiText-2・単語レベル言語モデリング
+│   │                                    # （order_030）．全36条件で発散が皆無，バッチサイズ
+│   │                                    # 512×学習率0.001のみチャンス張付き判定に該当したが
+│   │                                    # 学習不足であり崩壊ではないと判断．8プロセス並列時に
+│   │                                    # VRAM総量超過でGPUが応答不能になった事象とnum_workers
+│   │                                    # =2への対応，損失値がL2正則化項（Token Embeddingの
+│   │                                    # 初期スケール由来）に支配されている問題の発見，
+│   │                                    # 近似誤差の絶対水準は実験3と同等かむしろ小さいという
+│   │                                    # 結果，正則化係数見直しを含むStage B提案を記載
+│   └── report_031.md                   # 実験4b（ex0041）：正則化修正後のStage A再実行
+│                                        # （order_031）．Token Embedding・出力射影層の初期化を
+│                                        # $\mathcal N(0,1/\sqrt d)$へ修正し，初期L2正則化項が
+│                                        # チャンスレベル交差エントロピーの1.83倍に収まることを
+│                                        # 検証．全36条件で発散・チャンス張付きが皆無．訓練損失は
+│                                        # 969〜1080から24.5〜29.2へ縮小し交差エントロピーを
+│                                        # 反映する値になった．バッチサイズ512・学習率0.001は
+│                                        # 最終精度が約67〜71倍に改善（学習不足の大幅解消），
+│                                        # バッチサイズ128・学習率0.001の近似誤差異常値も解消．
+│                                        # 一方学習率0.01条件は精度がやや低下するという副次的な
+│                                        # 現象を考察，Stage Bへの提案を記載
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -864,6 +927,21 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
   している（8プロセス並列で実行した場合，最初にバッチサイズ512の条件が複数同時に実行され
   VRAM総量を超過しGPUが応答不能になった事象を踏まえた対応，`.reports/report_030.md` 5.3節
   参照）．
+- `programs/ex0041_wikitext2_transformer_fixedreg/data.py`：`programs/
+  ex004_wikitext2_transformer/` の同名ファイルと完全に同一（`EXPERIMENT_NAME` のみ変更）．
+- `programs/ex0041_wikitext2_transformer_fixedreg/model.py`：ex004の`model.py`とほぼ同一
+  だが，`__init__`内でToken Embedding層・出力射影層（`head`）の重みを明示的に
+  `nn.init.normal_(..., std=1/sqrt(d_model))`で再初期化する（`.orders/order_031.md` 3.2節，
+  `.reports/report_031.md` 3.1節）．PyTorchの`nn.Embedding`デフォルト初期化
+  （標準偏差1）に起因する，初期状態でのL2正則化項の過大な支配（`.reports/report_030.md`
+  8.3節）を修正するための変更である．
+- `programs/ex0041_wikitext2_transformer_fixedreg/train.py`：ex004 Stage Aと同一グリッド
+  （2手法×バッチサイズ3種×学習率2種×3Seed＝36条件，12エポック）を再実行する
+  （`.orders/order_031.md`）．`main`関数の冒頭で`verify_regularization_is_not_dominant`
+  関数を実行し，初期状態でのL2正則化項がチャンスレベル交差エントロピー理論値
+  （$\ln(\text{vocab\_size})$）の10倍を超えないことを学習開始前に検証する．最大バッチ
+  サイズ（512）でVRAM使用量を実測した上で`num_workers=2`を採用しており（`.reports/
+  report_030.md` 5.3節の教訓の反映），GPU応答不能事象は再発しなかった．
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -1125,6 +1203,10 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # 並列実行．バッチサイズ512のVRAM使用量が大きいため並列数を2に制限，既に完了した条件はスキップ）
 .venv_pytorch_gpu/bin/python programs/ex004_wikitext2_transformer/train.py
 
+# 実験4b（ex0041，正則化修正後のStage A再実行）の学習実行（同一グリッド36条件をGPUで
+# 2プロセス並列実行．既に完了した条件はスキップ）
+.venv_pytorch_gpu/bin/python programs/ex0041_wikitext2_transformer_fixedreg/train.py
+
 # --- 事前実験（.orders/order_011.md まで）---
 
 # Ex001の学習実行（4手法 x 5Seed = 20条件をマルチプロセスで並列実行．既に完了した条件はスキップ）
@@ -1163,7 +1245,7 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer}/{method}/{hyperparams}/{seed}/`
+  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer,ex0041_wikitext2_transformer_fixedreg}/{method}/{hyperparams}/{seed}/`
   （論文掲載用），
   `outputs_old/{ex001_mushroom_svrg,...,ex006_a9a_least_squares}/{method}/{hyperparams}/{seed}/`（事前実験）
 - 可視化結果（グラフ画像）：上記各実験ディレクトリ直下
