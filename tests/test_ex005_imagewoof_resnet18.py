@@ -337,3 +337,24 @@ def test_stage_b_epochs_give_comparable_total_iterations():
     }
     values = list(total_iterations.values())
     assert max(values) / min(values) < 1.1
+
+
+def test_compute_trailing_relative_change_detects_plateau():
+    """末尾の値がほとんど変化していない数値列に対し，小さい相対変化を返すことを確認する
+    （`.orders/order_034.md` 5節3項のプラトー判定）．"""
+    values = [0.1, 0.2, 0.3, 0.40, 0.401, 0.402, 0.4021]
+    rel_change = ex005_train.compute_trailing_relative_change(values, window=3)
+    assert rel_change < 0.01
+
+
+def test_compute_trailing_relative_change_detects_ongoing_change():
+    """末尾の値が大きく変化し続けている数値列に対し，大きい相対変化を返すことを確認する．"""
+    values = [0.05, 0.1, 0.2, 0.3, 0.4]
+    rel_change = ex005_train.compute_trailing_relative_change(values, window=3)
+    assert rel_change > 0.2
+
+
+def test_compute_trailing_relative_change_returns_inf_for_nonfinite_values():
+    """数値列に非有限値（NaN・Inf）が含まれる場合，`float("inf")` を返すことを確認する．"""
+    values = [0.1, 0.2, float("nan"), 0.4]
+    assert ex005_train.compute_trailing_relative_change(values, window=3) == float("inf")

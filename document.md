@@ -347,6 +347,34 @@ num_classes=10)`の全20層のBatchNorm2dをLayerNorm2d（ex0021由来の実装�
 ASAI SVRGの精度差が拡大する傾向（バッチサイズ32で+19.4ポイント）が確認された．詳細は
 `.reports/report_033.md`を参照．
 
+### 1.14 `.orders/order_034.md` による実験5 Stage B（4手法比較，長期学習）
+
+Stage Aの結果・提案を踏まえ，学習率0.001に固定した上でSGD・SVRGを追加した4手法比較を
+`programs/ex005_imagewoof_resnet18/train.py`（Stage Aと同一ファイルを拡張）で実施した．
+バッチサイズ128/64（Stage Aで相対的に低い精度を示したバッチサイズ32は対象外），5Seed，
+バッチサイズ128で64エポック・64で32エポック（総イテレーション数を約4544で統一）の
+2バッチサイズ×4手法×5Seed=40条件を，Stage Aとの重複12条件も含め全て新規に学習した
+（Optimizerの内部状態が保存されておらず継続学習不可のため）．Stage AとStage Bで条件が
+重複するSeed 0の先頭13エポックが完全に一致することを確認し，決定論性・再学習方針の
+妥当性を検証した．
+
+実行前の計算コスト見積もりでは，実データローダーを用いた計測により，SVRG系手法とSGDの
+1イテレーションあたりの実行時間に大きな差がない（データ読み込みが支配的）ことを確認した．
+全40条件の完了には約9時間1分を要し，見積もり（約6時間，Stage Aの並列実行時補正係数
+約2.5倍を適用した値）を約1.5倍上回った．実測を分析した結果，今回の誤差要因はStage Aとは
+異なり並列実行時のGPU資源競合ではなく，パイロット計測が評価・診断計算のコストを含んで
+いなかったことによる過小評価であったと判明した．
+
+**全40条件で発散は皆無**であった．**バッチサイズ128では，ASAI SVRGが4手法中最高精度
+（40.3%）を達成し，SGD・SVRGを上回った**．同一オラクル呼び出し回数での比較では，
+**バッチサイズ128の5Seed全てでASAI SVRGがSVRGを上回った**一方，**バッチサイズ64では
+5Seed中3Seedでの優位にとどまり**，1Seedでは長期学習中の一時的な崩壊（エポック26〜29で
+精度がチャンスレベルまで急落した後部分的に回復するパターン）によりSVRGを大きく下回った．
+NFG SVRGは，CIFAR-10系列ex0023で確認された「恒久的な慢性的振動」と同種の，プラトーに
+達しない持続的な不安定性を示し，4手法中最も低い精度にとどまった．NFG SVRGとASAI SVRGの
+精度差は，Stage Aの短期観察時点と比べ長期学習後も維持・拡大しており，団子現象への収束は
+確認されなかった．詳細は`.reports/report_034.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -510,7 +538,7 @@ ASAI SVRGの精度差が拡大する傾向（バッチサイズ32で+19.4ポイ�
 │                                        # 正則化項がチャンスレベル交差エントロピーの10倍を
 │                                        # 超えないことを検証．最大バッチサイズ（512）で
 │                                        # VRAM実測を行った上で`num_workers=2`を採用
-│   └── ex005_imagewoof_resnet18/       # 実験5 Stage A：Imagewoof・ResNet18画像分類
+│   └── ex005_imagewoof_resnet18/       # 実験5 Stage A・Stage B：Imagewoof・ResNet18画像分類
 │       ├── data.py                     # Imagewoof2-320（fast.aiより自動ダウンロード，
 │       │                                # $N_{\text{train}}=9025$，$N_{\text{test}}=3929$）．
 │       │                                # Resize(256)+CenterCrop(224)のみの決定論的前処理，
@@ -518,12 +546,17 @@ ASAI SVRGの精度差が拡大する傾向（バッチサイズ32で+19.4ポイ�
 │       ├── model.py                    # ResNet18LayerNorm．torchvision公式ResNet18の全20層
 │       │                                # のBatchNorm2dをLayerNorm2d（ex0021由来）に置換．
 │       │                                # パラメータ数11,181,642（標準BatchNorm版と完全一致）
-│       └── train.py                    # 2手法（NFG SVRG, ASAI SVRG）x 3バッチサイズ
-│                                        # (128,64,32) x 2学習率(0.01,0.001) x 3Seed = 36条件
-│                                        # を実行するスクリプト（Stage A，order_033）．
-│                                        # `is_stuck_near_chance`の許容幅は10クラス設定向けに
-│                                        # 0.03．最大バッチサイズ（128）でVRAM実測（約6.1GB）
-│                                        # を行った上で`num_workers=8`を採用
+│       └── train.py                    # Stage A（2手法 x 3バッチサイズ(128,64,32) x
+│                                        # 2学習率(0.01,0.001) x 3Seed = 36条件，order_033）と
+│                                        # Stage B（4手法(SGD,SVRG,NFG_SVRG,ASAI_SVRG) x
+│                                        # 2バッチサイズ(128,64) x 学習率0.001固定 x 5Seed =
+│                                        # 40条件，バッチサイズ128で64エポック・64で32エポック，
+│                                        # order_034）のタスクを`_build_stage_a_tasks`／
+│                                        # `_build_stage_b_tasks`で分離生成し結合実行する
+│                                        # スクリプト．`is_stuck_near_chance`の許容幅は
+│                                        # 10クラス設定向けに0.03．最大バッチサイズ（128）で
+│                                        # VRAM実測（約5.9〜6.1GB）を行った上で
+│                                        # `num_workers=8`を採用
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -636,10 +669,15 @@ ASAI SVRGの精度差が拡大する傾向（バッチサイズ32で+19.4ポイ�
 │   └── ex005_imagewoof_resnet18/
 │       └── {method}/{lr,bs,lambda,epochs}/{seed}/
 │           ├── log.json                # ResultLoggerによる評価指標の履歴（分類精度，
-│           │                            # 近似誤差等，13エントリ，epoch0〜12）
-│           ├── config.json             # collapsedフィールド（NaN発散のみ判定，全36条件で
-│           │                            # false．チャンスレベル張り付きは別途手動判定，
-│           │                            # report_033.md 8.1節参照），K・N_train等のメタデータ
+│           │                            # 近似誤差等）．Stage Aは13エントリ（epoch0〜12），
+│           │                            # Stage Bはバッチサイズ128で65エントリ（epoch0〜64），
+│           │                            # 64で33エントリ（epoch0〜32）
+│           ├── config.json             # collapsedフィールド（NaN発散のみ判定，Stage A・
+│           │                            # Stage Bとも全条件でfalse．チャンスレベル張り付きは
+│           │                            # 別途手動判定，report_033.md 8.1節・report_034.md
+│           │                            # 6.1節参照），K・N_train等のメタデータ．エポック数
+│           │                            # がStage A（12）とStage B（64/32）で異なるため
+│           │                            # ディレクトリ名（`epochsXX`）で自動的に分離される
 │           └── best_model.pth          # 検証精度が最高となったエポックの重み
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
@@ -727,16 +765,19 @@ ASAI SVRGの精度差が拡大する傾向（バッチサイズ32で+19.4ポイ�
 │   │                                    # こと，`verify_regularization_is_not_dominant`関数が
 │   │                                    # 妥当な設定で合格し極端な語彙サイズでは正しく
 │   │                                    # AssertionErrorを送出することを検証
-│   └── test_ex005_imagewoof_resnet18.py  # 実験5 Stage A．全BatchNorm2d層がLayerNorm2d
-│                                        # （20層）に置換され，Dropoutを含まないこと，出力の
-│                                        # 決定論性，パラメータ数が標準ResNet18（BatchNorm版）
-│                                        # と完全一致すること，L2正則化がConv2d・Linearの重み
-│                                        # のみに課されること，2手法（NFG SVRG，ASAI SVRG）
-│                                        # のスモークテスト，オラクル呼び出し回数（2N），
+│   └── test_ex005_imagewoof_resnet18.py  # 実験5 Stage A・Stage B．全BatchNorm2d層が
+│                                        # LayerNorm2d（20層）に置換され，Dropoutを含まない
+│                                        # こと，出力の決定論性，パラメータ数が標準ResNet18
+│                                        # （BatchNorm版）と完全一致すること，L2正則化が
+│                                        # Conv2d・Linearの重みのみに課されること，NFG SVRG・
+│                                        # ASAI SVRGに加えSGD・SVRG（Stage Bで追加）のスモーク
+│                                        # テスト，オラクル呼び出し回数（SGD:N，NFG/ASAI:2N，
+│                                        # SVRG:エポック0後4N・以降3N/エポック），
 │                                        # elapsed_timeの診断専用フル勾配計算除外，
 │                                        # is_stuck_near_chance（10クラス設定用の許容幅0.03）
-│                                        # の正しさ，Stage Aのグリッドが実験条件と一致すること
-│                                        # を検証
+│                                        # の正しさ，Stage A・Stage Bそれぞれのグリッドが
+│                                        # 実験条件と一致すること，両ステージのタスクリストが
+│                                        # ディレクトリ名の衝突なく分離されることを検証
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -842,6 +883,18 @@ ASAI SVRGの精度差が拡大する傾向（バッチサイズ32で+19.4ポイ�
 │                                        # 実験3の「団子」現象とは異なりバッチサイズが小さいほど
 │                                        # 手法間の精度差が拡大する傾向を記載，Stage Bへの提案を
 │                                        # 記載
+│   └── report_034.md                   # 実験5 Stage B：4手法比較・長期学習（order_034）．
+│                                        # Stage Aとの接続確認（Seed 0の先頭13エポックが完全
+│                                        # 一致）済み．全40条件で発散皆無，バッチサイズ128では
+│                                        # ASAI SVRGが4手法中最高精度（40.3%）を達成し同一
+│                                        # オラクル呼び出し回数で5Seed全てSVRGを上回った一方，
+│                                        # バッチサイズ64では3/5Seedのみ優位（1Seedは長期学習
+│                                        # 中の一時崩壊で大幅劣位）．NFG SVRGはCIFAR-10系列
+│                                        # ex0023と同種の恒久的な慢性的振動を示し4手法中最低
+│                                        # 精度．実測実行時間（約9時間1分）がStage Aの補正
+│                                        # 係数を用いた見積もり（約6時間）を上回った原因は
+│                                        # GPU資源競合ではなくパイロット計測の過小評価である
+│                                        # ことを分析・記載
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -1027,6 +1080,13 @@ ASAI SVRGの精度差が拡大する傾向（バッチサイズ32で+19.4ポイ�
   12エポックで学習する。`is_stuck_near_chance`の許容幅を10クラス設定向けに0.03へ設定
   している。実行前に最大バッチサイズ（128）でVRAM使用量を実測（約6.1GB）し
   （`.reports/report_030.md` 5.3節の教訓の反映），`num_workers=8`を採用した。
+  Stage B（`.orders/order_034.md`）として，同一ファイルにSGD用の学習ループ（`run_sgd`
+  関数）とSVRG対応（`run_variance_reduced`関数への分岐追加）を実装し，4手法
+  （SGD, SVRG, NFG SVRG, ASAI SVRG）×バッチサイズ(128,64)×学習率0.001固定×5Seed＝
+  40条件を，バッチサイズ128で64エポック・64で32エポック学習する。Stage A・Stage Bの
+  タスク生成は`_build_stage_a_tasks`／`_build_stage_b_tasks`関数で分離し，`main`関数で
+  結合したタスクリストを実行する（Stage Aの36条件は学習済みのため`is_run_completed`に
+  よりスキップされる）。
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -1292,8 +1352,9 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # 2プロセス並列実行．既に完了した条件はスキップ）
 .venv_pytorch_gpu/bin/python programs/ex0041_wikitext2_transformer_fixedreg/train.py
 
-# 実験5 Stage Aの学習実行（2手法 x 3バッチサイズ x 2学習率 x 3Seed = 36条件をGPUで8プロセス
-# 並列実行．既に完了した条件はスキップ）
+# 実験5 Stage A・Stage Bの学習実行（Stage A：2手法 x 3バッチサイズ x 2学習率 x 3Seed=36条件，
+# Stage B：4手法 x 2バッチサイズ x 学習率0.001固定 x 5Seed=40条件をGPUで8プロセス並列実行．
+# Stage Aの36条件は完了済みのためスキップされ，Stage Bの40条件のみ新規実行される）
 .venv_pytorch_gpu/bin/python programs/ex005_imagewoof_resnet18/train.py
 
 # --- 事前実験（.orders/order_011.md まで）---

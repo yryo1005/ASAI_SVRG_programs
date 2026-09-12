@@ -174,6 +174,27 @@ def is_stuck_near_chance(accuracies, num_classes: int, window: int = 3, toleranc
     return all(abs(a - chance) <= tolerance for a in tail)
 
 
+def compute_trailing_relative_change(values, window: int) -> float:
+    """
+    概要: 数値列の末尾 `window` 個について，連続する値の間の相対変化
+        $ |v^{(t)}-v^{(t-1)}|/|v^{(t-1)}| $ の最大値を計算する．Stage B（`.orders/
+        order_034.md` 5節3項）の長期学習がプラトーに達したかを数値的に判定するために用いる
+        （ex0023 `programs/ex0023_cifar10_alexnet_groupnorm_longrun/train.py` と同一実装）．
+    引数:
+        values (Sequence[float])．時系列の数値列（例：エポックごとの分類精度）．
+        window (int)．末尾から何個の値を対象にするか．`window + 1` 個以上の要素が必要．
+    戻り値: max_relative_change (float)．末尾`window`区間における相対変化の最大値．
+        非有限値（NaN・Inf）が含まれる場合は `float("inf")` を返す．
+    """
+    tail = np.asarray(values[-(window + 1):], dtype=np.float64)
+    if not np.all(np.isfinite(tail)):
+        return float("inf")
+    diffs = np.abs(tail[1:] - tail[:-1])
+    denom = np.abs(tail[:-1])
+    denom = np.where(denom == 0.0, np.finfo(np.float64).eps, denom)
+    return float(np.max(diffs / denom))
+
+
 def iteration(model, inputs, teacher_signals, reg_lambda, optimizer, snapshot_model=None) -> dict:
     """
     概要: 1つのミニバッチのデータを学習する関数．`snapshot_model` が指定される場合（SVRG系
