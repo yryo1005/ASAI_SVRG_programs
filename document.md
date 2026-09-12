@@ -325,6 +325,28 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 修正前の過大な初期化がたまたま短期的な学習に有利な多様な初期表現を与えていた可能性が
 考えられるとして考察した．詳細は`.reports/report_031.md`を参照．
 
+### 1.13 `.orders/order_033.md` による実験5（Imagewoofを用いたResNet18画像分類）Stage A
+
+より本物のImageNet画像に近い，高解像度（$224\times224$）かつ意味的に難しい分類タスク
+での検証として，Imagewoof（fast.aiが配布する，ImageNet-1kから抽出した犬種10クラスの
+サブセット，$N_{\text{train}}=9025$，$N_{\text{test}}=3929$）・ResNet18を用いた
+`programs/ex005_imagewoof_resnet18/`を実装した．正規化層は，本論文の2つの非凸実践設定
+（CIFAR-10とImagewoof）全体でLayerNormを標準として報告するため，CIFAR-10系列（GroupNorm）
+とは異なり**LayerNormに統一**した．`torchvision.models.resnet18(weights=None,
+num_classes=10)`の全20層のBatchNorm2dをLayerNorm2d（ex0021由来の実装）に置換する方式を
+採用し，パラメータ数（11,181,642）が標準BatchNorm版ResNet18と完全一致することを確認した．
+
+実行前の計算コスト見積もり（`report_030.md` 5.3節の教訓に従い，VRAM実測は最大バッチサイズ
+128で実施）では約1時間程度と概算したが，8プロセス並列実行時のGPU資源競合により実測は
+約2.5時間を要した．NFG SVRG・ASAI SVRGの2手法，バッチサイズ128/64/32・学習率0.01/0.001・
+3Seed，12エポックの36条件（Stage A）を実行した結果，**学習率0.001の18条件は全て非崩壊**
+であった一方，**学習率0.01ではNFG SVRGが全バッチサイズで崩壊し，ASAI SVRGはバッチサイズ
+128でのみ3Seed中2Seedが崩壊を免れる**という，学習率を主要因としつつバッチサイズ・手法の
+組み合わせに依存する崩壊境界が観察された．また，学習率0.001の条件では，実験3
+（Tiny Shakespeare）で見られた「団子」現象とは異なり，バッチサイズが小さいほどNFG SVRGと
+ASAI SVRGの精度差が拡大する傾向（バッチサイズ32で+19.4ポイント）が確認された．詳細は
+`.reports/report_033.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -355,6 +377,11 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │   │                                    # PyTorch公式word_language_modelサンプルより自動
 │   │                                    # ダウンロード，またはex004からコピー）．
 │   │                                    # ★ order_030/031の論文掲載用の実験4
+│   ├── ex005_imagewoof_resnet18/
+│   │   └── raw/                        # Imagewoof2-320の生データ（imagewoof2-320.tgz，
+│   │                                    # fast.aiより自動ダウンロード）とchannel_stats.json
+│   │                                    # （チャネル統計量のキャッシュ）．★ order_033の
+│   │                                    # 論文掲載用の実験5
 │   ├── ex001_mushroom_svrg/
 │   │   └── raw/                        # UCI Mushroomデータセットの生データ（自動ダウンロード）
 │   ├── ex002_cifar10_cnn/
@@ -483,6 +510,20 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │                                        # 正則化項がチャンスレベル交差エントロピーの10倍を
 │                                        # 超えないことを検証．最大バッチサイズ（512）で
 │                                        # VRAM実測を行った上で`num_workers=2`を採用
+│   └── ex005_imagewoof_resnet18/       # 実験5 Stage A：Imagewoof・ResNet18画像分類
+│       ├── data.py                     # Imagewoof2-320（fast.aiより自動ダウンロード，
+│       │                                # $N_{\text{train}}=9025$，$N_{\text{test}}=3929$）．
+│       │                                # Resize(256)+CenterCrop(224)のみの決定論的前処理，
+│       │                                # チャネル統計量は学習データから算出しキャッシュ
+│       ├── model.py                    # ResNet18LayerNorm．torchvision公式ResNet18の全20層
+│       │                                # のBatchNorm2dをLayerNorm2d（ex0021由来）に置換．
+│       │                                # パラメータ数11,181,642（標準BatchNorm版と完全一致）
+│       └── train.py                    # 2手法（NFG SVRG, ASAI SVRG）x 3バッチサイズ
+│                                        # (128,64,32) x 2学習率(0.01,0.001) x 3Seed = 36条件
+│                                        # を実行するスクリプト（Stage A，order_033）．
+│                                        # `is_stuck_near_chance`の許容幅は10クラス設定向けに
+│                                        # 0.03．最大バッチサイズ（128）でVRAM実測（約6.1GB）
+│                                        # を行った上で`num_workers=8`を採用
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -586,11 +627,19 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │   │       ├── config.json             # collapsedフィールド（全36条件でfalse），
 │   │       │                            # sequence_length等のメタデータ
 │   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
-│   └── ex0041_wikitext2_transformer_fixedreg/
+│   ├── ex0041_wikitext2_transformer_fixedreg/
+│   │   └── {method}/{lr,bs,lambda,epochs}/{seed}/
+│   │       ├── log.json                # ResultLoggerによる評価指標の履歴（正則化修正後，
+│   │       │                            # 13エントリ，epoch0〜12）
+│   │       ├── config.json             # collapsedフィールド（全36条件でfalse）
+│   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
+│   └── ex005_imagewoof_resnet18/
 │       └── {method}/{lr,bs,lambda,epochs}/{seed}/
-│           ├── log.json                # ResultLoggerによる評価指標の履歴（正則化修正後，
-│           │                            # 13エントリ，epoch0〜12）
-│           ├── config.json             # collapsedフィールド（全36条件でfalse）
+│           ├── log.json                # ResultLoggerによる評価指標の履歴（分類精度，
+│           │                            # 近似誤差等，13エントリ，epoch0〜12）
+│           ├── config.json             # collapsedフィールド（NaN発散のみ判定，全36条件で
+│           │                            # false．チャンスレベル張り付きは別途手動判定，
+│           │                            # report_033.md 8.1節参照），K・N_train等のメタデータ
 │           └── best_model.pth          # 検証精度が最高となったエポックの重み
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
@@ -671,13 +720,23 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │   │                                    # 計算除外，is_stuck_near_chance（本実験用の許容幅
 │   │                                    # 0.001）が学習進行中の精度・最頻出単語縮退の双方を
 │   │                                    # 誤検知しないことを検証
-│   └── test_ex0041_wikitext2_transformer_fixedreg.py  # 実験4b．実験4と共通の検証項目に加え，
-│                                        # Token Embedding・出力射影層が$\mathcal N(0,1/\sqrt d)$
-│                                        # スケールで初期化されていること，初期状態でのL2正則化
-│                                        # 項がチャンスレベル交差エントロピーの10倍を超えない
-│                                        # こと，`verify_regularization_is_not_dominant`関数が
-│                                        # 妥当な設定で合格し極端な語彙サイズでは正しく
-│                                        # AssertionErrorを送出することを検証
+│   ├── test_ex0041_wikitext2_transformer_fixedreg.py  # 実験4b．実験4と共通の検証項目に加え，
+│   │                                    # Token Embedding・出力射影層が$\mathcal N(0,1/\sqrt d)$
+│   │                                    # スケールで初期化されていること，初期状態でのL2正則化
+│   │                                    # 項がチャンスレベル交差エントロピーの10倍を超えない
+│   │                                    # こと，`verify_regularization_is_not_dominant`関数が
+│   │                                    # 妥当な設定で合格し極端な語彙サイズでは正しく
+│   │                                    # AssertionErrorを送出することを検証
+│   └── test_ex005_imagewoof_resnet18.py  # 実験5 Stage A．全BatchNorm2d層がLayerNorm2d
+│                                        # （20層）に置換され，Dropoutを含まないこと，出力の
+│                                        # 決定論性，パラメータ数が標準ResNet18（BatchNorm版）
+│                                        # と完全一致すること，L2正則化がConv2d・Linearの重み
+│                                        # のみに課されること，2手法（NFG SVRG，ASAI SVRG）
+│                                        # のスモークテスト，オラクル呼び出し回数（2N），
+│                                        # elapsed_timeの診断専用フル勾配計算除外，
+│                                        # is_stuck_near_chance（10クラス設定用の許容幅0.03）
+│                                        # の正しさ，Stage Aのグリッドが実験条件と一致すること
+│                                        # を検証
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -773,6 +832,16 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
 │                                        # バッチサイズ128・学習率0.001の近似誤差異常値も解消．
 │                                        # 一方学習率0.01条件は精度がやや低下するという副次的な
 │                                        # 現象を考察，Stage Bへの提案を記載
+│   └── report_033.md                   # 実験5 Stage A：Imagewoof・ResNet18画像分類での
+│                                        # 安定性探索（order_033）．全BatchNorm2d層をLayerNorm2d
+│                                        # に置換したResNet18の実装，実行前見積もり（約1時間）と
+│                                        # 実測（約2.5時間，8プロセス並列時のGPU資源競合が主因）
+│                                        # の乖離，学習率0.001の18条件は全て非崩壊，学習率0.01は
+│                                        # NFG SVRGが全バッチサイズで崩壊しASAI SVRGはバッチ
+│                                        # サイズ128でのみ部分的に崩壊回避という結果と考察，
+│                                        # 実験3の「団子」現象とは異なりバッチサイズが小さいほど
+│                                        # 手法間の精度差が拡大する傾向を記載，Stage Bへの提案を
+│                                        # 記載
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -942,6 +1011,22 @@ L2正則化項（Token Embeddingの初期スケールに起因）に支配され
   （$\ln(\text{vocab\_size})$）の10倍を超えないことを学習開始前に検証する．最大バッチ
   サイズ（512）でVRAM使用量を実測した上で`num_workers=2`を採用しており（`.reports/
   report_030.md` 5.3節の教訓の反映），GPU応答不能事象は再発しなかった．
+- `programs/ex005_imagewoof_resnet18/data.py`：fast.aiが配布するImagewoof2-320
+  （`https://s3.amazonaws.com/fast-ai-imageclas/imagewoof2-320.tgz`）を`urllib.request`で
+  自動ダウンロードし，`tarfile`で展開する．`torchvision.datasets.ImageFolder`で公式
+  train/val分割をそのまま読み込む．前処理は`Resize(256)→CenterCrop(224)→ToTensor→
+  Normalize`のみの決定論的な処理．チャネル統計量（mean/std）は学習用画像から算出し，
+  `channel_stats.json`にキャッシュして全プロセスで再利用する。
+- `programs/ex005_imagewoof_resnet18/model.py`：`ResNet18LayerNorm`．
+  `torchvision.models.resnet18(weights=None, num_classes=10)`をインスタンス化した後，
+  モジュール木を再帰的に走査し全20層の`nn.BatchNorm2d`を`LayerNorm2d`（ex0021由来の実装，
+  `_replace_batchnorm_with_layernorm`関数）に置換する。パラメータ数（11,181,642）は
+  標準BatchNorm版ResNet18と完全一致する。
+- `programs/ex005_imagewoof_resnet18/train.py`：Stage A（`.orders/order_033.md`）として，
+  NFG SVRG・ASAI SVRGの2手法×バッチサイズ(128,64,32)×学習率(0.01,0.001)×3Seed＝36条件を
+  12エポックで学習する。`is_stuck_near_chance`の許容幅を10クラス設定向けに0.03へ設定
+  している。実行前に最大バッチサイズ（128）でVRAM使用量を実測（約6.1GB）し
+  （`.reports/report_030.md` 5.3節の教訓の反映），`num_workers=8`を採用した。
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -1207,6 +1292,10 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # 2プロセス並列実行．既に完了した条件はスキップ）
 .venv_pytorch_gpu/bin/python programs/ex0041_wikitext2_transformer_fixedreg/train.py
 
+# 実験5 Stage Aの学習実行（2手法 x 3バッチサイズ x 2学習率 x 3Seed = 36条件をGPUで8プロセス
+# 並列実行．既に完了した条件はスキップ）
+.venv_pytorch_gpu/bin/python programs/ex005_imagewoof_resnet18/train.py
+
 # --- 事前実験（.orders/order_011.md まで）---
 
 # Ex001の学習実行（4手法 x 5Seed = 20条件をマルチプロセスで並列実行．既に完了した条件はスキップ）
@@ -1245,7 +1334,7 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer,ex0041_wikitext2_transformer_fixedreg}/{method}/{hyperparams}/{seed}/`
+  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer,ex0041_wikitext2_transformer_fixedreg,ex005_imagewoof_resnet18}/{method}/{hyperparams}/{seed}/`
   （論文掲載用），
   `outputs_old/{ex001_mushroom_svrg,...,ex006_a9a_least_squares}/{method}/{hyperparams}/{seed}/`（事前実験）
 - 可視化結果（グラフ画像）：上記各実験ディレクトリ直下
