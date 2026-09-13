@@ -375,6 +375,34 @@ NFG SVRGは，CIFAR-10系列ex0023で確認された「恒久的な慢性的振�
 精度差は，Stage Aの短期観察時点と比べ長期学習後も維持・拡大しており，団子現象への収束は
 確認されなかった．詳細は`.reports/report_034.md`を参照．
 
+### 1.15 `.orders/order_035.md` による実験5b（ex0051，バッチサイズ128長期学習とプラトー判定方法の改善）
+
+Stage B（`report_034.md`）でASAI SVRG・バッチサイズ128が示した「隣接相対変化のみで見ると
+プラトーに到達した」という判定は，隣接ステップ間の変化率のみを見る指標の方法論上の限界
+（緩やかな単調増加を検出できない）による誤りである可能性が指摘され，`programs/
+ex0051_imagewoof_resnet18_bs128_longrun/`にて，(1) バッチサイズ128・学習率0.001の
+エポック数を64から128へ倍に延長し，(2) 隣接相対変化に加え末尾区間の正味変化量・線形回帰の
+相対傾きを算出する3指標方式（`is_plateaued`関数）でプラトー判定を改善した上で，4手法
+（SGD, SVRG, NFG SVRG, ASAI SVRG）×5Seed=20条件を再検証した．`data.py`・`model.py`は
+Stage A/Bと完全に同一のファイルを複製し，`datasets/ex005_imagewoof_resnet18/`のキャッシュを
+再利用した．Stage Bとの接続確認（Seed 0の先頭65エポックが完全一致）も確認済みである．
+
+実行前の計算コスト見積もりでは，Stage Bの教訓（1イテレーション単位の時間からの外挿は
+評価・診断計算のコストを見落とし実測の約2.8倍の誤差を生んだ）を踏まえ，1エポック全体を
+実際に1回実行して計測する方式に変更した結果，実測（約12時間50分）は見積もり（約10.7〜
+12.2時間）の上限をわずか5%上回る程度に収まり，見積もり精度が大幅に改善された．
+
+**全20条件で発散・チャンスレベル張り付き（機械的判定）は皆無**であったが，**ASAI SVRG・
+Seed 3で，エポック117以降に近似誤差が急増し分類精度がチャンスレベル付近まで崩壊する現象が
+新たに観測された**．このSeedはStage B（64エポック）の観測範囲では優良な結果を示しており，
+エポック数の延長によって初めて顕在化した崩壊である．3指標によるプラトー判定の結果，
+**SGD・NFG SVRG・ASAI SVRG（崩壊Seedを除く4Seed平均も含む）はいずれも128エポック時点で
+未プラトーと判定された**．SVRGのみ機械的判定（僅かに未プラトー）と目視確認（明確な
+プラトー）が食い違い，目視確認を優先してプラトー到達と判断した．オラクル呼び出し回数
+ベースの比較では，ASAI SVRGは4/5Seedで引き続きSVRGに対する優位性を維持したが，崩壊した
+Seed 3では大幅な劣位に転じ，優位性が全Seedで無条件に保証されるわけではないことが判明した．
+詳細は`.reports/report_035.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -538,7 +566,7 @@ NFG SVRGは，CIFAR-10系列ex0023で確認された「恒久的な慢性的振�
 │                                        # 正則化項がチャンスレベル交差エントロピーの10倍を
 │                                        # 超えないことを検証．最大バッチサイズ（512）で
 │                                        # VRAM実測を行った上で`num_workers=2`を採用
-│   └── ex005_imagewoof_resnet18/       # 実験5 Stage A・Stage B：Imagewoof・ResNet18画像分類
+│   ├── ex005_imagewoof_resnet18/       # 実験5 Stage A・Stage B：Imagewoof・ResNet18画像分類
 │       ├── data.py                     # Imagewoof2-320（fast.aiより自動ダウンロード，
 │       │                                # $N_{\text{train}}=9025$，$N_{\text{test}}=3929$）．
 │       │                                # Resize(256)+CenterCrop(224)のみの決定論的前処理，
@@ -557,6 +585,21 @@ NFG SVRGは，CIFAR-10系列ex0023で確認された「恒久的な慢性的振�
 │                                        # 10クラス設定向けに0.03．最大バッチサイズ（128）で
 │                                        # VRAM実測（約5.9〜6.1GB）を行った上で
 │                                        # `num_workers=8`を採用
+│   └── ex0051_imagewoof_resnet18_bs128_longrun/  # 実験5b：バッチサイズ128長期学習と
+│       ├── data.py                     # ex005_imagewoof_resnet18/の同名ファイルと
+│       │                                # バイト単位で完全に同一（`EXPERIMENT_NAME`も無変更）．
+│       │                                # datasets/ex005_imagewoof_resnet18/のキャッシュを再利用
+│       ├── model.py                    # ex005_imagewoof_resnet18/の同名ファイルと完全に同一
+│       └── train.py                    # 4手法(SGD,SVRG,NFG_SVRG,ASAI_SVRG) x 5Seed = 20条件
+│                                        # （バッチサイズ128・学習率0.001固定，128エポック，
+│                                        # order_035）を実行するスクリプト．プラトー判定の
+│                                        # 改善指標（隣接相対変化に加え，末尾区間の正味変化量
+│                                        # `compute_trailing_net_change`・線形回帰の相対傾き
+│                                        # `compute_trailing_regression_slope`を実装し，
+│                                        # `is_plateaued`関数でいずれか1つでも未プラトーを
+│                                        # 示せば全体を未プラトーと判定）を含む．実行前に
+│                                        # 1エポック全体（学習・評価・診断計算）を実測してから
+│                                        # 総所要時間を見積もる方式を採用
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -666,18 +709,28 @@ NFG SVRGは，CIFAR-10系列ex0023で確認された「恒久的な慢性的振�
 │   │       │                            # 13エントリ，epoch0〜12）
 │   │       ├── config.json             # collapsedフィールド（全36条件でfalse）
 │   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
-│   └── ex005_imagewoof_resnet18/
-│       └── {method}/{lr,bs,lambda,epochs}/{seed}/
-│           ├── log.json                # ResultLoggerによる評価指標の履歴（分類精度，
-│           │                            # 近似誤差等）．Stage Aは13エントリ（epoch0〜12），
-│           │                            # Stage Bはバッチサイズ128で65エントリ（epoch0〜64），
-│           │                            # 64で33エントリ（epoch0〜32）
-│           ├── config.json             # collapsedフィールド（NaN発散のみ判定，Stage A・
-│           │                            # Stage Bとも全条件でfalse．チャンスレベル張り付きは
-│           │                            # 別途手動判定，report_033.md 8.1節・report_034.md
-│           │                            # 6.1節参照），K・N_train等のメタデータ．エポック数
-│           │                            # がStage A（12）とStage B（64/32）で異なるため
-│           │                            # ディレクトリ名（`epochsXX`）で自動的に分離される
+│   ├── ex005_imagewoof_resnet18/
+│   │   └── {method}/{lr,bs,lambda,epochs}/{seed}/
+│   │       ├── log.json                # ResultLoggerによる評価指標の履歴（分類精度，
+│   │       │                            # 近似誤差等）．Stage Aは13エントリ（epoch0〜12），
+│   │       │                            # Stage Bはバッチサイズ128で65エントリ（epoch0〜64），
+│   │       │                            # 64で33エントリ（epoch0〜32）
+│   │       ├── config.json             # collapsedフィールド（NaN発散のみ判定，Stage A・
+│   │       │                            # Stage Bとも全条件でfalse．チャンスレベル張り付きは
+│   │       │                            # 別途手動判定，report_033.md 8.1節・report_034.md
+│   │       │                            # 6.1節参照），K・N_train等のメタデータ．エポック数
+│   │       │                            # がStage A（12）とStage B（64/32）で異なるため
+│   │       │                            # ディレクトリ名（`epochsXX`）で自動的に分離される
+│   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
+│   └── ex0051_imagewoof_resnet18_bs128_longrun/
+│       └── {method}/lr0.001_bs128_lambda0.0005_epochs128/{seed}/
+│           ├── log.json                # ResultLoggerによる評価指標の履歴（129エントリ，
+│           │                            # epoch0〜128）．先頭65エントリはStage Bの同一条件
+│           │                            # （epochs64）と完全一致することを確認済み
+│           ├── config.json             # collapsedフィールド（全20条件でfalse．ASAI SVRG・
+│           │                            # Seed 3はエポック117以降に近似誤差急増・精度崩壊が
+│           │                            # 生じたが，訓練損失は非有限値化しなかったため
+│           │                            # collapsed=falseのまま．report_035.md 6.1節参照）
 │           └── best_model.pth          # 検証精度が最高となったエポックの重み
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
@@ -765,19 +818,30 @@ NFG SVRGは，CIFAR-10系列ex0023で確認された「恒久的な慢性的振�
 │   │                                    # こと，`verify_regularization_is_not_dominant`関数が
 │   │                                    # 妥当な設定で合格し極端な語彙サイズでは正しく
 │   │                                    # AssertionErrorを送出することを検証
-│   └── test_ex005_imagewoof_resnet18.py  # 実験5 Stage A・Stage B．全BatchNorm2d層が
-│                                        # LayerNorm2d（20層）に置換され，Dropoutを含まない
-│                                        # こと，出力の決定論性，パラメータ数が標準ResNet18
-│                                        # （BatchNorm版）と完全一致すること，L2正則化が
-│                                        # Conv2d・Linearの重みのみに課されること，NFG SVRG・
-│                                        # ASAI SVRGに加えSGD・SVRG（Stage Bで追加）のスモーク
-│                                        # テスト，オラクル呼び出し回数（SGD:N，NFG/ASAI:2N，
-│                                        # SVRG:エポック0後4N・以降3N/エポック），
-│                                        # elapsed_timeの診断専用フル勾配計算除外，
-│                                        # is_stuck_near_chance（10クラス設定用の許容幅0.03）
-│                                        # の正しさ，Stage A・Stage Bそれぞれのグリッドが
-│                                        # 実験条件と一致すること，両ステージのタスクリストが
-│                                        # ディレクトリ名の衝突なく分離されることを検証
+│   ├── test_ex005_imagewoof_resnet18.py  # 実験5 Stage A・Stage B．全BatchNorm2d層が
+│   │                                    # LayerNorm2d（20層）に置換され，Dropoutを含まない
+│   │                                    # こと，出力の決定論性，パラメータ数が標準ResNet18
+│   │                                    # （BatchNorm版）と完全一致すること，L2正則化が
+│   │                                    # Conv2d・Linearの重みのみに課されること，NFG SVRG・
+│   │                                    # ASAI SVRGに加えSGD・SVRG（Stage Bで追加）のスモーク
+│   │                                    # テスト，オラクル呼び出し回数（SGD:N，NFG/ASAI:2N，
+│   │                                    # SVRG:エポック0後4N・以降3N/エポック），
+│   │                                    # elapsed_timeの診断専用フル勾配計算除外，
+│   │                                    # is_stuck_near_chance（10クラス設定用の許容幅0.03）
+│   │                                    # の正しさ，Stage A・Stage Bそれぞれのグリッドが
+│   │                                    # 実験条件と一致すること，両ステージのタスクリストが
+│   │                                    # ディレクトリ名の衝突なく分離されることを検証
+│   └── test_ex0051_imagewoof_resnet18_bs128_longrun.py  # 実験5b．`data.py`・`model.py`が
+│                                        # ex005_imagewoof_resnet18/と完全に同一（バイト単位）
+│                                        # であること，4手法（SGD, SVRG, NFG SVRG, ASAI SVRG）
+│                                        # のスモークテスト，実験グリッドが4手法x5Seed=20条件・
+│                                        # バッチサイズ128・学習率0.001・128エポックであること，
+│                                        # プラトー判定の新規3指標（`compute_trailing_net_
+│                                        # change`：末尾区間の正味変化量，`compute_trailing_
+│                                        # regression_slope`：線形回帰の相対傾き）が「隣接
+│                                        # 相対変化のみでは検出できない緩やかな単調増加」を
+│                                        # 正しく検出すること，これらを統合する`is_plateaued`
+│                                        # 関数の正しさを検証
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -883,18 +947,34 @@ NFG SVRGは，CIFAR-10系列ex0023で確認された「恒久的な慢性的振�
 │                                        # 実験3の「団子」現象とは異なりバッチサイズが小さいほど
 │                                        # 手法間の精度差が拡大する傾向を記載，Stage Bへの提案を
 │                                        # 記載
-│   └── report_034.md                   # 実験5 Stage B：4手法比較・長期学習（order_034）．
-│                                        # Stage Aとの接続確認（Seed 0の先頭13エポックが完全
-│                                        # 一致）済み．全40条件で発散皆無，バッチサイズ128では
-│                                        # ASAI SVRGが4手法中最高精度（40.3%）を達成し同一
-│                                        # オラクル呼び出し回数で5Seed全てSVRGを上回った一方，
-│                                        # バッチサイズ64では3/5Seedのみ優位（1Seedは長期学習
-│                                        # 中の一時崩壊で大幅劣位）．NFG SVRGはCIFAR-10系列
-│                                        # ex0023と同種の恒久的な慢性的振動を示し4手法中最低
-│                                        # 精度．実測実行時間（約9時間1分）がStage Aの補正
-│                                        # 係数を用いた見積もり（約6時間）を上回った原因は
-│                                        # GPU資源競合ではなくパイロット計測の過小評価である
-│                                        # ことを分析・記載
+│   ├── report_034.md                   # 実験5 Stage B：4手法比較・長期学習（order_034）．
+│   │                                    # Stage Aとの接続確認（Seed 0の先頭13エポックが完全
+│   │                                    # 一致）済み．全40条件で発散皆無，バッチサイズ128では
+│   │                                    # ASAI SVRGが4手法中最高精度（40.3%）を達成し同一
+│   │                                    # オラクル呼び出し回数で5Seed全てSVRGを上回った一方，
+│   │                                    # バッチサイズ64では3/5Seedのみ優位（1Seedは長期学習
+│   │                                    # 中の一時崩壊で大幅劣位）．NFG SVRGはCIFAR-10系列
+│   │                                    # ex0023と同種の恒久的な慢性的振動を示し4手法中最低
+│   │                                    # 精度．実測実行時間（約9時間1分）がStage Aの補正
+│   │                                    # 係数を用いた見積もり（約6時間）を上回った原因は
+│   │                                    # GPU資源競合ではなくパイロット計測の過小評価である
+│   │                                    # ことを分析・記載
+│   └── report_035.md                   # 実験5b（ex0051）：バッチサイズ128長期学習と
+│                                        # プラトー判定方法の改善（order_035）．隣接相対変化に
+│                                        # 加え正味変化量・線形回帰の相対傾きを用いる3指標方式
+│                                        # を実装し，Stage Bの実測データで閾値を較正．Stage Bとの
+│                                        # 接続確認（Seed 0の先頭65エポックが完全一致）済み．
+│                                        # エポック数を64から128へ倍に延長した結果，ASAI SVRG・
+│                                        # Seed 3でエポック117以降に近似誤差急増・精度崩壊が
+│                                        # 新たに顕在化（Stage Bの観測範囲では良好だったSeed）．
+│                                        # 3指標判定ではSGD・NFG SVRG・ASAI SVRG（崩壊Seedを
+│                                        # 除く4Seed平均も含め）は全て未プラトーと判定，SVRGは
+│                                        # 機械的判定と目視確認が食い違い目視確認（プラトー
+│                                        # 到達）を優先．オラクル呼び出し回数ベースの比較では
+│                                        # ASAI SVRGは4/5Seedで優位性を維持したが崩壊Seedでは
+│                                        # 大幅劣位に転じることを確認．1エポック全体を実測する
+│                                        # 計算コスト見積もり方式への改善により実測が見積もりの
+│                                        # 5%増に収まったことを記載
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -1087,6 +1167,20 @@ NFG SVRGは，CIFAR-10系列ex0023で確認された「恒久的な慢性的振�
   タスク生成は`_build_stage_a_tasks`／`_build_stage_b_tasks`関数で分離し，`main`関数で
   結合したタスクリストを実行する（Stage Aの36条件は学習済みのため`is_run_completed`に
   よりスキップされる）。
+- `programs/ex0051_imagewoof_resnet18_bs128_longrun/data.py`・`model.py`：`programs/
+  ex005_imagewoof_resnet18/`の同名ファイルとバイト単位で完全に同一（`EXPERIMENT_NAME`も
+  無変更）。これにより`datasets/ex005_imagewoof_resnet18/`のキャッシュ済みデータ・
+  チャネル統計量がそのまま再利用される。
+- `programs/ex0051_imagewoof_resnet18_bs128_longrun/train.py`：`.orders/order_035.md`
+  として，バッチサイズ128・学習率0.001固定で4手法×5Seed＝20条件を128エポック
+  （Stage Bの64エポックから倍に延長）で学習する。プラトー判定を，既存の隣接相対変化
+  （`compute_trailing_relative_change`）に加え，末尾区間の正味変化量
+  （`compute_trailing_net_change`）・線形回帰の相対傾き（`compute_trailing_regression_
+  slope`）を算出する3指標方式（`is_plateaued`関数，いずれか1つでも未プラトーなら全体を
+  未プラトーと判定）に改善した。閾値（隣接相対変化2%・正味変化量2%・回帰の相対傾き
+  0.1%/エポック，窓幅$W=10$）はStage Bの実測データを用いて較正した。実行前の計算コスト
+  見積もりは，Stage Bの教訓（1イテレーション単位の時間からの外挿が評価・診断計算の
+  コストを見落とした）を踏まえ，1エポック全体を実際に1回実行して計測する方式に変更した。
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -1357,6 +1451,10 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # Stage Aの36条件は完了済みのためスキップされ，Stage Bの40条件のみ新規実行される）
 .venv_pytorch_gpu/bin/python programs/ex005_imagewoof_resnet18/train.py
 
+# 実験5b（ex0051，バッチサイズ128長期学習）の学習実行（4手法 x 5Seed = 20条件，128エポック
+# をGPUで8プロセス並列実行．既に完了した条件はスキップ）
+.venv_pytorch_gpu/bin/python programs/ex0051_imagewoof_resnet18_bs128_longrun/train.py
+
 # --- 事前実験（.orders/order_011.md まで）---
 
 # Ex001の学習実行（4手法 x 5Seed = 20条件をマルチプロセスで並列実行．既に完了した条件はスキップ）
@@ -1395,7 +1493,7 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer,ex0041_wikitext2_transformer_fixedreg,ex005_imagewoof_resnet18}/{method}/{hyperparams}/{seed}/`
+  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer,ex0041_wikitext2_transformer_fixedreg,ex005_imagewoof_resnet18,ex0051_imagewoof_resnet18_bs128_longrun}/{method}/{hyperparams}/{seed}/`
   （論文掲載用），
   `outputs_old/{ex001_mushroom_svrg,...,ex006_a9a_least_squares}/{method}/{hyperparams}/{seed}/`（事前実験）
 - 可視化結果（グラフ画像）：上記各実験ディレクトリ直下
