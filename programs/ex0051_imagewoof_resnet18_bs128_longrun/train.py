@@ -1,6 +1,7 @@
 """
-実験5b（ex0051，バッチサイズ128長期学習とプラトー判定方法の改善）の学習ループを定義し，
-実験を実行するスクリプト．
+実験5b（ex0051，バッチサイズ128長期学習とプラトー判定方法の改善）・実験5c（ex0051拡張，
+学習率・バッチサイズを変えた崩壊対策グリッド）の学習ループを定義し，実験を実行する
+スクリプト．
 
 `.orders/order_035.md` に対応する．Stage B（`report_034.md`）は，バッチサイズ128・学習率
 0.001において，ASAI SVRGが64エポック時点で`compute_trailing_relative_change`（隣接エポック
@@ -69,6 +70,48 @@ Stage Bで判明した教訓（1イテレーションのforward/backward時間�
 所要時間は約10.7〜12.2時間程度になると見込まれる．VRAM使用量には十分な余裕がある
 （$8\\times5.9\\text{GB}\\approx47.2\\text{GB}$，総VRAM約102.6GBに対し十分小さい）ため，
 8プロセス並列のまま実行する．実測との比較は`.reports/report_035.md`に記載する．
+
+## 実験5c：崩壊対策グリッドへの拡張（`.orders/order_036.md`）
+
+ex0051（基準条件，バッチサイズ128・学習率0.001・128エポック）は，ASAI SVRG・Seed 3で
+エポック117付近から近似誤差の急増を伴う終盤崩壊を示した（`.reports/report_035.md` 6.1節）．
+本実験は，ASAI SVRG論文のアルゴリズム自体（Algorithm 3, 4）を変更しない範囲での崩壊対策
+として，(1) 学習率を一桁下げる（条件A：バッチサイズ128・学習率0.0001），(2) バッチサイズを
+拡大する（条件B：バッチサイズ512・学習率0.001）の2条件を追加検証する．
+
+条件A・Bとも，基準条件の総イテレーション数（$128\\times71=9088$）にエポック数を揃えた
+（`CONDITIONS`定数）．条件Aはバッチサイズ不変（$K=71$）のため基準条件と同一の128エポック，
+条件Bはバッチサイズ512（$K=\\lceil9025/512\\rceil=18$）のため
+$\\lceil9088/18\\rceil=505$エポック（総イテレーション数9090，基準条件から+2の端数）とした．
+
+タスク生成部分（`main`関数）を，単一のハイパーパラメータの組ではなく`CONDITIONS`（基準条件・
+条件A・条件Bのリスト）に対応するグリッドを生成できるよう修正した．基準条件の既存20条件は
+`is_run_completed`により自動的にスキップされ，条件A・Bの40条件のみが新規に学習される．
+`data.py`・`model.py`はex0051から変更していない．
+
+### 実験5c：実行前の計算コスト見積もり（`.orders/order_036.md` 6節）
+
+グリッド中の最大バッチサイズ（512，条件B）で1エポック全体（学習・評価・診断計算を全て
+含む）を実際に1回実行し計測した結果，SGD 81.6秒／エポック，NFG SVRG 80.1秒／エポック，
+ASAI SVRG 83.6秒／エポック，SVRG 114.7秒／エポックであった（バッチサイズ128とほぼ同水準の
+1エポックあたり時間だが，バッチサイズ512は1エポックあたりのイテレーション数$K=18$が
+バッチサイズ128の$K=71$よりはるかに少ないため，同一エポック数での学習の進み方は大きく
+異なる）．
+
+**VRAM使用量はバッチサイズ512で約22.6GB（reservedベース）に達し，バッチサイズ128の
+約5.9GBの約3.8倍であった**．8プロセス並列のままバッチサイズ512のタスクを実行すると
+合計VRAM使用量が約180.8GBとなり，総VRAM（約102.6GB）を大幅に超過してGPUが応答不能に
+なる危険がある（ex004・`.reports/report_030.md` 5.3節と同種のリスク）．そのため，
+`main`関数を，バッチサイズ128のタスク（基準条件・条件A，8プロセス並列，合計約47.2GB）と
+バッチサイズ512のタスク（条件B，4プロセス並列，合計約90.2GB）を分離した2つの逐次実行
+プロセスプールに変更した（`_build_tasks`関数がバッチサイズを引数に取るよう修正）．
+
+条件Bの単一プロセスでの総所要時間（4手法×5Seed×505エポックの合計）は約252.5時間と
+見積もられ，4プロセス並列により理想的には約63.1時間まで短縮される計算である．ex0051の
+並列実行時の補正係数（実測は理想的な並列短縮の約1.32倍）を適用すると，条件Bの実際の
+所要時間は約80〜85時間程度になると見込まれる．これは基準条件・条件A（バッチサイズ128，
+8プロセス並列，合計約20〜25時間程度と見込まれる）よりも大幅に長く，本実験全体の所要時間は
+条件Bが支配的になる．実測との比較は`.reports/report_036.md`に記載する．
 """
 
 import itertools
@@ -105,12 +148,23 @@ OUTPUT_ROOT = os.path.join(_PROJECT_ROOT, "outputs", EXPERIMENT_NAME)
 
 SEEDS = [0, 1, 2, 3, 4]
 METHODS = ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"]
-BATCH_SIZE = 128  # order_035 4節：バッチサイズ128のみを対象とする
-LEARNING_RATE = 0.001  # order_035 4節：学習率0.001のみを対象とする
 REG_LAMBDA = 5e-4
-EPOCHS = 128  # order_035 4節：Stage Bの64エポックから倍に延長
 NUM_CLASSES = 10
 NEAR_CHANCE_TOLERANCE = 0.03  # チャンスレベル(0.1)の±0.03，本実験の10クラス設定向け
+
+# --- 実験条件のグリッド（`.orders/order_035.md`：基準条件，`.orders/order_036.md`：
+# 条件A・条件B）。総イテレーション数を基準条件（128エポック×K=71=9088）に揃えている
+# （条件Bのみ端数により9090で若干上回る，`.reports/report_036.md`参照）。
+CONDITIONS = [
+    {"batch_size": 128, "learning_rate": 0.001, "epochs": 128},  # 基準条件（order_035）
+    {"batch_size": 128, "learning_rate": 0.0001, "epochs": 128},  # 条件A：学習率を1/10に低減
+    {"batch_size": 512, "learning_rate": 0.001, "epochs": 505},  # 条件B：バッチサイズ拡大
+]
+
+# 後方互換のため，基準条件の値を単体テスト等から参照できるよう維持する。
+BATCH_SIZE = CONDITIONS[0]["batch_size"]
+LEARNING_RATE = CONDITIONS[0]["learning_rate"]
+EPOCHS = CONDITIONS[0]["epochs"]
 
 # --- プラトー判定（order_035 3節）：窓幅と3指標の閾値 ---
 PLATEAU_WINDOW = 10
@@ -570,17 +624,18 @@ def is_run_completed(target_dir: str, epochs: int) -> bool:
 
 def run_single_experiment(args):
     """
-    概要: 1つの (手法, Seed) の組に対する学習を実行し，結果を保存する．バッチサイズ・学習率・
-        エポック数は本実験を通じて固定であるため，タプルには含めない．
-    引数: args (tuple)．(method, seed) のタプル．
+    概要: 1つの (手法, バッチサイズ, 学習率, エポック数, Seed) の組に対する学習を実行し，
+        結果を保存する．`.orders/order_036.md` によりバッチサイズ・学習率・エポック数が
+        条件ごとに異なるグリッドへ拡張されたため，これらを明示的にタプルへ含める。
+    引数: args (tuple)．(method, batch_size, eta, epochs, seed) のタプル．
     戻り値: なし
     """
-    method, seed = args
+    method, batch_size, eta, epochs, seed = args
     torch.set_num_threads(1)
 
-    name = hp_name(LEARNING_RATE, BATCH_SIZE, EPOCHS)
+    name = hp_name(eta, batch_size, epochs)
     target_dir = os.path.join(OUTPUT_ROOT, method, name, str(seed))
-    if is_run_completed(target_dir, EPOCHS):
+    if is_run_completed(target_dir, epochs):
         print(f"[skip] {method}/{name}/{seed} は既に完了しています．", flush=True)
         return
 
@@ -593,29 +648,29 @@ def run_single_experiment(args):
     logger.set_names("epoch", "oracle_calls", "elapsed_time", "train_loss", "test_accuracy", "approx_error")
 
     if method == "SGD":
-        run_sgd(target_dir, load_dataloader, LEARNING_RATE, BATCH_SIZE, REG_LAMBDA, EPOCHS, device, seed, logger)
+        run_sgd(target_dir, load_dataloader, eta, batch_size, REG_LAMBDA, epochs, device, seed, logger)
     else:
         run_variance_reduced(
-            method, target_dir, load_dataloader, LEARNING_RATE, BATCH_SIZE, REG_LAMBDA, EPOCHS, device, seed, logger
+            method, target_dir, load_dataloader, eta, batch_size, REG_LAMBDA, epochs, device, seed, logger
         )
 
     logger.save(os.path.join(target_dir, "log.json"))
 
-    train_dataloader, test_dataloader = load_dataloader(seed=seed, batch_size=BATCH_SIZE)
+    train_dataloader, test_dataloader = load_dataloader(seed=seed, batch_size=batch_size)
     config = {
         "experiment": EXPERIMENT_NAME,
         "method": method,
         "seed": seed,
-        "learning_rate": LEARNING_RATE,
-        "batch_size": BATCH_SIZE,
+        "learning_rate": eta,
+        "batch_size": batch_size,
         "reg_lambda": REG_LAMBDA,
-        "epochs": EPOCHS,
+        "epochs": epochs,
         "K": len(train_dataloader),
-        "total_iterations": EPOCHS * len(train_dataloader),
+        "total_iterations": epochs * len(train_dataloader),
         "N_train": len(train_dataloader.dataset),
         "N_test": len(test_dataloader.dataset),
         "num_classes": NUM_CLASSES,
-        "collapsed": len(logger["train_loss"]) < EPOCHS + 1,
+        "collapsed": len(logger["train_loss"]) < epochs + 1,
     }
     with open(os.path.join(target_dir, "config.json"), "w") as f:
         json.dump(config, f, indent=4, ensure_ascii=False)
@@ -623,33 +678,99 @@ def run_single_experiment(args):
     print(f"[done] {method}/{name}/{seed}", flush=True)
 
 
-def main():
+def _build_tasks(batch_size: int) -> list:
     """
-    概要: 実験5bの全条件（4手法×5Seed=20条件，バッチサイズ128・学習率0.001固定，
-        128エポック）をマルチプロセスで並列に学習する．
+    概要: `CONDITIONS`の中から指定したバッチサイズの条件のみを対象に，×`METHODS`×`SEEDS`の
+        タスクリストを構築する．`.orders/order_036.md` 6節の指示に基づき，バッチサイズ512
+        （条件B）はバッチサイズ128（基準条件・条件A）よりVRAM使用量が大幅に大きい
+        （実測約22.6GB vs 約5.9GB，reservedベース）ため，バッチサイズごとに独立した並列数の
+        プロセスプールで実行できるよう，タスク生成をバッチサイズ単位に分離する。
+    引数: batch_size (int)．対象とするバッチサイズ。
+    戻り値: tasks (list of tuple)．(method, batch_size, eta, epochs, seed) のリスト。
+    """
+    return [
+        (method, cond["batch_size"], cond["learning_rate"], cond["epochs"], seed)
+        for method, cond, seed in itertools.product(METHODS, CONDITIONS, SEEDS)
+        if cond["batch_size"] == batch_size
+    ]
+
+
+def run_bs128_phase() -> None:
+    """
+    概要: バッチサイズ128のタスク（基準条件・条件A，計40条件，8プロセス並列で合計VRAM
+        約47.2GB）を実行する．基準条件20条件は`is_run_completed`により自動的にスキップ
+        される．
     引数: なし
     戻り値: なし
     """
-    print(
-        f"バッチサイズ = {BATCH_SIZE}, 学習率 = {LEARNING_RATE}, "
-        f"lambda = {REG_LAMBDA}, epochs = {EPOCHS}, num_classes = {NUM_CLASSES}"
-    )
-
-    tasks = [(method, seed) for method, seed in itertools.product(METHODS, SEEDS)]
-
-    # `.orders/order_035.md` 6節2項の指示に基づき，VRAM使用量はStage Bの実測値
-    # （約5.9GB，バッチサイズ128，reservedベース）をそのまま流用する．8プロセス並列時の
-    # 合計VRAM使用量（約47.2GB）は総VRAM（約102.6GB）を十分下回るため，Stage A/Bと同じ
-    # 8プロセス並列を採用する．
-    num_workers = min(8, len(tasks))
-    print(f"並列プロセス数: {num_workers}（総タスク数: {len(tasks)}）")
-
     ctx = multiprocessing.get_context("spawn")
-    with ctx.Pool(processes=num_workers) as pool:
-        pool.map(run_single_experiment, tasks, chunksize=1)
+    tasks_bs128 = _build_tasks(128)
+    num_workers_bs128 = min(8, len(tasks_bs128))
+    print(f"バッチサイズ128タスク数: {len(tasks_bs128)}，並列プロセス数: {num_workers_bs128}")
+    with ctx.Pool(processes=num_workers_bs128) as pool:
+        pool.map(run_single_experiment, tasks_bs128, chunksize=1)
+
+
+def run_bs512_phase() -> None:
+    """
+    概要: バッチサイズ512のタスク（条件B，計20条件，4プロセス並列で合計VRAM約90.2GB）を
+        実行する．
+    引数: なし
+    戻り値: なし
+    """
+    ctx = multiprocessing.get_context("spawn")
+    tasks_bs512 = _build_tasks(512)
+    num_workers_bs512 = min(4, len(tasks_bs512))
+    print(f"バッチサイズ512タスク数: {len(tasks_bs512)}，並列プロセス数: {num_workers_bs512}")
+    with ctx.Pool(processes=num_workers_bs512) as pool:
+        pool.map(run_single_experiment, tasks_bs512, chunksize=1)
+
+
+def main(run_bs128: bool = True, run_bs512: bool = True) -> None:
+    """
+    概要: 実験5b・5cの条件（`CONDITIONS`：基準条件・条件A・条件B の3条件×4手法×5Seed=
+        60条件）を学習する．`run_bs128`・`run_bs512`引数により，バッチサイズ128の
+        フェーズ（基準条件・条件A）とバッチサイズ512のフェーズ（条件B）を独立に実行できる。
+
+        `.orders/order_036.md` 6節の指示に基づき，最大バッチサイズ（512，条件B）でVRAM
+        使用量を実測した結果，バッチサイズ128（基準条件・条件A）の約5.9GBに対し，バッチ
+        サイズ512は約22.6GB（reservedベース）に達することが判明した（`.reports/
+        report_036.md`参照）。8プロセス並列のままバッチサイズ512のタスクを実行すると
+        合計VRAM使用量が約180.8GBとなり，総VRAM（約102.6GB）を大幅に超過してGPUが応答
+        不能になる危険がある（ex004・`report_030.md` 5.3節の教訓）。
+
+        さらに，条件Bのみで推定所要時間が約80〜85時間に達し，条件A・基準条件（バッチサイズ
+        128フェーズ，約20〜25時間）と合わせると全体で4日以上を要する見込みとなったため，
+        ユーザーの明示的な指示（チャットでの指示，`.orders/order_036.md`追記1節参照）に
+        基づき，**まず条件B（バッチサイズを上げて総イテレーション数を揃えた条件）のみを
+        単独で実行し，バッチサイズ128フェーズ（条件A）は本実行の完了後，別途の実行で追加
+        する**方針とした．デフォルト引数（`run_bs128=True, run_bs512=True`）は両フェーズを
+        実行するが，`if __name__ == "__main__"`のブロックでは条件Bのみを実行するよう
+        明示的に指定している．条件Aを追加実行する際は，同ブロックを`main(run_bs128=True,
+        run_bs512=False)`（または引数なしの`main()`）に変更して再実行すればよく，条件B
+        （学習済み）は`is_run_completed`により自動的にスキップされ，条件Aのみが新規に
+        学習される。
+    引数:
+        run_bs128 (bool) = True．バッチサイズ128フェーズ（基準条件・条件A）を実行するか。
+        run_bs512 (bool) = True．バッチサイズ512フェーズ（条件B）を実行するか。
+    戻り値: なし
+    """
+    for cond in CONDITIONS:
+        print(
+            f"バッチサイズ = {cond['batch_size']}, 学習率 = {cond['learning_rate']}, "
+            f"epochs = {cond['epochs']}"
+        )
+
+    if run_bs128:
+        run_bs128_phase()
+    if run_bs512:
+        run_bs512_phase()
 
     print("全ての学習が終了しました．")
 
 
 if __name__ == "__main__":
-    main()
+    # ユーザーの明示的な指示により，まず条件B（バッチサイズ512）のみを実行する．
+    # 条件A（バッチサイズ128・学習率0.0001）は，本実行の完了後，`main(run_bs128=True,
+    # run_bs512=False)` へ変更して別途実行する（`.orders/order_036.md`追記1節参照）．
+    main(run_bs128=False, run_bs512=True)

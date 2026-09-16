@@ -230,13 +230,90 @@ def test_is_stuck_near_chance_does_not_flag_learning_progress():
 
 
 def test_experiment_grid_matches_order_specification():
-    """`.orders/order_035.md` 4節：4手法×5Seed=20条件，バッチサイズ128・学習率0.001固定，
-    128エポックであることを確認する．"""
+    """`.orders/order_035.md` 4節：基準条件（バッチサイズ128・学習率0.001・128エポック）が
+    `CONDITIONS[0]`と一致し，`BATCH_SIZE`・`LEARNING_RATE`・`EPOCHS`（後方互換のエイリアス）
+    もこれと一致すること，4手法・5Seedであることを確認する．"""
     assert set(ex0051_train.METHODS) == {"SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"}
+    assert ex0051_train.CONDITIONS[0] == {"batch_size": 128, "learning_rate": 0.001, "epochs": 128}
     assert ex0051_train.BATCH_SIZE == 128
     assert ex0051_train.LEARNING_RATE == 0.001
     assert ex0051_train.EPOCHS == 128
     assert ex0051_train.SEEDS == [0, 1, 2, 3, 4]
+
+
+def test_condition_grid_matches_order_036_specification():
+    """`.orders/order_036.md` 3節：条件A（バッチサイズ128・学習率0.0001・128エポック）・
+    条件B（バッチサイズ512・学習率0.001・505エポック）が，基準条件に加えて
+    `CONDITIONS`に含まれることを確認する．"""
+    assert len(ex0051_train.CONDITIONS) == 3
+    assert {"batch_size": 128, "learning_rate": 0.0001, "epochs": 128} in ex0051_train.CONDITIONS
+    assert {"batch_size": 512, "learning_rate": 0.001, "epochs": 505} in ex0051_train.CONDITIONS
+
+
+def test_condition_b_total_iterations_are_close_to_baseline():
+    """`.orders/order_036.md` 4節：条件Bの総イテレーション数（エポック数×K）が，基準条件の
+    総イテレーション数（$128\\times71=9088$）とほぼ一致する（端数の差が小さい）ことを
+    確認する．"""
+    baseline_total = 128 * 71
+    condition_b = next(c for c in ex0051_train.CONDITIONS if c["batch_size"] == 512)
+    k_512 = 18  # N_train=9025のときのK=ceil(9025/512)
+    condition_b_total = condition_b["epochs"] * k_512
+    assert abs(condition_b_total - baseline_total) <= 10
+
+
+def test_condition_a_uses_same_epochs_as_baseline():
+    """`.orders/order_036.md` 3節：条件Aはバッチサイズ不変（K=71）のため，基準条件と
+    同一のエポック数（128）であることを確認する．"""
+    condition_a = next(
+        c for c in ex0051_train.CONDITIONS if c["batch_size"] == 128 and c["learning_rate"] == 0.0001
+    )
+    assert condition_a["epochs"] == 128
+
+
+def test_build_tasks_generates_expected_total_count():
+    """`_build_tasks`がバッチサイズ128（基準条件＋条件A＝2条件×4手法×5Seed=40タスク）と
+    バッチサイズ512（条件B＝1条件×4手法×5Seed=20タスク）を合わせて60タスク生成すること
+    を確認する（`.orders/order_036.md` 3節：既存20条件＋新規40条件＝60条件）．"""
+    tasks_128 = ex0051_train._build_tasks(128)
+    tasks_512 = ex0051_train._build_tasks(512)
+    assert len(tasks_128) == 2 * 4 * 5
+    assert len(tasks_512) == 1 * 4 * 5
+    assert len(tasks_128) + len(tasks_512) == 3 * 4 * 5
+
+
+def test_build_tasks_only_returns_requested_batch_size():
+    """`_build_tasks(128)`はバッチサイズ128のタスクのみ，`_build_tasks(512)`はバッチサイズ
+    512のタスクのみを返すことを確認する（`.orders/order_036.md` 6節：VRAM使用量の大きな
+    バッチサイズ512を別プロセスプールで実行するための分離）．"""
+    tasks_128 = ex0051_train._build_tasks(128)
+    tasks_512 = ex0051_train._build_tasks(512)
+    assert all(bs == 128 for method, bs, eta, epochs, seed in tasks_128)
+    assert all(bs == 512 for method, bs, eta, epochs, seed in tasks_512)
+
+
+def test_build_tasks_baseline_condition_matches_existing_directory_naming():
+    """既存の基準条件20条件のディレクトリ名（`.orders/order_035.md`で学習済み）と，
+    `_build_tasks`が生成する基準条件タスクの`hp_name`が一致し，`is_run_completed`により
+    正しくスキップ対象となることを確認する（既存結果を誤って上書きしないための検証）．"""
+    tasks = ex0051_train._build_tasks(128)
+    baseline_names = {
+        ex0051_train.hp_name(eta, bs, epochs)
+        for method, bs, eta, epochs, seed in tasks
+        if bs == 128 and eta == 0.001
+    }
+    assert baseline_names == {"lr0.001_bs128_lambda0.0005_epochs128"}
+
+
+def test_build_tasks_all_conditions_produce_distinct_directory_names():
+    """基準条件・条件A・条件Bの3条件が，`hp_name`によって重複なく異なるディレクトリ名に
+    分離されることを確認する．"""
+    tasks = ex0051_train._build_tasks(128) + ex0051_train._build_tasks(512)
+    names = {ex0051_train.hp_name(eta, bs, epochs) for method, bs, eta, epochs, seed in tasks}
+    assert names == {
+        "lr0.001_bs128_lambda0.0005_epochs128",
+        "lr0.0001_bs128_lambda0.0005_epochs128",
+        "lr0.001_bs512_lambda0.0005_epochs505",
+    }
 
 
 # --- プラトー判定の3指標（`.orders/order_035.md` 3節）のテスト ---
@@ -318,3 +395,31 @@ def test_is_plateaued_requires_minimum_history():
     result = ex0051_train.is_plateaued([0.1, 0.2, 0.3], window=10)
     assert not result["plateaued"]
     assert np.isnan(result["relative_change"])
+
+
+def test_main_entry_point_runs_condition_b_only_for_now():
+    """ユーザーの明示的な指示（`.orders/order_036.md`追記1節）により，`train.py`を直接実行
+    した場合はまず条件B（バッチサイズ512）のみが実行され，条件A（バッチサイズ128・
+    学習率0.0001）は含まれないこと，`main`関数が`run_bs128`・`run_bs512`引数により
+    両フェーズを独立に制御できることを確認する．"""
+    import ast
+
+    source_path = os.path.join(_EX0051_DIR, "train.py")
+    with open(source_path) as f:
+        tree = ast.parse(f.read())
+    main_call_found = False
+    for node in ast.walk(tree):
+        if isinstance(node, ast.If) and ast.unparse(node.test) == "__name__ == '__main__'":
+            call_src = ast.unparse(node.body[0])
+            assert "run_bs128=False" in call_src
+            assert "run_bs512=True" in call_src
+            main_call_found = True
+    assert main_call_found, "`if __name__ == '__main__':`ブロックが見つからない"
+
+    import inspect
+
+    main_signature = inspect.signature(ex0051_train.main)
+    assert "run_bs128" in main_signature.parameters
+    assert "run_bs512" in main_signature.parameters
+    assert main_signature.parameters["run_bs128"].default is True
+    assert main_signature.parameters["run_bs512"].default is True

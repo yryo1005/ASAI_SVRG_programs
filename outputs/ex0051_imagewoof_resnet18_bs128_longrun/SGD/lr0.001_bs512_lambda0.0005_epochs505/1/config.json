@@ -1,0 +1,15 @@
+{
+    "experiment": "ex0051_imagewoof_resnet18_bs128_longrun",
+    "method": "SGD",
+    "seed": 1,
+    "learning_rate": 0.001,
+    "batch_size": 512,
+    "reg_lambda": 0.0005,
+    "epochs": 505,
+    "K": 18,
+    "total_iterations": 9090,
+    "N_train": 9025,
+    "N_test": 3929,
+    "num_classes": 10,
+    "collapsed": false
+}
