@@ -403,6 +403,29 @@ Seed 3で，エポック117以降に近似誤差が急増し分類精度がチ�
 Seed 3では大幅な劣位に転じ，優位性が全Seedで無条件に保証されるわけではないことが判明した．
 詳細は`.reports/report_035.md`を参照．
 
+### 1.16 `.orders/order_036.md` による実験5c（ex0051拡張，バッチサイズを変えた崩壊対策グリッド，条件B）
+
+ex0051（`report_035.md`）が発見したASAI SVRG・Seed 3の終盤崩壊（エポック117以降）への
+対策として，`programs/ex0051_imagewoof_resnet18_bs128_longrun/train.py`をグリッド対応
+（`CONDITIONS`定数）に拡張し，バッチサイズを拡大する対策（条件B：バッチサイズ512・学習率
+0.001・505エポック，基準条件と総イテレーション数をほぼ揃えた設定，$K=18$）を検証した。
+学習率を下げる対策（条件A：バッチサイズ128・学習率0.0001）は，実行前見積もりでVRAM使用量が
+バッチサイズ128の約3.8倍（約22.6GB）に達し，8プロセス並列では総VRAMを大幅に超過する危険が
+判明したため，`main`関数を`run_bs128`/`run_bs512`引数で2フェーズに分離した上で，ユーザーの
+明示的な指示（チャットでの指示，`.orders/order_036.md`追記1節）により**条件Bのみを先行実行**
+し，条件Aは別途後日実行することとした。
+
+**全20条件が正常に完了し，発散・チャンスレベル張り付きは皆無であった。最も重要な結果として，
+基準条件でエポック117以降に崩壊したASAI SVRG・Seed 3が，条件B（バッチサイズ512）では
+同一の初期値・データ順序にもかかわらず崩壊しなかった**（最高精度0.4933からの低下幅は
+わずか0.0036）。5Seed全てで崩壊が回避され，最終精度は0.4886±0.0035と4手法中最高かつ
+最小の標準偏差を示した。3指標プラトー判定でもASAI SVRGのみがプラトーに到達し（基準条件では
+未プラトー），オラクル呼び出し回数ベースの効率性優位性も5Seed全てで回復した（基準条件では
+崩壊Seedのみ大幅劣位）。以上より，**バッチサイズの拡大はASAI SVRGの終盤崩壊に対する有効な
+対策であると結論した**。実行前見積もり（約80〜85時間）に対し実測所要時間は約56時間と，
+見積もりを大幅に下回った。詳細は`.reports/report_036.md`を参照。条件Aは未実施であり，今後の
+検討課題として残る。
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -599,7 +622,14 @@ Seed 3では大幅な劣位に転じ，優位性が全Seedで無条件に保証�
 │                                        # `is_plateaued`関数でいずれか1つでも未プラトーを
 │                                        # 示せば全体を未プラトーと判定）を含む．実行前に
 │                                        # 1エポック全体（学習・評価・診断計算）を実測してから
-│                                        # 総所要時間を見積もる方式を採用
+│                                        # 総所要時間を見積もる方式を採用．`.orders/order_036.md`
+│                                        # によりグリッド対応に拡張（`CONDITIONS`定数：基準条件・
+│                                        # 条件A・条件B），`_build_tasks(batch_size)`でバッチ
+│                                        # サイズ単位にタスクを分離し，`run_bs128_phase`
+│                                        # （8プロセス並列）／`run_bs512_phase`（4プロセス並列，
+│                                        # VRAM実測約22.6GBのため）を`main(run_bs128, run_bs512)`
+│                                        # で個別に実行可能．ユーザー指示により現状は条件B
+│                                        # （バッチサイズ512・505エポック）のみを実行
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -723,15 +753,22 @@ Seed 3では大幅な劣位に転じ，優位性が全Seedで無条件に保証�
 │   │       │                            # ディレクトリ名（`epochsXX`）で自動的に分離される
 │   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
 │   └── ex0051_imagewoof_resnet18_bs128_longrun/
-│       └── {method}/lr0.001_bs128_lambda0.0005_epochs128/{seed}/
-│           ├── log.json                # ResultLoggerによる評価指標の履歴（129エントリ，
-│           │                            # epoch0〜128）．先頭65エントリはStage Bの同一条件
-│           │                            # （epochs64）と完全一致することを確認済み
-│           ├── config.json             # collapsedフィールド（全20条件でfalse．ASAI SVRG・
-│           │                            # Seed 3はエポック117以降に近似誤差急増・精度崩壊が
-│           │                            # 生じたが，訓練損失は非有限値化しなかったため
-│           │                            # collapsed=falseのまま．report_035.md 6.1節参照）
-│           └── best_model.pth          # 検証精度が最高となったエポックの重み
+│       ├── {method}/lr0.001_bs128_lambda0.0005_epochs128/{seed}/  # 基準条件（order_035）
+│       │   ├── log.json                # ResultLoggerによる評価指標の履歴（129エントリ，
+│       │   │                            # epoch0〜128）．先頭65エントリはStage Bの同一条件
+│       │   │                            # （epochs64）と完全一致することを確認済み
+│       │   ├── config.json             # collapsedフィールド（全20条件でfalse．ASAI SVRG・
+│       │   │                            # Seed 3はエポック117以降に近似誤差急増・精度崩壊が
+│       │   │                            # 生じたが，訓練損失は非有限値化しなかったため
+│       │   │                            # collapsed=falseのまま．report_035.md 6.1節参照）
+│       │   └── best_model.pth          # 検証精度が最高となったエポックの重み
+│       └── {method}/lr0.001_bs512_lambda0.0005_epochs505/{seed}/  # 条件B（order_036，
+│           │                            # 条件Aのディレクトリは未実行のため存在しない）
+│           ├── log.json                # 506エントリ（epoch0〜505）．ASAI SVRG・Seed 3を
+│           │                            # 含む全5Seedで終盤崩壊が生じなかったことを確認済み
+│           │                            # （report_036.md 5.2節）
+│           ├── config.json             # 全20条件でcollapsed=false．K=18, total_iterations=9090
+│           └── best_model.pth
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
 │   │   └── {method}/{hyperparams}/{seed}/
@@ -831,7 +868,7 @@ Seed 3では大幅な劣位に転じ，優位性が全Seedで無条件に保証�
 │   │                                    # の正しさ，Stage A・Stage Bそれぞれのグリッドが
 │   │                                    # 実験条件と一致すること，両ステージのタスクリストが
 │   │                                    # ディレクトリ名の衝突なく分離されることを検証
-│   └── test_ex0051_imagewoof_resnet18_bs128_longrun.py  # 実験5b．`data.py`・`model.py`が
+│   └── test_ex0051_imagewoof_resnet18_bs128_longrun.py  # 実験5b・5c．`data.py`・`model.py`が
 │                                        # ex005_imagewoof_resnet18/と完全に同一（バイト単位）
 │                                        # であること，4手法（SGD, SVRG, NFG SVRG, ASAI SVRG）
 │                                        # のスモークテスト，実験グリッドが4手法x5Seed=20条件・
@@ -841,7 +878,12 @@ Seed 3では大幅な劣位に転じ，優位性が全Seedで無条件に保証�
 │                                        # regression_slope`：線形回帰の相対傾き）が「隣接
 │                                        # 相対変化のみでは検出できない緩やかな単調増加」を
 │                                        # 正しく検出すること，これらを統合する`is_plateaued`
-│                                        # 関数の正しさを検証
+│                                        # 関数の正しさを検証．order_036追加分：`CONDITIONS`
+│                                        # グリッド（基準条件・条件A・条件B）が仕様と一致する
+│                                        # こと，`_build_tasks(batch_size)`がバッチサイズで
+│                                        # 正しくフィルタされること，`if __name__ == "__main__"`
+│                                        # ブロックが`main(run_bs128=False, run_bs512=True)`を
+│                                        # 呼び出すことをASTで検証（計28テスト）
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -975,6 +1017,15 @@ Seed 3では大幅な劣位に転じ，優位性が全Seedで無条件に保証�
 │                                        # 大幅劣位に転じることを確認．1エポック全体を実測する
 │                                        # 計算コスト見積もり方式への改善により実測が見積もりの
 │                                        # 5%増に収まったことを記載
+│   └── report_036.md                   # 実験5c（ex0051拡張，条件Bのみ）：崩壊対策グリッド
+│                                        # （order_036）．バッチサイズ512・学習率0.001・505
+│                                        # エポック（総イテレーション数を基準条件とほぼ揃えた
+│                                        # 設定）で4手法×5Seed=20条件を実行．基準条件で崩壊
+│                                        # したASAI SVRG・Seed 3を含む全5Seedで終盤崩壊が
+│                                        # 回避されたことを確認．3指標判定でASAI SVRGのみが
+│                                        # プラトーに到達，オラクル呼び出し効率の優位性も5Seed
+│                                        # 全てで回復．条件A（学習率0.0001）はユーザー指示に
+│                                        # より本実験の対象外とし別途実行予定であることを記載
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -1181,6 +1232,14 @@ Seed 3では大幅な劣位に転じ，優位性が全Seedで無条件に保証�
   0.1%/エポック，窓幅$W=10$）はStage Bの実測データを用いて較正した。実行前の計算コスト
   見積もりは，Stage Bの教訓（1イテレーション単位の時間からの外挿が評価・診断計算の
   コストを見落とした）を踏まえ，1エポック全体を実際に1回実行して計測する方式に変更した。
+  `.orders/order_036.md`により，同ファイルは`CONDITIONS`定数（基準条件・条件A：バッチサイズ
+  128・学習率0.0001・条件B：バッチサイズ512・学習率0.001・505エポック）によるグリッド対応に
+  拡張された。`_build_tasks(batch_size)`がバッチサイズ単位でタスクを分離し，`run_bs128_phase`
+  （8プロセス並列）・`run_bs512_phase`（4プロセス並列，バッチサイズ512のVRAM実測約22.6GBが
+  バッチサイズ128の約3.8倍のため）を`main(run_bs128, run_bs512)`で個別に実行できる。ユーザーの
+  明示的な指示（`.orders/order_036.md`追記1節）により，現状は条件B（バッチサイズ512）のみを
+  実行済みであり（`.reports/report_036.md`），条件Aは`main(run_bs128=True, run_bs512=False)`
+  への変更により別途追加実行する。
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -1451,8 +1510,15 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # Stage Aの36条件は完了済みのためスキップされ，Stage Bの40条件のみ新規実行される）
 .venv_pytorch_gpu/bin/python programs/ex005_imagewoof_resnet18/train.py
 
-# 実験5b（ex0051，バッチサイズ128長期学習）の学習実行（4手法 x 5Seed = 20条件，128エポック
-# をGPUで8プロセス並列実行．既に完了した条件はスキップ）
+# 実験5b（ex0051，バッチサイズ128長期学習）・実験5c条件B（バッチサイズ512，order_036）の
+# 学習実行（現状は`main(run_bs128=False, run_bs512=True)`のため条件Bのみ実行．基準条件20条件は
+# 完了済みのためスキップ．条件Bの4手法 x 5Seed = 20条件を505エポック・GPUで4プロセス並列実行．
+# 本コマンドは実行済み）
+.venv_pytorch_gpu/bin/python programs/ex0051_imagewoof_resnet18_bs128_longrun/train.py
+
+# 実験5c条件A（バッチサイズ128・学習率0.0001，order_036）を追加実行する場合：train.pyの
+# `if __name__ == "__main__":`ブロックを`main(run_bs128=True, run_bs512=False)`に変更してから
+# 実行する（条件Bは`is_run_completed`によりスキップされ条件Aのみ新規実行される，未実施）
 .venv_pytorch_gpu/bin/python programs/ex0051_imagewoof_resnet18_bs128_longrun/train.py
 
 # --- 事前実験（.orders/order_011.md まで）---
