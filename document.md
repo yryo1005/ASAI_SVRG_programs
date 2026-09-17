@@ -453,6 +453,23 @@ Seed数・バッチサイズごとのエポック数は全てex0023と同一）�
 のに対し，LayerNormでは5Seed中4Seedが部分的または完全に崩壊するという，LayerNorm固有の
 新規の不安定性が確認された**。詳細は`.reports/report_037.md`を参照。
 
+### 1.18 `.orders/order_038.md` によるSGDのみエポック数を倍にした追加学習
+
+ex0024（`report_037.md`）でSGDがバッチサイズ32において他手法（SVRG）よりやや低い最終精度を
+示したことを受け，チャットでの指示に基づき，全バッチサイズについてSGDのみを対象にエポック数
+を2倍（512→384，128→96，32→24）に延長した追加学習を実施した。`train.py`の`run_single_
+experiment`をエポック数を明示的に受け取れる形に拡張し，`main(run_grid, run_sgd_double)`の
+2フェーズ実行パターン（ex0051c拡張で確立）により，既存の60条件を変更せず新規15条件のみを
+追加した。
+
+**全バッチサイズでエポック数の倍増によりSGDの精度が向上し（512：+0.98ポイント，128：+2.59
+ポイント，32：+5.79ポイント），向上幅はバッチサイズが小さいほど大きかった**。プラトー判定
+の結果，バッチサイズ512・128は倍エポック時点で明確にプラトーに達したが，**バッチサイズ32は
+24エポック時点でもなお上昇トレンドが続いており未プラトーであった**。この結果は，report_037.md
+のSGDに関する一部の比較が，特にバッチサイズが小さい条件で学習不足の影響を受けていた可能性を
+示すが，report_037.mdの主要な結論（NFG SVRG・ASAI SVRGの崩壊現象）には影響しない。詳細は
+`.reports/report_038.md`を参照。
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -574,7 +591,13 @@ Seed数・バッチサイズごとのエポック数は全てex0023と同一）�
 │   │                                    # （ex0023と同様，ただし一部Seedで実際にNaN化する点が
 │   │                                    # 異なる），バッチサイズ128でNFG SVRGが5Seed中4Seedで
 │   │                                    # 崩壊（ex0023では崩壊せず慢性的振動のみ，LayerNorm
-│   │                                    # 固有の新規現象）
+│   │                                    # 固有の新規現象）．`run_single_experiment`は
+│   │                                    # (method, batch_size, seed, epochs)を受け取り，
+│   │                                    # `_build_main_tasks`（基本グリッド60条件）・
+│   │                                    # `_build_sgd_double_epoch_tasks`（SGD倍エポック
+│   │                                    # 追加学習15条件，order_038）でタスク生成を分離．
+│   │                                    # `main(run_grid, run_sgd_double)`で両フェーズを
+│   │                                    # 独立実行可能
 │   ├── ex003_tinyshakespeare_transformer/  # 実験3 Stage A・Stage B：Tiny Shakespeare・
 │       │                                # Transformer
 │       ├── data.py                     # Tiny Shakespeare（自動ダウンロード）を文字レベルで
@@ -762,6 +785,8 @@ Seed数・バッチサイズごとのエポック数は全てex0023と同一）�
 │   │       │                            # 判定．チャンスレベル付近までの精度低下は別途
 │   │       │                            # report_037.md 5.2節・5.3節で目視確認）
 │   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
+│   │       # SGDのみepochs{384,96,24}（order_038，基本グリッドの2倍）の3条件×5Seedも
+│   │       # 同一階層に追加保存される（エポック数がディレクトリ名に含まれ自動的に分離）
 │   ├── ex003_tinyshakespeare_transformer/
 │   │   └── {method}/{lr,bs,lambda,epochs}/{seed}/
 │   │       ├── log.json                # ResultLoggerによる評価指標の履歴（次文字予測精度，
@@ -879,7 +904,15 @@ Seed数・バッチサイズごとのエポック数は全てex0023と同一）�
 │   │                                    # ことに加え，ex0023のテストと同様の4手法スモーク
 │   │                                    # テスト，オラクル呼び出し回数，elapsed_timeの
 │   │                                    # 診断専用フル勾配計算除外，プラトー判定，崩壊時の
-│   │                                    # 打ち切りを検証（計18テスト）
+│   │                                    # 打ち切りを検証．order_038追加分：SGD倍エポック
+│   │                                    # （`SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE`）が基本グリッド
+│   │                                    # のちょうど2倍であること，`_build_main_tasks`／
+│   │                                    # `_build_sgd_double_epoch_tasks`のタスク数・内容の
+│   │                                    # 正しさ，両者のディレクトリ名が衝突しないこと，
+│   │                                    # `if __name__ == "__main__"`ブロックが
+│   │                                    # `main(run_grid=False, run_sgd_double=True)`を
+│   │                                    # 呼び出すことをASTで検証，`run_single_experiment`が
+│   │                                    # 明示的なepochs引数を受け取ることを確認（計24テスト）
 │   ├── test_ex003_tinyshakespeare_transformer.py  # 実験3 Stage A・Stage B．Dropout・
 │   │                                    # BatchNorm不使用の確認，モデルの決定論性，Causal
 │   │                                    # マスクが未来のトークンに依存しないこと，チャンク
@@ -1093,6 +1126,15 @@ Seed数・バッチサイズごとのエポック数は全てex0023と同一）�
 │                                        # のみだったが，LayerNormでは5Seed中4Seedが崩壊する
 │                                        # 新規現象を確認．計算コスト見積もり誤差（実測が
 │                                        # 見積もりの約2.9倍）についても考察
+│   └── report_038.md                   # 実験ex0024：SGDのみエポック数を倍にした追加学習
+│                                        # （order_038）．全バッチサイズでエポック数倍増により
+│                                        # SGD精度が向上（512:+0.98pt, 128:+2.59pt,
+│                                        # 32:+5.79pt，バッチサイズが小さいほど向上幅が大きい）．
+│                                        # バッチサイズ512・128は倍エポックでプラトー到達，
+│                                        # バッチサイズ32は24エポック時点でも未プラトーで
+│                                        # 上昇継続中．report_037.mdのSGD関連比較が学習不足の
+│                                        # 影響を受けていた可能性を指摘しつつ，主要な結論
+│                                        # （NFG SVRG・ASAI SVRGの崩壊現象）には影響しないと結論
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -1210,7 +1252,10 @@ Seed数・バッチサイズごとのエポック数は全てex0023と同一）�
   手法・バッチサイズ・学習率・正則化係数・Seed数・バッチサイズごとのエポック数は全て
   ex0023と同一の値をそのまま用いる（`.orders/order_037.md`：「ほかの実験条件はex0023と
   同様とします」）。GPU（`.venv_pytorch_gpu`）を用い，8プロセスを `chunksize=1` で
-  並列実行する。
+  並列実行する。`.orders/order_038.md`により，SGDのみエポック数を倍にした追加学習
+  （`SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE`，3バッチサイズ×5Seed＝15条件）用に
+  `run_single_experiment`がエポック数を明示的に受け取れるよう拡張され，`main(run_grid,
+  run_sgd_double)`で基本グリッドと倍エポック追加学習を独立に実行できる。
 - `programs/ex003_tinyshakespeare_transformer/data.py`：`urllib.request` でTiny
   Shakespeareを自動ダウンロードし，文字レベルで語彙を構築する．コーパスの前方90%を
   学習用，後方10%を検証用とし，それぞれ独立に固定長 $ T+1=129 $ の非重複チャンクへ

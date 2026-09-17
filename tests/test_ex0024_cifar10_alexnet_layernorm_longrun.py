@@ -13,6 +13,7 @@ SVRG，NFG SVRG，ASAI SVRG）が合成データ上でエラーなく完走す�
 
 import filecmp
 import importlib.util
+import json
 import os
 import sys
 import time
@@ -287,3 +288,86 @@ def test_hp_name_includes_layernorm():
     name = ex0024_train.hp_name(128, 48)
     assert "layernorm" in name
     assert "groupnorm" not in name
+
+
+def test_sgd_double_epochs_are_exactly_double():
+    """`.orders/order_038.md`：SGD倍エポックのエポック数が，通常のグリッドのちょうど2倍で
+    あることを確認する．"""
+    for bs, epochs in ex0024_train.EPOCHS_BY_BATCH_SIZE.items():
+        assert ex0024_train.SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE[bs] == 2 * epochs
+
+
+def test_build_main_tasks_covers_full_grid():
+    """基本グリッドのタスク数が4手法×3バッチサイズ×5Seed=60であり，各タスクのエポック数が
+    `EPOCHS_BY_BATCH_SIZE`と一致することを確認する．"""
+    tasks = ex0024_train._build_main_tasks()
+    assert len(tasks) == 60
+    for method, batch_size, seed, epochs in tasks:
+        assert epochs == ex0024_train.EPOCHS_BY_BATCH_SIZE[batch_size]
+
+
+def test_build_sgd_double_epoch_tasks_covers_sgd_only():
+    """SGD倍エポック追加学習のタスク数が3バッチサイズ×5Seed=15であり，全て手法がSGD，
+    エポック数が`SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE`と一致することを確認する．"""
+    tasks = ex0024_train._build_sgd_double_epoch_tasks()
+    assert len(tasks) == 15
+    for method, batch_size, seed, epochs in tasks:
+        assert method == "SGD"
+        assert epochs == ex0024_train.SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE[batch_size]
+
+
+def test_main_and_sgd_double_tasks_produce_distinct_directory_names():
+    """基本グリッドのSGDタスクと倍エポックタスクとで，`hp_name`（ディレクトリ名）が衝突
+    しないことを確認する（エポック数が異なるため自動的に分離される）．"""
+    main_names = {
+        ex0024_train.hp_name(bs, ex0024_train.EPOCHS_BY_BATCH_SIZE[bs])
+        for bs in ex0024_train.BATCH_SIZES
+    }
+    double_names = {
+        ex0024_train.hp_name(bs, ex0024_train.SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE[bs])
+        for bs in ex0024_train.BATCH_SIZES
+    }
+    assert main_names.isdisjoint(double_names)
+
+
+def test_main_entry_point_runs_sgd_double_epoch_phase_only():
+    """`.orders/order_038.md`：基本グリッドは完了済みのため，`if __name__ == "__main__":`
+    ブロックが`main(run_grid=False, run_sgd_double=True)`を呼び出すことをASTで検証する．"""
+    import ast
+    import inspect
+
+    source = inspect.getsource(ex0024_train)
+    tree = ast.parse(source)
+    main_block = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.If) and ast.unparse(node.test) == "__name__ == '__main__'":
+            main_block = node
+            break
+    assert main_block is not None
+    call_sources = [ast.unparse(stmt) for stmt in main_block.body]
+    assert any("main(run_grid=False, run_sgd_double=True)" in c for c in call_sources)
+
+    sig = inspect.signature(ex0024_train.main)
+    assert sig.parameters["run_grid"].default is True
+    assert sig.parameters["run_sgd_double"].default is True
+
+
+def test_run_single_experiment_accepts_explicit_epochs(tmp_path, monkeypatch):
+    """`run_single_experiment`が (method, batch_size, seed, epochs) の4要素タプルを受け取り，
+    指定したエポック数で学習・保存することを確認する（合成データで軽量に検証）．"""
+    monkeypatch.setattr(ex0024_train, "OUTPUT_ROOT", str(tmp_path))
+
+    def fake_load_dataloader(seed=0, batch_size=8):
+        return _make_synthetic_dataloaders(n_train=16, n_test=8, batch_size=batch_size, seed=seed)
+
+    monkeypatch.setattr(ex0024_train, "load_dataloader", fake_load_dataloader)
+
+    epochs = 2
+    ex0024_train.run_single_experiment(("SGD", 8, 0, epochs))
+
+    target_dir = os.path.join(str(tmp_path), "SGD", ex0024_train.hp_name(8, epochs), "0")
+    with open(os.path.join(target_dir, "config.json")) as f:
+        config = json.load(f)
+    assert config["epochs"] == epochs
+    logger = ResultLogger(os.path.join(target_dir, "log.json"))
+    assert len(logger["epoch"]) == epochs + 1

@@ -1,0 +1,15 @@
+{
+    "experiment": "ex0024_cifar10_alexnet_layernorm_longrun",
+    "method": "SGD",
+    "seed": 3,
+    "learning_rate": 0.001,
+    "batch_size": 32,
+    "norm_type": "layernorm",
+    "reg_lambda": 0.0005,
+    "epochs": 24,
+    "K": 1563,
+    "total_iterations": 37512,
+    "N_train": 50000,
+    "N_test": 10000,
+    "collapsed": false
+}

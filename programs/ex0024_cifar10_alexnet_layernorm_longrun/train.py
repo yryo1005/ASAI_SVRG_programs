@@ -36,6 +36,23 @@ ex0023と同一の実装（`SVRG`／`NFGSVRG`，次のスナップショット�
 `@.ai/ai-dev-kit/root_prompt.md`・`machine_learning.md`の指示に基づき，グリッド中の最大
 バッチサイズ（512）で1エポック全体を実際に1回実行し，GroupNorm（ex0023）との所要時間・VRAM
 使用量の差を実測してから並列数を決定した。実測結果は`.reports/report_037.md`に記載する。
+
+## SGDのみエポック数を倍にした追加学習（`.orders/order_038.md`）
+
+チャットでの指示に基づき，全バッチサイズについてSGDのみを対象に，エポック数を
+`EPOCHS_BY_BATCH_SIZE`の2倍（`SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE`：512→384，128→96，32→24）に
+延長した追加学習を行う。既存の60条件（4手法×3バッチサイズ×5Seed，`.orders/order_037.md`）は
+変更せず保持し，新規にSGD×3バッチサイズ×5Seed＝15条件を追加する。`run_single_experiment`の
+引数を`(method, batch_size, seed)`から`(method, batch_size, seed, epochs)`へ拡張し，
+エポック数をタスクごとに明示的に指定できるようにした上で，タスク生成を`_build_main_tasks`
+（既存の60条件）・`_build_sgd_double_epoch_tasks`（新規15条件）に分離した。`main`関数は
+`run_grid`・`run_sgd_double`引数により両フェーズを独立に実行できる（`.orders/order_036.md`の
+ex0051c拡張で確立した2フェーズ実行パターンを踏襲）。VRAM使用量は既存の4手法混在時（実測
+約25.6GB，8プロセス合計）を下回ることが既知（SGDは他手法よりモデルインスタンスが1つ少なく
+軽量）であるため，追加のVRAM実測は行わず8プロセス並列のまま実行した。計算コスト見積もりは，
+既に完了しているex0024の実測`elapsed_time`（8プロセス並列実行下，資源競合を含む実測値）から
+バッチサイズごとの1エポックあたり所要時間を算出し，2倍のエポック数に適用する方式を用いた。
+実測結果は`.reports/report_037.md`に記載する。
 """
 
 import itertools
@@ -80,6 +97,9 @@ REG_LAMBDA = 5e-4  # ex0023と同一
 
 # バッチサイズごとのエポック数．ex0023（`.orders/order_026.md` 5節）と同一の値をそのまま用いる．
 EPOCHS_BY_BATCH_SIZE = {512: 192, 128: 48, 32: 12}
+
+# SGDのみエポック数を倍にした追加学習用（`.orders/order_038.md`）．
+SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE = {bs: 2 * ep for bs, ep in EPOCHS_BY_BATCH_SIZE.items()}
 
 _VARIANCE_REDUCED_OPTIMIZER_CLASSES = {
     "SVRG": SVRG,
@@ -459,15 +479,18 @@ def is_run_completed(target_dir: str, epochs: int) -> bool:
 
 def run_single_experiment(args):
     """
-    概要: 1つの (手法, バッチサイズ, Seed) の組に対する学習を実行し，結果を保存する．
-        すでに正常終了した結果（または崩壊による打ち切り）が存在する場合は学習をスキップする．
-    引数: args (tuple)．(method, batch_size, seed) のタプル．
+    概要: 1つの (手法, バッチサイズ, Seed, エポック数) の組に対する学習を実行し，結果を保存
+        する．すでに正常終了した結果（または崩壊による打ち切り）が存在する場合は学習を
+        スキップする．`.orders/order_038.md`により，エポック数をタスクごとに明示的に指定
+        できるよう引数を拡張した（同一バッチサイズでも，通常のグリッド（`EPOCHS_BY_BATCH_
+        SIZE`）とSGDのみエポック数を倍にした追加学習（`SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE`）
+        とでエポック数が異なるため）．
+    引数: args (tuple)．(method, batch_size, seed, epochs) のタプル．
     戻り値: なし
     """
-    method, batch_size, seed = args
+    method, batch_size, seed, epochs = args
     torch.set_num_threads(1)
 
-    epochs = EPOCHS_BY_BATCH_SIZE[batch_size]
     name = hp_name(batch_size, epochs)
     target_dir = os.path.join(OUTPUT_ROOT, method, name, str(seed))
     if is_run_completed(target_dir, epochs):
@@ -513,30 +536,86 @@ def run_single_experiment(args):
     print(f"[done] {method}/{name}/{seed}", flush=True)
 
 
-def main():
+def _build_main_tasks() -> list:
     """
-    概要: 実験ex0024の全条件（4手法 × 3バッチサイズ × 5Seed = 60条件）をマルチプロセスで
-        並列に学習する．学習率0.001固定，LayerNorm（`.orders/order_037.md`）．
+    概要: 実験ex0024の基本グリッド（4手法 × 3バッチサイズ × 5Seed = 60条件，
+        `EPOCHS_BY_BATCH_SIZE`）のタスクリストを構築する．
     引数: なし
+    戻り値: tasks (list of tuple)．(method, batch_size, seed, epochs) のリスト．
+    """
+    return [
+        (method, batch_size, seed, EPOCHS_BY_BATCH_SIZE[batch_size])
+        for method, batch_size, seed in itertools.product(METHODS, BATCH_SIZES, SEEDS)
+    ]
+
+
+def _build_sgd_double_epoch_tasks() -> list:
+    """
+    概要: SGDのみエポック数を倍にした追加学習（`.orders/order_038.md`）のタスクリストを
+        構築する．3バッチサイズ × 5Seed = 15条件．
+    引数: なし
+    戻り値: tasks (list of tuple)．(method, batch_size, seed, epochs) のリスト．
+    """
+    return [
+        ("SGD", batch_size, seed, SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE[batch_size])
+        for batch_size, seed in itertools.product(BATCH_SIZES, SEEDS)
+    ]
+
+
+def run_grid_phase() -> None:
+    """
+    概要: 実験ex0024の基本グリッド（60条件）を8プロセス並列で実行する．
+    引数: なし
+    戻り値: なし
+    """
+    tasks = _build_main_tasks()
+    num_workers = min(8, len(tasks))
+    print(f"基本グリッドタスク数: {len(tasks)}，並列プロセス数: {num_workers}")
+    ctx = multiprocessing.get_context("spawn")
+    with ctx.Pool(processes=num_workers) as pool:
+        pool.map(run_single_experiment, tasks, chunksize=1)
+
+
+def run_sgd_double_epoch_phase() -> None:
+    """
+    概要: SGDのみエポック数を倍にした追加学習（15条件，`.orders/order_038.md`）を8プロセス
+        並列で実行する．
+    引数: なし
+    戻り値: なし
+    """
+    tasks = _build_sgd_double_epoch_tasks()
+    num_workers = min(8, len(tasks))
+    print(f"SGD倍エポックタスク数: {len(tasks)}，並列プロセス数: {num_workers}")
+    ctx = multiprocessing.get_context("spawn")
+    with ctx.Pool(processes=num_workers) as pool:
+        pool.map(run_single_experiment, tasks, chunksize=1)
+
+
+def main(run_grid: bool = True, run_sgd_double: bool = True) -> None:
+    """
+    概要: 実験ex0024の基本グリッド（4手法 × 3バッチサイズ × 5Seed = 60条件，
+        `.orders/order_037.md`）と，SGDのみエポック数を倍にした追加学習（15条件，
+        `.orders/order_038.md`）を実行する．`run_grid`・`run_sgd_double`引数により両
+        フェーズを独立に実行できる（`.orders/order_036.md`のex0051c拡張で確立した2フェーズ
+        実行パターンを踏襲）．基本グリッドは`is_run_completed`により完了済み条件を自動的に
+        スキップする。
+    引数:
+        run_grid (bool) = True．基本グリッド（60条件）を実行するか。
+        run_sgd_double (bool) = True．SGD倍エポック追加学習（15条件）を実行するか。
     戻り値: なし
     """
     print(f"バッチサイズ = {BATCH_SIZES}, 学習率 = {LEARNING_RATE}, 正規化層 = {NORM_TYPE}")
     print(f"バッチサイズごとのエポック数: {EPOCHS_BY_BATCH_SIZE}")
+    print(f"SGD倍エポック（order_038）: {SGD_DOUBLE_EPOCHS_BY_BATCH_SIZE}")
 
-    tasks = [
-        (method, batch_size, seed)
-        for method, batch_size, seed in itertools.product(METHODS, BATCH_SIZES, SEEDS)
-    ]
-
-    num_workers = min(8, len(tasks))
-    print(f"並列プロセス数: {num_workers}（総タスク数: {len(tasks)}）")
-
-    ctx = multiprocessing.get_context("spawn")
-    with ctx.Pool(processes=num_workers) as pool:
-        pool.map(run_single_experiment, tasks, chunksize=1)
+    if run_grid:
+        run_grid_phase()
+    if run_sgd_double:
+        run_sgd_double_epoch_phase()
 
     print("全ての学習が終了しました．")
 
 
 if __name__ == "__main__":
-    main()
+    # 基本グリッド（60条件）は完了済みのため，SGD倍エポック追加学習（order_038）のみ実行する．
+    main(run_grid=False, run_sgd_double=True)
