@@ -426,6 +426,33 @@ ex0051（`report_035.md`）が発見したASAI SVRG・Seed 3の終盤崩壊（�
 見積もりを大幅に下回った。詳細は`.reports/report_036.md`を参照。条件Aは未実施であり，今後の
 検討課題として残る。
 
+### 1.17 実験ex0024（LayerNorm・学習率0.001固定での長期エポック学習，ex0023との比較）
+
+ex0023（`report_026.md`）はGroupNorm下で，バッチサイズ512・128ではASAI SVRGが明確にプラトー
+に達する一方，バッチサイズ32ではNFG SVRG・ASAI SVRGの双方が全Seedで恒久的に崩壊することを
+示した。チャットでの指示（正規化層をGroupNormからLayerNormへ変更し，他の実験条件はex0023と
+同様とする）に基づき，`programs/ex0024_cifar10_alexnet_layernorm_longrun/`を新設した。
+`model.py`は正規化層4パターンを`norm_type`引数で選択できる既存の`AlexNetCIFARNorm`
+（`.orders/order_023.md`・`.orders/order_024.md`由来）をそのまま用いるため，ex0023の
+`model.py`をバイト単位で無変更のまま複製し，`train.py`は`NORM_TYPE`を`"groupnorm"`から
+`"layernorm"`に変更した点のみがex0023との差異である（バッチサイズ・学習率・正則化係数・
+Seed数・バッチサイズごとのエポック数は全てex0023と同一）。
+
+実行前の計算コスト見積もりでは，最大バッチサイズ（512）での1エポック実測によりVRAM使用量が
+約2.5GB（AlexNetベースの軽量モデルのため）と小さく8プロセス並列で問題ないことを確認したが，
+実測所要時間（約8時間38分）は見積もり（約2.95時間）の約2.9倍に達し，過去の実験で用いてきた
+並列実行時の補正係数（約1.3倍）を大幅に超える乖離が生じた（軽量モデルではGPU計算時間に
+対する非GPUオーバーヘッドの割合が相対的に大きくなる可能性を`report_037.md`で考察）。
+
+**全60条件が完了し，結果はGroupNorm・LayerNormの両方で共通する現象と，LayerNorm固有の新規
+現象の両方を示した**。(1) バッチサイズ512・128でのASAI SVRGの安定性・プラトー到達・学習
+序盤でのオラクル呼び出し効率の優位性は両正規化層で共通して確認された。(2) バッチサイズ32
+での崩壊（NFG SVRG・ASAI SVRGとも全Seed）は正規化層に依存しない現象であったが，崩壊時の
+数値的挙動（LayerNormでは一部Seedが実際にNaN化，GroupNormでは有限値のまま発散）は正規化層
+により異なった。(3) **バッチサイズ128のNFG SVRGは，GroupNormでは慢性的振動に留まっていた
+のに対し，LayerNormでは5Seed中4Seedが部分的または完全に崩壊するという，LayerNorm固有の
+新規の不安定性が確認された**。詳細は`.reports/report_037.md`を参照。
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -537,6 +564,17 @@ ex0051（`report_035.md`）が発見したASAI SVRG・Seed 3の終盤崩壊（�
 │   │                                    # `compute_trailing_relative_change`関数でプラトー
 │   │                                    # 判定を行う．訓練損失が非有限値化した場合は学習を
 │   │                                    # 打ち切る（is_run_completedもこれを完了済みとして扱う）
+│   ├── ex0024_cifar10_alexnet_layernorm_longrun/  # 実験ex0024：LayerNorm・学習率0.001固定・
+│   │   ├── data.py                     # ex0023と同一（EXPERIMENT_NAMEのみ変更）
+│   │   ├── model.py                    # ex0023とバイト単位で完全に同一（`AlexNetCIFARNorm`
+│   │   │                                # が既にnorm_type="layernorm"を選択できるため無変更）
+│   │   └── train.py                    # ex0023のNORM_TYPEを"groupnorm"から"layernorm"に
+│   │                                    # 変更したのみ（他の条件は全てex0023と同一，order_037）．
+│   │                                    # バッチサイズ32でNFG SVRG・ASAI SVRGが全Seed崩壊
+│   │                                    # （ex0023と同様，ただし一部Seedで実際にNaN化する点が
+│   │                                    # 異なる），バッチサイズ128でNFG SVRGが5Seed中4Seedで
+│   │                                    # 崩壊（ex0023では崩壊せず慢性的振動のみ，LayerNorm
+│   │                                    # 固有の新規現象）
 │   ├── ex003_tinyshakespeare_transformer/  # 実験3 Stage A・Stage B：Tiny Shakespeare・
 │       │                                # Transformer
 │       ├── data.py                     # Tiny Shakespeare（自動ダウンロード）を文字レベルで
@@ -714,6 +752,16 @@ ex0051（`report_035.md`）が発見したASAI SVRG・Seed 3の終盤崩壊（�
 │   │       │                            # 切られた場合は記録数がepochs+1未満
 │   │       ├── config.json             # collapsedフィールドで崩壊の有無を明示
 │   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
+│   ├── ex0024_cifar10_alexnet_layernorm_longrun/
+│   │   └── {method}/{lr,bs,norm(layernorm),lambda,epochs}/{seed}/
+│   │       ├── log.json                # ResultLoggerによる評価指標の履歴．バッチサイズ32の
+│   │       │                            # ASAI SVRG一部Seed・バッチサイズ128のNFG SVRG一部
+│   │       │                            # Seedは訓練損失が非有限値化し打ち切り（記録数が
+│   │       │                            # epochs+1未満）
+│   │       ├── config.json             # collapsedフィールド（訓練損失の非有限値化のみを
+│   │       │                            # 判定．チャンスレベル付近までの精度低下は別途
+│   │       │                            # report_037.md 5.2節・5.3節で目視確認）
+│   │       └── best_model.pth          # 検証精度が最高となったエポックの重み
 │   ├── ex003_tinyshakespeare_transformer/
 │   │   └── {method}/{lr,bs,lambda,epochs}/{seed}/
 │   │       ├── log.json                # ResultLoggerによる評価指標の履歴（次文字予測精度，
@@ -824,6 +872,14 @@ ex0051（`report_035.md`）が発見したASAI SVRG・Seed 3の終盤崩壊（�
 │   │                                    # 正しさ，学習率を極端に大きくして人為的に崩壊させた
 │   │                                    # 場合に学習が打ち切られること，打ち切られたログを
 │   │                                    # is_run_completedが完了済みとして扱うことを検証
+│   ├── test_ex0024_cifar10_alexnet_layernorm_longrun.py  # 実験ex0024．model.pyがex0023と
+│   │                                    # バイト単位で完全に同一であること，NORM_TYPEが
+│   │                                    # "layernorm"であること，正規化層以外の実験条件が
+│   │                                    # ex0023と完全一致すること，LayerNorm2d層を含む
+│   │                                    # ことに加え，ex0023のテストと同様の4手法スモーク
+│   │                                    # テスト，オラクル呼び出し回数，elapsed_timeの
+│   │                                    # 診断専用フル勾配計算除外，プラトー判定，崩壊時の
+│   │                                    # 打ち切りを検証（計18テスト）
 │   ├── test_ex003_tinyshakespeare_transformer.py  # 実験3 Stage A・Stage B．Dropout・
 │   │                                    # BatchNorm不使用の確認，モデルの決定論性，Causal
 │   │                                    # マスクが未来のトークンに依存しないこと，チャンク
@@ -1026,6 +1082,17 @@ ex0051（`report_035.md`）が発見したASAI SVRG・Seed 3の終盤崩壊（�
 │                                        # プラトーに到達，オラクル呼び出し効率の優位性も5Seed
 │                                        # 全てで回復．条件A（学習率0.0001）はユーザー指示に
 │                                        # より本実験の対象外とし別途実行予定であることを記載
+│   └── report_037.md                   # 実験ex0024：LayerNorm・学習率0.001固定での長期
+│                                        # エポック学習，ex0023（GroupNorm）との比較
+│                                        # （order_037）．バッチサイズ512・128でのASAI SVRGの
+│                                        # 安定性・プラトー到達・学習序盤でのオラクル呼び出し
+│                                        # 効率の優位性は両正規化層で共通．バッチサイズ32での
+│                                        # NFG SVRG・ASAI SVRG全Seed崩壊も正規化層に依存しない
+│                                        # （数値的挙動＝NaN化するか否かは異なる）．
+│                                        # バッチサイズ128のNFG SVRGはGroupNormでは慢性的振動
+│                                        # のみだったが，LayerNormでは5Seed中4Seedが崩壊する
+│                                        # 新規現象を確認．計算コスト見積もり誤差（実測が
+│                                        # 見積もりの約2.9倍）についても考察
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -1133,6 +1200,17 @@ ex0051（`report_035.md`）が発見したASAI SVRG・Seed 3の終盤崩壊（�
   末尾複数エポックの相対変化の最大値によりプラトー到達を数値的に判定する．訓練損失が
   非有限値化した場合（崩壊）は学習を打ち切り，`is_run_completed` はこれを完了済みとして
   扱う．GPU（`.venv_pytorch_gpu`）を用い，8プロセスを `chunksize=1` で並列実行する．
+- `programs/ex0024_cifar10_alexnet_layernorm_longrun/data.py`：`programs/
+  ex0023_cifar10_alexnet_groupnorm_longrun/data.py` と同一（`EXPERIMENT_NAME` のみ変更）。
+- `programs/ex0024_cifar10_alexnet_layernorm_longrun/model.py`：`AlexNetCIFARNorm` が
+  既に`norm_type="layernorm"`を選択できるため，ex0023の`model.py`をバイト単位で無変更の
+  まま複製した（単体テストで確認済み）。
+- `programs/ex0024_cifar10_alexnet_layernorm_longrun/train.py`：ex0023の
+  `NORM_TYPE = "groupnorm"`を`"layernorm"`に変更した点のみが実装上の差異であり，比較
+  手法・バッチサイズ・学習率・正則化係数・Seed数・バッチサイズごとのエポック数は全て
+  ex0023と同一の値をそのまま用いる（`.orders/order_037.md`：「ほかの実験条件はex0023と
+  同様とします」）。GPU（`.venv_pytorch_gpu`）を用い，8プロセスを `chunksize=1` で
+  並列実行する。
 - `programs/ex003_tinyshakespeare_transformer/data.py`：`urllib.request` でTiny
   Shakespeareを自動ダウンロードし，文字レベルで語彙を構築する．コーパスの前方90%を
   学習用，後方10%を検証用とし，それぞれ独立に固定長 $ T+1=129 $ の非重複チャンクへ
@@ -1488,6 +1566,10 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # GPUで8プロセス並列実行．既に完了した条件（崩壊による打ち切りを含む）はスキップ）
 .venv_pytorch_gpu/bin/python programs/ex0023_cifar10_alexnet_groupnorm_longrun/train.py
 
+# 実験ex0024の学習実行（LayerNorm，学習率0.001固定，4手法 x 3バッチサイズ x 5Seed = 60条件を
+# 全て新規にGPUで8プロセス並列実行．本コマンドは実行済み）
+.venv_pytorch_gpu/bin/python programs/ex0024_cifar10_alexnet_layernorm_longrun/train.py
+
 # 実験3 Stage A・Stage Bの学習実行（4手法 x 3バッチサイズ x 2学習率 x 3Seed = 72条件のうち，
 # Stage Aで完了済みの36条件はスキップし，Stage B新規36条件（SGD・SVRG）をGPUで8プロセス
 # 並列実行）
@@ -1559,7 +1641,7 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer,ex0041_wikitext2_transformer_fixedreg,ex005_imagewoof_resnet18,ex0051_imagewoof_resnet18_bs128_longrun}/{method}/{hyperparams}/{seed}/`
+  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex0024_cifar10_alexnet_layernorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer,ex0041_wikitext2_transformer_fixedreg,ex005_imagewoof_resnet18,ex0051_imagewoof_resnet18_bs128_longrun}/{method}/{hyperparams}/{seed}/`
   （論文掲載用），
   `outputs_old/{ex001_mushroom_svrg,...,ex006_a9a_least_squares}/{method}/{hyperparams}/{seed}/`（事前実験）
 - 可視化結果（グラフ画像）：上記各実験ディレクトリ直下
