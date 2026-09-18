@@ -1611,8 +1611,10 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # GPUで8プロセス並列実行．既に完了した条件（崩壊による打ち切りを含む）はスキップ）
 .venv_pytorch_gpu/bin/python programs/ex0023_cifar10_alexnet_groupnorm_longrun/train.py
 
-# 実験ex0024の学習実行（LayerNorm，学習率0.001固定，4手法 x 3バッチサイズ x 5Seed = 60条件を
-# 全て新規にGPUで8プロセス並列実行．本コマンドは実行済み）
+# 実験ex0024の学習実行（LayerNorm，学習率0.001固定．train.pyのif __name__=="__main__"は
+# main(run_grid=False, run_sgd_double=True)のため，現状はSGD倍エポック追加学習（15条件，
+# order_038）のみが実行される．基本グリッド60条件（order_037）・SGD倍エポック15条件（order_038）
+# とも実行済み）
 .venv_pytorch_gpu/bin/python programs/ex0024_cifar10_alexnet_layernorm_longrun/train.py
 
 # 実験3 Stage A・Stage Bの学習実行（4手法 x 3バッチサイズ x 2学習率 x 3Seed = 72条件のうち，
