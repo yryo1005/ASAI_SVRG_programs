@@ -397,11 +397,11 @@ def test_is_plateaued_requires_minimum_history():
     assert np.isnan(result["relative_change"])
 
 
-def test_main_entry_point_runs_condition_b_only_for_now():
-    """ユーザーの明示的な指示（`.orders/order_036.md`追記1節）により，`train.py`を直接実行
-    した場合はまず条件B（バッチサイズ512）のみが実行され，条件A（バッチサイズ128・
-    学習率0.0001）は含まれないこと，`main`関数が`run_bs128`・`run_bs512`引数により
-    両フェーズを独立に制御できることを確認する．"""
+def test_main_entry_point_runs_sgd_double_epoch_phase_only_for_now():
+    """基準条件・条件A・条件Bが全て完了済みのため，`train.py`を直接実行した場合はSGD倍
+    エポック追加学習フェーズ（`.orders/order_039.md`）のみが実行されること，`main`関数が
+    `run_bs128`・`run_bs512`・`run_sgd_double`引数により各フェーズを独立に制御できることを
+    確認する．"""
     import ast
 
     source_path = os.path.join(_EX0051_DIR, "train.py")
@@ -412,7 +412,8 @@ def test_main_entry_point_runs_condition_b_only_for_now():
         if isinstance(node, ast.If) and ast.unparse(node.test) == "__name__ == '__main__'":
             call_src = ast.unparse(node.body[0])
             assert "run_bs128=False" in call_src
-            assert "run_bs512=True" in call_src
+            assert "run_bs512=False" in call_src
+            assert "run_sgd_double=True" in call_src
             main_call_found = True
     assert main_call_found, "`if __name__ == '__main__':`ブロックが見つからない"
 
@@ -421,5 +422,42 @@ def test_main_entry_point_runs_condition_b_only_for_now():
     main_signature = inspect.signature(ex0051_train.main)
     assert "run_bs128" in main_signature.parameters
     assert "run_bs512" in main_signature.parameters
+    assert "run_sgd_double" in main_signature.parameters
     assert main_signature.parameters["run_bs128"].default is True
     assert main_signature.parameters["run_bs512"].default is True
+    assert main_signature.parameters["run_sgd_double"].default is False
+
+
+def test_sgd_double_epoch_condition_matches_condition_b_except_epochs():
+    """`.orders/order_039.md`：SGD倍エポック追加学習の条件が，条件B（バッチサイズ512・
+    学習率0.001）とバッチサイズ・学習率が一致し，エポック数のみちょうど2倍であることを
+    確認する．"""
+    condition_b = next(c for c in ex0051_train.CONDITIONS if c["batch_size"] == 512)
+    double_cond = ex0051_train.SGD_DOUBLE_EPOCH_CONDITION
+    assert double_cond["batch_size"] == condition_b["batch_size"]
+    assert double_cond["learning_rate"] == condition_b["learning_rate"]
+    assert double_cond["epochs"] == 2 * condition_b["epochs"]
+
+
+def test_build_sgd_double_epoch_tasks_covers_sgd_only_five_seeds():
+    """SGD倍エポック追加学習のタスクが5Seed分（SGDのみ）であり，条件Bと同一のバッチサイズ・
+    学習率，倍のエポック数を持つことを確認する．"""
+    tasks = ex0051_train._build_sgd_double_epoch_tasks()
+    assert len(tasks) == len(ex0051_train.SEEDS)
+    cond = ex0051_train.SGD_DOUBLE_EPOCH_CONDITION
+    for method, batch_size, eta, epochs, seed in tasks:
+        assert method == "SGD"
+        assert batch_size == cond["batch_size"]
+        assert eta == cond["learning_rate"]
+        assert epochs == cond["epochs"]
+    assert {t[4] for t in tasks} == set(ex0051_train.SEEDS)
+
+
+def test_sgd_double_epoch_task_directory_name_does_not_collide_with_condition_b():
+    """SGD倍エポック追加学習のディレクトリ名（`hp_name`）が，条件Bの既存ディレクトリ名と
+    衝突しないことを確認する（エポック数が異なるため自動的に分離される）．"""
+    condition_b = next(c for c in ex0051_train.CONDITIONS if c["batch_size"] == 512)
+    name_b = ex0051_train.hp_name(condition_b["learning_rate"], condition_b["batch_size"], condition_b["epochs"])
+    cond = ex0051_train.SGD_DOUBLE_EPOCH_CONDITION
+    name_double = ex0051_train.hp_name(cond["learning_rate"], cond["batch_size"], cond["epochs"])
+    assert name_b != name_double

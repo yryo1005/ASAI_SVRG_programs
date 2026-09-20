@@ -112,6 +112,19 @@ ASAI SVRG 83.6秒／エポック，SVRG 114.7秒／エポックであった（�
 所要時間は約80〜85時間程度になると見込まれる．これは基準条件・条件A（バッチサイズ128，
 8プロセス並列，合計約20〜25時間程度と見込まれる）よりも大幅に長く，本実験全体の所要時間は
 条件Bが支配的になる．実測との比較は`.reports/report_036.md`に記載する．
+
+## SGDのみエポック数を倍にした追加学習（`.orders/order_039.md`）
+
+チャットでの指示に基づき，条件B（バッチサイズ512・学習率0.001・$\\lambda=5\\times10^{-4}$）
+と同一の条件のまま，SGDのみを対象にエポック数を2倍（505→1010）に延長した追加学習を行う
+（ex0024・`.orders/order_038.md`と同種の指示）。`run_single_experiment`は既にタプル引数
+`(method, batch_size, eta, epochs, seed)`でエポック数を明示的に受け取る設計になっている
+ため，`_build_sgd_double_epoch_tasks`関数でSGD×5Seed＝5条件（エポック数1010）のタスクを
+別途生成し，`run_sgd_double_epoch_phase`関数で実行する。VRAM使用量はバッチサイズ512では
+手法によらず約22.5GB（reservedベース，`.reports/report_036.md`のパイロット計測でSGD単独でも
+22.52GB）であるため，条件Bと同様に4プロセス並列で実行する。5Seedに対し4プロセス並列のため，
+2ラウンド（1ラウンド目4Seed，2ラウンド目1Seed）となり，見積もり時間は単一タスクの所要時間の
+約2倍になる。計算コスト見積もり・実測との比較は`.reports/report_039.md`に記載する。
 """
 
 import itertools
@@ -165,6 +178,15 @@ CONDITIONS = [
 BATCH_SIZE = CONDITIONS[0]["batch_size"]
 LEARNING_RATE = CONDITIONS[0]["learning_rate"]
 EPOCHS = CONDITIONS[0]["epochs"]
+
+# SGDのみエポック数を倍にした追加学習用（`.orders/order_039.md`）．条件B
+# （バッチサイズ512・学習率0.001）と同一の条件のまま，エポック数のみ2倍にする。
+_CONDITION_B = next(c for c in CONDITIONS if c["batch_size"] == 512)
+SGD_DOUBLE_EPOCH_CONDITION = {
+    "batch_size": _CONDITION_B["batch_size"],
+    "learning_rate": _CONDITION_B["learning_rate"],
+    "epochs": _CONDITION_B["epochs"] * 2,
+}
 
 # --- プラトー判定（order_035 3節）：窓幅と3指標の閾値 ---
 PLATEAU_WINDOW = 10
@@ -726,7 +748,39 @@ def run_bs512_phase() -> None:
         pool.map(run_single_experiment, tasks_bs512, chunksize=1)
 
 
-def main(run_bs128: bool = True, run_bs512: bool = True) -> None:
+def _build_sgd_double_epoch_tasks() -> list:
+    """
+    概要: SGDのみエポック数を倍にした追加学習（`.orders/order_039.md`）のタスクリストを
+        構築する．条件B（バッチサイズ512・学習率0.001）と同一の条件で，エポック数のみ
+        `SGD_DOUBLE_EPOCH_CONDITION["epochs"]`（1010）に置き換える．5Seed分。
+    引数: なし
+    戻り値: tasks (list of tuple)．(method, batch_size, eta, epochs, seed) のリスト。
+    """
+    cond = SGD_DOUBLE_EPOCH_CONDITION
+    return [
+        ("SGD", cond["batch_size"], cond["learning_rate"], cond["epochs"], seed)
+        for seed in SEEDS
+    ]
+
+
+def run_sgd_double_epoch_phase() -> None:
+    """
+    概要: SGDのみエポック数を倍にした追加学習（5条件，`.orders/order_039.md`）を実行する．
+        条件Bと同一のバッチサイズ512であるため，VRAM使用量（約22.5GB／プロセス）を踏まえ
+        4プロセス並列とする（`run_bs512_phase`と同一の制約）．5Seedに対し4プロセス並列の
+        ため，2ラウンド（1ラウンド目4Seed，2ラウンド目1Seed）で実行される。
+    引数: なし
+    戻り値: なし
+    """
+    ctx = multiprocessing.get_context("spawn")
+    tasks = _build_sgd_double_epoch_tasks()
+    num_workers = min(4, len(tasks))
+    print(f"SGD倍エポックタスク数: {len(tasks)}，並列プロセス数: {num_workers}")
+    with ctx.Pool(processes=num_workers) as pool:
+        pool.map(run_single_experiment, tasks, chunksize=1)
+
+
+def main(run_bs128: bool = True, run_bs512: bool = True, run_sgd_double: bool = False) -> None:
     """
     概要: 実験5b・5cの条件（`CONDITIONS`：基準条件・条件A・条件B の3条件×4手法×5Seed=
         60条件）を学習する．`run_bs128`・`run_bs512`引数により，バッチサイズ128の
@@ -749,10 +803,12 @@ def main(run_bs128: bool = True, run_bs512: bool = True) -> None:
         明示的に指定している．条件Aを追加実行する際は，同ブロックを`main(run_bs128=True,
         run_bs512=False)`（または引数なしの`main()`）に変更して再実行すればよく，条件B
         （学習済み）は`is_run_completed`により自動的にスキップされ，条件Aのみが新規に
-        学習される。
+        学習される。`run_sgd_double`引数により，SGDのみエポック数を倍にした追加学習
+        （`.orders/order_039.md`，5条件）を独立に実行できる。
     引数:
         run_bs128 (bool) = True．バッチサイズ128フェーズ（基準条件・条件A）を実行するか。
         run_bs512 (bool) = True．バッチサイズ512フェーズ（条件B）を実行するか。
+        run_sgd_double (bool) = False．SGD倍エポック追加学習フェーズを実行するか。
     戻り値: なし
     """
     for cond in CONDITIONS:
@@ -765,12 +821,13 @@ def main(run_bs128: bool = True, run_bs512: bool = True) -> None:
         run_bs128_phase()
     if run_bs512:
         run_bs512_phase()
+    if run_sgd_double:
+        run_sgd_double_epoch_phase()
 
     print("全ての学習が終了しました．")
 
 
 if __name__ == "__main__":
-    # ユーザーの明示的な指示により，まず条件B（バッチサイズ512）のみを実行する．
-    # 条件A（バッチサイズ128・学習率0.0001）は，本実行の完了後，`main(run_bs128=True,
-    # run_bs512=False)` へ変更して別途実行する（`.orders/order_036.md`追記1節参照）．
-    main(run_bs128=False, run_bs512=True)
+    # 基準条件・条件A・条件Bは全て完了済みのため，SGD倍エポック追加学習（order_039）のみ
+    # 実行する。
+    main(run_bs128=False, run_bs512=False, run_sgd_double=True)

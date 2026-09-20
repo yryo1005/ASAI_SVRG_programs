@@ -470,6 +470,26 @@ experiment`をエポック数を明示的に受け取れる形に拡張し，`ma
 示すが，report_037.mdの主要な結論（NFG SVRG・ASAI SVRGの崩壊現象）には影響しない。詳細は
 `.reports/report_038.md`を参照。
 
+### 1.19 `.orders/order_039.md` によるex0051条件BでのSGDのみエポック数を倍にした追加学習
+
+ex0024（`report_038.md`）で確認された「SGDはエポック数の延長により精度が向上する」という
+傾向が，異なるデータセット・アーキテクチャ（Imagewoof・ResNet18）でも成立するかを確認する
+ため，チャットでの指示に基づき，ex0051の条件B（バッチサイズ512・学習率0.001，`.orders/
+order_036.md`）と同一の条件のまま，SGDのみエポック数を2倍（505→1010）に延長した追加学習を
+実施した。`train.py`に`SGD_DOUBLE_EPOCH_CONDITION`・`_build_sgd_double_epoch_tasks`・
+`run_sgd_double_epoch_phase`を追加し，`main`関数に`run_sgd_double`引数を追加した
+（ex0024・`.orders/order_038.md`と同種の実装パターン）。VRAM制約（バッチサイズ512では
+約22.5GB／プロセス）により4プロセス並列とし，5Seedに対し2ラウンドで実行されるため，学習
+開始前に総所要時間を約46.8時間と見積もりユーザーへ報告した（実測は約45.8時間でほぼ一致）。
+
+**エポック数の倍増により最終精度が3.30ポイント向上した**（0.4472→0.4802）ものの，**1010
+エポック時点でも3指標判定で未プラトーであり，標準偏差もむしろ増大した**（0.0090→0.0235）。
+これはex0024（バッチサイズ512・128で倍エポックにより明確にプラトー到達）とは異なる挙動
+であり，「SGDがエポック数の延長で精度向上する」傾向はデータセット・アーキテクチャによらず
+一般的だが，プラトーへの到達しやすさはモデル・データセットに依存する可能性を示唆する。
+report_036.mdの主要な結論（バッチサイズ拡大によるASAI SVRGの崩壊回避）には影響しない。
+詳細は`.reports/report_039.md`を参照。
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -688,9 +708,13 @@ experiment`をエポック数を明示的に受け取れる形に拡張し，`ma
 │                                        # 条件A・条件B），`_build_tasks(batch_size)`でバッチ
 │                                        # サイズ単位にタスクを分離し，`run_bs128_phase`
 │                                        # （8プロセス並列）／`run_bs512_phase`（4プロセス並列，
-│                                        # VRAM実測約22.6GBのため）を`main(run_bs128, run_bs512)`
-│                                        # で個別に実行可能．ユーザー指示により現状は条件B
-│                                        # （バッチサイズ512・505エポック）のみを実行
+│                                        # VRAM実測約22.6GBのため）を`main(run_bs128, run_bs512,
+│                                        # run_sgd_double)`で個別に実行可能．基準条件・条件A・
+│                                        # 条件Bは全て完了済み．`.orders/order_039.md`により
+│                                        # `SGD_DOUBLE_EPOCH_CONDITION`（条件Bと同一条件で
+│                                        # エポック数のみ2倍の1010）・`_build_sgd_double_epoch_
+│                                        # tasks`・`run_sgd_double_epoch_phase`を追加し，
+│                                        # 現状はSGD倍エポック追加学習（5条件）のみを実行
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -835,12 +859,18 @@ experiment`をエポック数を明示的に受け取れる形に拡張し，`ma
 │       │   │                            # 生じたが，訓練損失は非有限値化しなかったため
 │       │   │                            # collapsed=falseのまま．report_035.md 6.1節参照）
 │       │   └── best_model.pth          # 検証精度が最高となったエポックの重み
-│       └── {method}/lr0.001_bs512_lambda0.0005_epochs505/{seed}/  # 条件B（order_036，
-│           │                            # 条件Aのディレクトリは未実行のため存在しない）
-│           ├── log.json                # 506エントリ（epoch0〜505）．ASAI SVRG・Seed 3を
-│           │                            # 含む全5Seedで終盤崩壊が生じなかったことを確認済み
-│           │                            # （report_036.md 5.2節）
-│           ├── config.json             # 全20条件でcollapsed=false．K=18, total_iterations=9090
+│       ├── {method}/lr0.001_bs512_lambda0.0005_epochs505/{seed}/  # 条件B（order_036，
+│       │   │                            # 条件Aのディレクトリは未実行のため存在しない）
+│       │   ├── log.json                # 506エントリ（epoch0〜505）．ASAI SVRG・Seed 3を
+│       │   │                            # 含む全5Seedで終盤崩壊が生じなかったことを確認済み
+│       │   │                            # （report_036.md 5.2節）
+│       │   ├── config.json             # 全20条件でcollapsed=false．K=18, total_iterations=9090
+│       │   └── best_model.pth
+│       └── SGD/lr0.001_bs512_lambda0.0005_epochs1010/{seed}/  # SGD倍エポック追加学習
+│           │                            # （order_039，5Seed）
+│           ├── log.json                # 1011エントリ（epoch0〜1010）．1010エポック時点でも
+│           │                            # 3指標判定で未プラトー（report_039.md 4.2節）
+│           ├── config.json             # 全5条件でcollapsed=false
 │           └── best_model.pth
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
@@ -970,9 +1000,15 @@ experiment`をエポック数を明示的に受け取れる形に拡張し，`ma
 │                                        # 関数の正しさを検証．order_036追加分：`CONDITIONS`
 │                                        # グリッド（基準条件・条件A・条件B）が仕様と一致する
 │                                        # こと，`_build_tasks(batch_size)`がバッチサイズで
-│                                        # 正しくフィルタされること，`if __name__ == "__main__"`
-│                                        # ブロックが`main(run_bs128=False, run_bs512=True)`を
-│                                        # 呼び出すことをASTで検証（計28テスト）
+│                                        # 正しくフィルタされること．order_039追加分：
+│                                        # `SGD_DOUBLE_EPOCH_CONDITION`が条件Bとバッチサイズ・
+│                                        # 学習率が一致しエポック数のみ2倍であること，
+│                                        # `_build_sgd_double_epoch_tasks`がSGDのみ5Seed分を
+│                                        # 生成すること，ディレクトリ名が条件Bと衝突しないこと，
+│                                        # `if __name__ == "__main__"`ブロックが
+│                                        # `main(run_bs128=False, run_bs512=False,
+│                                        # run_sgd_double=True)`を呼び出すことをASTで検証
+│                                        # （計31テスト）
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -1135,6 +1171,15 @@ experiment`をエポック数を明示的に受け取れる形に拡張し，`ma
 │                                        # 上昇継続中．report_037.mdのSGD関連比較が学習不足の
 │                                        # 影響を受けていた可能性を指摘しつつ，主要な結論
 │                                        # （NFG SVRG・ASAI SVRGの崩壊現象）には影響しないと結論
+│   └── report_039.md                   # 実験ex0051条件B：SGDのみエポック数を倍にした追加学習
+│                                        # （order_039）．バッチサイズ512・学習率0.001・1010
+│                                        # エポック（条件Bの505エポックの2倍）で5Seedを実行．
+│                                        # 最終精度が3.30ポイント向上（0.4472→0.4802）した
+│                                        # ものの，1010エポック時点でも3指標判定で未プラトー，
+│                                        # 標準偏差もむしろ増大（ex0024とは異なりプラトーに
+│                                        # 未到達）．見積もり時間（約46.8時間）は実測（約45.8
+│                                        # 時間）とほぼ一致．report_036.mdの主要な結論には
+│                                        # 影響しないと結論
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -1360,9 +1405,12 @@ experiment`をエポック数を明示的に受け取れる形に拡張し，`ma
   拡張された。`_build_tasks(batch_size)`がバッチサイズ単位でタスクを分離し，`run_bs128_phase`
   （8プロセス並列）・`run_bs512_phase`（4プロセス並列，バッチサイズ512のVRAM実測約22.6GBが
   バッチサイズ128の約3.8倍のため）を`main(run_bs128, run_bs512)`で個別に実行できる。ユーザーの
-  明示的な指示（`.orders/order_036.md`追記1節）により，現状は条件B（バッチサイズ512）のみを
-  実行済みであり（`.reports/report_036.md`），条件Aは`main(run_bs128=True, run_bs512=False)`
-  への変更により別途追加実行する。
+  明示的な指示（`.orders/order_036.md`追記1節）により，条件B（バッチサイズ512）を実行済み
+  （`.reports/report_036.md`），条件Aは`main(run_bs128=True, run_bs512=False)`への変更により
+  別途追加実行できる。`.orders/order_039.md`により，条件Bと同一条件でSGDのみエポック数を
+  倍（505→1010）にした追加学習用の`SGD_DOUBLE_EPOCH_CONDITION`・`_build_sgd_double_epoch_
+  tasks`・`run_sgd_double_epoch_phase`が追加され，`main`関数の`run_sgd_double`引数で個別に
+  実行できる（実行済み，`.reports/report_039.md`）。
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -1639,15 +1687,16 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # Stage Aの36条件は完了済みのためスキップされ，Stage Bの40条件のみ新規実行される）
 .venv_pytorch_gpu/bin/python programs/ex005_imagewoof_resnet18/train.py
 
-# 実験5b（ex0051，バッチサイズ128長期学習）・実験5c条件B（バッチサイズ512，order_036）の
-# 学習実行（現状は`main(run_bs128=False, run_bs512=True)`のため条件Bのみ実行．基準条件20条件は
-# 完了済みのためスキップ．条件Bの4手法 x 5Seed = 20条件を505エポック・GPUで4プロセス並列実行．
-# 本コマンドは実行済み）
+# 実験5b（ex0051，バッチサイズ128長期学習）・実験5c条件B（バッチサイズ512，order_036）・
+# SGD倍エポック追加学習（order_039）の学習実行（現状は`main(run_bs128=False, run_bs512=False,
+# run_sgd_double=True)`のためSGD倍エポック追加学習のみ実行．基準条件・条件B・SGD倍エポックは
+# 全て完了済み．本コマンドは実行済み）
 .venv_pytorch_gpu/bin/python programs/ex0051_imagewoof_resnet18_bs128_longrun/train.py
 
 # 実験5c条件A（バッチサイズ128・学習率0.0001，order_036）を追加実行する場合：train.pyの
-# `if __name__ == "__main__":`ブロックを`main(run_bs128=True, run_bs512=False)`に変更してから
-# 実行する（条件Bは`is_run_completed`によりスキップされ条件Aのみ新規実行される，未実施）
+# `if __name__ == "__main__":`ブロックを`main(run_bs128=True, run_bs512=False,
+# run_sgd_double=False)`に変更してから実行する（条件B・SGD倍エポックは`is_run_completed`に
+# よりスキップされ条件Aのみ新規実行される，未実施）
 .venv_pytorch_gpu/bin/python programs/ex0051_imagewoof_resnet18_bs128_longrun/train.py
 
 # --- 事前実験（.orders/order_011.md まで）---
