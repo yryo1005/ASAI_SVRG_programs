@@ -125,6 +125,36 @@ ASAI SVRG 83.6秒／エポック，SVRG 114.7秒／エポックであった（�
 22.52GB）であるため，条件Bと同様に4プロセス並列で実行する。5Seedに対し4プロセス並列のため，
 2ラウンド（1ラウンド目4Seed，2ラウンド目1Seed）となり，見積もり時間は単一タスクの所要時間の
 約2倍になる。計算コスト見積もり・実測との比較は`.reports/report_039.md`に記載する。
+
+## 条件C：バッチサイズを縮小した追加実験（`.orders/order_040.md`）
+
+チャットでの指示に基づき，条件B（バッチサイズ512・学習率0.001）と同様の実験を，バッチサイズ
+のみ32に変更して実施する（条件C）。学習率・正則化係数・比較手法・Seed数は条件Bと同一とし，
+エポック数は全手法で統一する（既存の`CONDITIONS`構造がこの性質を自然に満たす）。エポック数は
+条件A・Bと同様の方針（基準条件の総イテレーション数$128\\times71=9088$に揃える）で，
+$K=\\lceil9025/32\\rceil=283$より$\\lceil9088/283\\rceil=33$エポックとした（総イテレーション数
+$33\\times283=9339$，基準条件から+2.8%の端数．条件Bの端数（+0.022%）より大きい）。
+
+### チェックポイントの保存（`.orders/order_040.md` 2.1節）
+
+ユーザーの明示的な指示に基づき，将来エポック数を増やして学習を継続する追試験を可能にする
+ため，各条件の学習終了時点で`checkpoint.pth`を保存する`save_checkpoint`関数を追加した。
+モデルの重み（`model.state_dict()`）・スナップショットモデルの重み（SVRG系手法のみ）に加え，
+Optimizerの内部状態（`optimizer.state_dict()`が捕捉する`self.state`の全内容：スナップショット
+勾配・パラメータ候補，ASAI SVRGの平均勾配・平均パラメータの累積等）・`state_dict`に含まれない
+独自属性（`K`，`_step_count`，`_target_k`）・データのシャッフル順序を決定する
+`torch.Generator`の状態・SVRG・NFG SVRGのスナップショット点選択用`numpy.random.Generator`の
+状態を全て保存する。SGDは内部状態を持たないため（`self.state`が空），スナップショットモデル・
+乱数生成器は保存しない。
+
+本オーダーの対象はチェックポイントの保存機構の実装・検証までであり，チェックポイントから
+実際に学習を再開してエポック数を延長する実験自体は別オーダーで実施する（`load_checkpoint`
+関数は将来の追試験のために用意するが，本オーダーでは呼び出さない）。
+
+### 実行前の計算コスト見積もり
+
+バッチサイズ32での1エポック全体を実際に1回実行し，所要時間・VRAM使用量を計測してから並列数を
+決定した。実測結果は`.reports/report_040.md`に記載する。
 """
 
 import itertools
@@ -166,12 +196,14 @@ NUM_CLASSES = 10
 NEAR_CHANCE_TOLERANCE = 0.03  # チャンスレベル(0.1)の±0.03，本実験の10クラス設定向け
 
 # --- 実験条件のグリッド（`.orders/order_035.md`：基準条件，`.orders/order_036.md`：
-# 条件A・条件B）。総イテレーション数を基準条件（128エポック×K=71=9088）に揃えている
-# （条件Bのみ端数により9090で若干上回る，`.reports/report_036.md`参照）。
+# 条件A・条件B，`.orders/order_040.md`：条件C）。総イテレーション数を基準条件
+# （128エポック×K=71=9088）に揃えている（条件Bは端数により9090，条件Cは端数により9339
+# （+2.8%）で若干上回る，`.reports/report_036.md`・`.reports/report_040.md`参照）。
 CONDITIONS = [
     {"batch_size": 128, "learning_rate": 0.001, "epochs": 128},  # 基準条件（order_035）
     {"batch_size": 128, "learning_rate": 0.0001, "epochs": 128},  # 条件A：学習率を1/10に低減
     {"batch_size": 512, "learning_rate": 0.001, "epochs": 505},  # 条件B：バッチサイズ拡大
+    {"batch_size": 32, "learning_rate": 0.001, "epochs": 33},  # 条件C：バッチサイズ縮小
 ]
 
 # 後方互換のため，基準条件の値を単体テスト等から参照できるよう維持する。
@@ -464,6 +496,66 @@ def _save_if_best(model, test_accuracy, best_accuracy, target_dir):
     return best_accuracy
 
 
+def save_checkpoint(
+    target_dir, model, optimizer, train_dataloader, epoch, oracle_calls, elapsed_time,
+    best_accuracy, snapshot_model=None, rng=None,
+):
+    """
+    概要: 学習終了時点の状態を`checkpoint.pth`として保存する．`.orders/order_040.md`の
+        指示に基づき，将来エポック数を増やして学習を継続する追試験のために，モデルの重み
+        だけでなく，Optimizerの内部状態（スナップショット勾配・パラメータ，ASAI SVRGの
+        平均勾配・平均パラメータの累積等，`torch.optim.Optimizer.state_dict()`が捕捉する
+        `self.state`の全内容）と，`K`・`_step_count`・`_target_k`等の`state_dict`に含まれない
+        独自属性，データのシャッフル順序を決定する`torch.Generator`の状態，SVRG・NFG SVRGの
+        スナップショット点選択に用いる`numpy.random.Generator`の状態を全て保存する。
+        SGDは`optimizer.state_dict()`のstateが空（`self.state`に何も追加しない実装のため），
+        `snapshot_model`・`rng`は`None`のままでよい。
+    引数:
+        target_dir (str)．保存先ディレクトリ。
+        model (torch.nn.Module)．現在のパラメータを保持するモデル（SVRG系手法では $ w_S^K $）。
+        optimizer (torch.optim.Optimizer)．
+        train_dataloader (torch.utils.data.DataLoader)．`shuffle=True`の`torch.Generator`を
+            保持するデータローダー。
+        epoch (int)．学習終了時点のエポック番号。
+        oracle_calls (int)．累積オラクル呼び出し回数。
+        elapsed_time (float)．累積`elapsed_time`。
+        best_accuracy (float)．学習を通じての最高精度。
+        snapshot_model (torch.nn.Module) = None．スナップショットモデル（SVRG系手法のみ，$ z_S $）。
+        rng (numpy.random.Generator) = None．SVRG・NFG SVRGのスナップショット点選択用乱数生成器。
+    戻り値: なし
+    """
+    checkpoint = {
+        "epoch": epoch,
+        "oracle_calls": oracle_calls,
+        "elapsed_time": elapsed_time,
+        "best_accuracy": best_accuracy,
+        "model_state_dict": model.state_dict(),
+        "snapshot_model_state_dict": snapshot_model.state_dict() if snapshot_model is not None else None,
+        "optimizer_state_dict": optimizer.state_dict(),
+        "optimizer_extra_state": {
+            "K": getattr(optimizer, "K", None),
+            "_step_count": getattr(optimizer, "_step_count", None),
+            "_target_k": getattr(optimizer, "_target_k", None),
+        },
+        "dataloader_generator_state": (
+            train_dataloader.generator.get_state() if train_dataloader.generator is not None else None
+        ),
+        "numpy_rng_state": rng.bit_generator.state if rng is not None else None,
+    }
+    torch.save(checkpoint, os.path.join(target_dir, "checkpoint.pth"))
+
+
+def load_checkpoint(target_dir: str) -> dict:
+    """
+    概要: `save_checkpoint`で保存したチェックポイントを読み込む．エポック数を増やす追試験
+        （本オーダーの対象外，別オーダーで実施）が，モデル・Optimizer・乱数状態を復元する
+        際に用いることを想定する。
+    引数: target_dir (str)．チェックポイントが保存されているディレクトリ。
+    戻り値: checkpoint (dict)．`save_checkpoint`が構築した辞書と同一のキーを持つ。
+    """
+    return torch.load(os.path.join(target_dir, "checkpoint.pth"), weights_only=False)
+
+
 def run_sgd(target_dir, load_dataloader_func, eta, batch_size, reg_lambda, epochs, device, seed, logger):
     """
     概要: SGDによる学習を実行し，各エポック終了時の評価指標を `logger` に記録する．
@@ -517,6 +609,11 @@ def run_sgd(target_dir, load_dataloader_func, eta, batch_size, reg_lambda, epoch
 
         if not np.isfinite(train_metrics["loss"]):
             break
+
+    save_checkpoint(
+        target_dir, model, optimizer, train_dataloader, epoch_index, oracle_calls, elapsed_time,
+        best_accuracy,
+    )
 
 
 def run_variance_reduced(
@@ -621,6 +718,11 @@ def run_variance_reduced(
 
         if not np.isfinite(train_metrics["loss"]):
             break
+
+    save_checkpoint(
+        target_dir, model, optimizer, train_dataloader, epoch_index, oracle_calls, elapsed_time,
+        best_accuracy, snapshot_model=snapshot_model, rng=rng,
+    )
 
 
 def is_run_completed(target_dir: str, epochs: int) -> bool:
@@ -748,6 +850,22 @@ def run_bs512_phase() -> None:
         pool.map(run_single_experiment, tasks_bs512, chunksize=1)
 
 
+def run_bs32_phase() -> None:
+    """
+    概要: バッチサイズ32のタスク（条件C，計20条件，`.orders/order_040.md`）を実行する．
+        並列数は実行前の計算コスト見積もり（VRAM実測）に基づき決定する（`.reports/
+        report_040.md`参照）．
+    引数: なし
+    戻り値: なし
+    """
+    ctx = multiprocessing.get_context("spawn")
+    tasks_bs32 = _build_tasks(32)
+    num_workers_bs32 = min(8, len(tasks_bs32))
+    print(f"バッチサイズ32タスク数: {len(tasks_bs32)}，並列プロセス数: {num_workers_bs32}")
+    with ctx.Pool(processes=num_workers_bs32) as pool:
+        pool.map(run_single_experiment, tasks_bs32, chunksize=1)
+
+
 def _build_sgd_double_epoch_tasks() -> list:
     """
     概要: SGDのみエポック数を倍にした追加学習（`.orders/order_039.md`）のタスクリストを
@@ -780,7 +898,10 @@ def run_sgd_double_epoch_phase() -> None:
         pool.map(run_single_experiment, tasks, chunksize=1)
 
 
-def main(run_bs128: bool = True, run_bs512: bool = True, run_sgd_double: bool = False) -> None:
+def main(
+    run_bs128: bool = True, run_bs512: bool = True, run_bs32: bool = False,
+    run_sgd_double: bool = False,
+) -> None:
     """
     概要: 実験5b・5cの条件（`CONDITIONS`：基準条件・条件A・条件B の3条件×4手法×5Seed=
         60条件）を学習する．`run_bs128`・`run_bs512`引数により，バッチサイズ128の
@@ -804,10 +925,12 @@ def main(run_bs128: bool = True, run_bs512: bool = True, run_sgd_double: bool = 
         run_bs512=False)`（または引数なしの`main()`）に変更して再実行すればよく，条件B
         （学習済み）は`is_run_completed`により自動的にスキップされ，条件Aのみが新規に
         学習される。`run_sgd_double`引数により，SGDのみエポック数を倍にした追加学習
-        （`.orders/order_039.md`，5条件）を独立に実行できる。
+        （`.orders/order_039.md`，5条件）を独立に実行できる。`run_bs32`引数により，
+        バッチサイズ32のフェーズ（条件C，`.orders/order_040.md`）を独立に実行できる。
     引数:
         run_bs128 (bool) = True．バッチサイズ128フェーズ（基準条件・条件A）を実行するか。
         run_bs512 (bool) = True．バッチサイズ512フェーズ（条件B）を実行するか。
+        run_bs32 (bool) = False．バッチサイズ32フェーズ（条件C）を実行するか。
         run_sgd_double (bool) = False．SGD倍エポック追加学習フェーズを実行するか。
     戻り値: なし
     """
@@ -821,6 +944,8 @@ def main(run_bs128: bool = True, run_bs512: bool = True, run_sgd_double: bool = 
         run_bs128_phase()
     if run_bs512:
         run_bs512_phase()
+    if run_bs32:
+        run_bs32_phase()
     if run_sgd_double:
         run_sgd_double_epoch_phase()
 
@@ -828,6 +953,6 @@ def main(run_bs128: bool = True, run_bs512: bool = True, run_sgd_double: bool = 
 
 
 if __name__ == "__main__":
-    # 基準条件・条件A・条件Bは全て完了済みのため，SGD倍エポック追加学習（order_039）のみ
-    # 実行する。
-    main(run_bs128=False, run_bs512=False, run_sgd_double=True)
+    # 基準条件・条件A・条件B・SGD倍エポック追加学習は全て完了済みのため，条件C
+    # （バッチサイズ32，order_040）のみ実行する。
+    main(run_bs128=False, run_bs512=False, run_bs32=True, run_sgd_double=False)

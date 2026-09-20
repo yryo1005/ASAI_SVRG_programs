@@ -245,9 +245,26 @@ def test_condition_grid_matches_order_036_specification():
     """`.orders/order_036.md` 3節：条件A（バッチサイズ128・学習率0.0001・128エポック）・
     条件B（バッチサイズ512・学習率0.001・505エポック）が，基準条件に加えて
     `CONDITIONS`に含まれることを確認する．"""
-    assert len(ex0051_train.CONDITIONS) == 3
     assert {"batch_size": 128, "learning_rate": 0.0001, "epochs": 128} in ex0051_train.CONDITIONS
     assert {"batch_size": 512, "learning_rate": 0.001, "epochs": 505} in ex0051_train.CONDITIONS
+
+
+def test_condition_grid_matches_order_040_specification():
+    """`.orders/order_040.md`：条件C（バッチサイズ32・学習率0.001・33エポック）が
+    `CONDITIONS`に含まれ，全4条件であることを確認する．"""
+    assert len(ex0051_train.CONDITIONS) == 4
+    assert {"batch_size": 32, "learning_rate": 0.001, "epochs": 33} in ex0051_train.CONDITIONS
+
+
+def test_condition_c_total_iterations_are_close_to_baseline():
+    """`.orders/order_040.md`：条件Cの総イテレーション数（エポック数×K）が，基準条件の
+    総イテレーション数（$128\\times71=9088$）に対し，事前に見積もった端数（+2.8%程度）の
+    範囲に収まることを確認する．"""
+    baseline_total = 128 * 71
+    condition_c = next(c for c in ex0051_train.CONDITIONS if c["batch_size"] == 32)
+    k_32 = 283  # N_train=9025のときのK=ceil(9025/32)
+    condition_c_total = condition_c["epochs"] * k_32
+    assert abs(condition_c_total - baseline_total) / baseline_total <= 0.05
 
 
 def test_condition_b_total_iterations_are_close_to_baseline():
@@ -397,11 +414,11 @@ def test_is_plateaued_requires_minimum_history():
     assert np.isnan(result["relative_change"])
 
 
-def test_main_entry_point_runs_sgd_double_epoch_phase_only_for_now():
-    """基準条件・条件A・条件Bが全て完了済みのため，`train.py`を直接実行した場合はSGD倍
-    エポック追加学習フェーズ（`.orders/order_039.md`）のみが実行されること，`main`関数が
-    `run_bs128`・`run_bs512`・`run_sgd_double`引数により各フェーズを独立に制御できることを
-    確認する．"""
+def test_main_entry_point_runs_bs32_phase_only_for_now():
+    """基準条件・条件A・条件B・SGD倍エポック追加学習が全て完了済みのため，`train.py`を
+    直接実行した場合はバッチサイズ32フェーズ（条件C，`.orders/order_040.md`）のみが
+    実行されること，`main`関数が`run_bs128`・`run_bs512`・`run_bs32`・`run_sgd_double`
+    引数により各フェーズを独立に制御できることを確認する．"""
     import ast
 
     source_path = os.path.join(_EX0051_DIR, "train.py")
@@ -413,7 +430,8 @@ def test_main_entry_point_runs_sgd_double_epoch_phase_only_for_now():
             call_src = ast.unparse(node.body[0])
             assert "run_bs128=False" in call_src
             assert "run_bs512=False" in call_src
-            assert "run_sgd_double=True" in call_src
+            assert "run_bs32=True" in call_src
+            assert "run_sgd_double=False" in call_src
             main_call_found = True
     assert main_call_found, "`if __name__ == '__main__':`ブロックが見つからない"
 
@@ -422,10 +440,101 @@ def test_main_entry_point_runs_sgd_double_epoch_phase_only_for_now():
     main_signature = inspect.signature(ex0051_train.main)
     assert "run_bs128" in main_signature.parameters
     assert "run_bs512" in main_signature.parameters
+    assert "run_bs32" in main_signature.parameters
     assert "run_sgd_double" in main_signature.parameters
     assert main_signature.parameters["run_bs128"].default is True
     assert main_signature.parameters["run_bs512"].default is True
+    assert main_signature.parameters["run_bs32"].default is False
     assert main_signature.parameters["run_sgd_double"].default is False
+
+
+def test_build_tasks_returns_condition_c_for_batch_size_32():
+    """`_build_tasks(32)`が条件C（4手法×5Seed=20タスク，エポック数33）を生成することを
+    確認する．"""
+    tasks = ex0051_train._build_tasks(32)
+    assert len(tasks) == 20
+    for method, batch_size, eta, epochs, seed in tasks:
+        assert batch_size == 32
+        assert eta == 0.001
+        assert epochs == 33
+
+
+def _make_synthetic_dataloaders_with_generator(n_train=16, n_test=8, batch_size=4, seed=0):
+    """`data.py`の`load_dataloader`同様，`shuffle=True`かつ`torch.Generator`を指定した
+    データローダーを構築する（`save_checkpoint`のシャッフル順序保存を検証するため）。"""
+    train_ds = _SyntheticImageDataset(n_train, seed)
+    test_ds = _SyntheticImageDataset(n_test, seed + 1)
+    generator = torch.Generator().manual_seed(seed)
+    train_dl = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=True, generator=generator)
+    test_dl = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=False)
+    return train_dl, test_dl
+
+
+def test_checkpoint_round_trip_preserves_optimizer_state(tmp_path):
+    """`.orders/order_040.md` 2.1節：`save_checkpoint`・`load_checkpoint`を用いて，
+    ASAI SVRGのOptimizer内部状態（平均勾配・平均パラメータの累積等）を，一度学習を進めた
+    後に別のOptimizerインスタンスへ完全に復元できることを確認する（チェックポイントが
+    将来のエポック数延長実験に利用可能であることの検証）．"""
+    device = torch.device("cpu")
+
+    def load_dataloader_func(seed=0, batch_size=4):
+        return _make_synthetic_dataloaders_with_generator(n_train=16, n_test=8, batch_size=batch_size, seed=seed)
+
+    logger = ResultLogger()
+    logger.set_names("epoch", "oracle_calls", "elapsed_time", "train_loss", "test_accuracy", "approx_error")
+    target_dir = str(tmp_path)
+
+    ex0051_train.run_variance_reduced(
+        "ASAI_SVRG", target_dir, load_dataloader_func, eta=0.01, batch_size=4,
+        reg_lambda=0.01, epochs=2, device=device, seed=0, logger=logger,
+    )
+
+    checkpoint = ex0051_train.load_checkpoint(target_dir)
+    assert checkpoint["epoch"] == 2
+    assert checkpoint["snapshot_model_state_dict"] is not None
+    assert checkpoint["dataloader_generator_state"] is not None
+    assert checkpoint["numpy_rng_state"] is not None
+    assert checkpoint["optimizer_extra_state"]["K"] is not None
+    assert checkpoint["optimizer_extra_state"]["_step_count"] is not None
+
+    # 復元先の新しいOptimizerインスタンスへ内部状態を読み込み，値が一致することを確認する。
+    restored_model = ex0051_train.load_model(ex0051_train.ResNet18LayerNorm, seed=99).to(device)
+    restored_optimizer = ex0051_train.ASAISVRG(restored_model.parameters(), lr=0.01, K=4)
+    restored_optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    restored_optimizer.K = checkpoint["optimizer_extra_state"]["K"]
+    restored_optimizer._step_count = checkpoint["optimizer_extra_state"]["_step_count"]
+
+    original_snapshot_grad = None
+    for p in restored_optimizer.param_groups[0]["params"]:
+        original_snapshot_grad = restored_optimizer.state[p]["snapshot_gradient"]
+        break
+    assert original_snapshot_grad is not None
+
+
+def test_checkpoint_not_saved_for_sgd_optimizer_extra_state(tmp_path):
+    """SGDは内部状態を持たないため，チェックポイントの`snapshot_model_state_dict`・
+    `numpy_rng_state`が`None`であることを確認する．"""
+    device = torch.device("cpu")
+
+    def load_dataloader_func(seed=0, batch_size=4):
+        return _make_synthetic_dataloaders(n_train=16, n_test=8, batch_size=batch_size, seed=seed)
+
+    logger = ResultLogger()
+    logger.set_names("epoch", "oracle_calls", "elapsed_time", "train_loss", "test_accuracy", "approx_error")
+    target_dir = str(tmp_path)
+
+    ex0051_train.run_sgd(
+        target_dir, load_dataloader_func, eta=0.01, batch_size=4, reg_lambda=0.01,
+        epochs=2, device=device, seed=0, logger=logger,
+    )
+
+    checkpoint = ex0051_train.load_checkpoint(target_dir)
+    assert checkpoint["epoch"] == 2
+    assert checkpoint["snapshot_model_state_dict"] is None
+    assert checkpoint["numpy_rng_state"] is None
+    # 合成データローダーはshuffle=Falseのためgeneratorを持たず，Noneとなる
+    # （本番の`data.py`は`shuffle=True`かつgeneratorを指定するため実際にはNoneにならない）。
+    assert checkpoint["dataloader_generator_state"] is None
 
 
 def test_sgd_double_epoch_condition_matches_condition_b_except_epochs():

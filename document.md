@@ -490,6 +490,33 @@ order_036.md`）と同一の条件のまま，SGDのみエポック数を2倍（
 report_036.mdの主要な結論（バッチサイズ拡大によるASAI SVRGの崩壊回避）には影響しない。
 詳細は`.reports/report_039.md`を参照。
 
+### 1.20 `.orders/order_040.md` によるex0051条件C（バッチサイズ32）とチェックポイント保存機構
+
+ex0023・ex0024（CIFAR-10・AlexNet）で確認された「バッチサイズ32でNFG SVRG・ASAI SVRGが
+全Seedで崩壊する」現象（`.reports/report_037.md` 5.2節）が，Imagewoof・ResNet18でも成立
+するかを確認するため，チャットでの指示に基づき，条件B（バッチサイズ512・学習率0.001）と
+同様の実験をバッチサイズ32に変更して実施した（条件C，$K=\lceil9025/32\rceil=283$，
+$\lceil9088/283\rceil=33$エポック，総イテレーション数9339，基準条件から+2.8%の端数）。
+`CONDITIONS`に条件Cを追加し，`run_bs32_phase`・`main`関数への`run_bs32`引数を追加した。
+
+併せて，ユーザーの明示的な指示に基づき，将来エポック数を増やす追試験を可能にするため，
+各条件の学習終了時点でモデルの重み・Optimizerの内部状態（`optimizer.state_dict()`が捕捉
+する`self.state`の全内容，`K`・`_step_count`・`_target_k`等の独自属性）・データシャッフル
+順序を決定する`torch.Generator`の状態・スナップショット点選択用`numpy.random.Generator`の
+状態を`checkpoint.pth`として保存する`save_checkpoint`・`load_checkpoint`関数を新設した
+（本オーダーは保存機構の実装・検証までを対象とし，チェックポイントからの再開自体は別
+オーダーで実施する）。
+
+**全20条件が正常に完了し，チェックポイントも全条件で保存されたが，結果は極めて明確な崩壊を
+示した：ASAI SVRGは5Seed全てでチャンスレベル付近（0.102〜0.109）まで崩壊した**（SVRGのみ
+安定して44.08%，SGD・NFG SVRGも精度が低く不安定）。ASAI SVRGの崩壊パターン（学習序盤で
+最高精度35〜39%に達した後，短期間でチャンスレベルまで崩壊し回復しない）は，ex0023・ex0024
+で観察されたパターンと定性的に完全に一致しており，**バッチサイズ32でのASAI SVRGの崩壊が，
+正規化層・データセット・アーキテクチャによらない一般的な現象であること**が，3つ目の独立した
+実験系列によって確認された。オラクル呼び出し回数ベースの比較でも，ASAI SVRGは5Seed全てで
+SVRGを大幅に下回り（平均差−0.3369），条件B（バッチサイズ512）で見られた効率性優位性が
+完全に逆転することを確認した。詳細は`.reports/report_040.md`を参照。
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -708,13 +735,20 @@ report_036.mdの主要な結論（バッチサイズ拡大によるASAI SVRGの�
 │                                        # 条件A・条件B），`_build_tasks(batch_size)`でバッチ
 │                                        # サイズ単位にタスクを分離し，`run_bs128_phase`
 │                                        # （8プロセス並列）／`run_bs512_phase`（4プロセス並列，
-│                                        # VRAM実測約22.6GBのため）を`main(run_bs128, run_bs512,
-│                                        # run_sgd_double)`で個別に実行可能．基準条件・条件A・
-│                                        # 条件Bは全て完了済み．`.orders/order_039.md`により
-│                                        # `SGD_DOUBLE_EPOCH_CONDITION`（条件Bと同一条件で
-│                                        # エポック数のみ2倍の1010）・`_build_sgd_double_epoch_
-│                                        # tasks`・`run_sgd_double_epoch_phase`を追加し，
-│                                        # 現状はSGD倍エポック追加学習（5条件）のみを実行
+│                                        # VRAM実測約22.6GBのため）／`run_bs32_phase`
+│                                        # （8プロセス並列，条件C，VRAM実測約1.85GBのため）を
+│                                        # `main(run_bs128, run_bs512, run_bs32, run_sgd_double)`
+│                                        # で個別に実行可能．基準条件・条件A・条件B・条件C・
+│                                        # SGD倍エポック追加学習は全て完了済み．`.orders/
+│                                        # order_039.md`により`SGD_DOUBLE_EPOCH_CONDITION`
+│                                        # （条件Bと同一条件でエポック数のみ2倍の1010）・
+│                                        # `_build_sgd_double_epoch_tasks`・
+│                                        # `run_sgd_double_epoch_phase`を追加．`.orders/
+│                                        # order_040.md`により条件C（バッチサイズ32・33
+│                                        # エポック）を追加し，`save_checkpoint`・
+│                                        # `load_checkpoint`関数（モデル・Optimizer内部状態・
+│                                        # データシャッフル順序を`checkpoint.pth`として保存・
+│                                        # 復元）を実装．現状は条件Cのみを実行
 ├── programs_old/                       # order_020以前の事前実験（Ex001〜Ex006）
 │   ├── optimizers/
 │   │   ├── __init__.py
@@ -866,12 +900,22 @@ report_036.mdの主要な結論（バッチサイズ拡大によるASAI SVRGの�
 │       │   │                            # （report_036.md 5.2節）
 │       │   ├── config.json             # 全20条件でcollapsed=false．K=18, total_iterations=9090
 │       │   └── best_model.pth
-│       └── SGD/lr0.001_bs512_lambda0.0005_epochs1010/{seed}/  # SGD倍エポック追加学習
-│           │                            # （order_039，5Seed）
-│           ├── log.json                # 1011エントリ（epoch0〜1010）．1010エポック時点でも
-│           │                            # 3指標判定で未プラトー（report_039.md 4.2節）
-│           ├── config.json             # 全5条件でcollapsed=false
-│           └── best_model.pth
+│       ├── SGD/lr0.001_bs512_lambda0.0005_epochs1010/{seed}/  # SGD倍エポック追加学習
+│       │   │                            # （order_039，5Seed）
+│       │   ├── log.json                # 1011エントリ（epoch0〜1010）．1010エポック時点でも
+│       │   │                            # 3指標判定で未プラトー（report_039.md 4.2節）
+│       │   ├── config.json             # 全5条件でcollapsed=false
+│       │   └── best_model.pth
+│       └── {method}/lr0.001_bs32_lambda0.0005_epochs33/{seed}/  # 条件C（order_040，
+│           │                            # 4手法x5Seed=20条件）
+│           ├── log.json                # 34エントリ（epoch0〜33）．ASAI SVRGは全5Seedで
+│           │                            # チャンスレベル付近まで崩壊（report_040.md 4.2節）
+│           ├── config.json             # 全20条件でcollapsed=false（崩壊は訓練損失の非有限
+│           │                            # 値化ではなく精度のチャンスレベル張り付きとして発生）
+│           ├── best_model.pth
+│           └── checkpoint.pth          # 学習終了時点のモデル・Optimizer内部状態・データ
+│                                        # シャッフル順序の完全な保存（order_040，将来の
+│                                        # エポック数延長実験用，本オーダーでは未使用）
 ├── outputs_old/                        # order_020以前の事前実験の結果
 │   ├── ex001_mushroom_svrg/
 │   │   └── {method}/{hyperparams}/{seed}/
@@ -1007,8 +1051,18 @@ report_036.mdの主要な結論（バッチサイズ拡大によるASAI SVRGの�
 │                                        # 生成すること，ディレクトリ名が条件Bと衝突しないこと，
 │                                        # `if __name__ == "__main__"`ブロックが
 │                                        # `main(run_bs128=False, run_bs512=False,
-│                                        # run_sgd_double=True)`を呼び出すことをASTで検証
-│                                        # （計31テスト）
+│                                        # run_sgd_double=True)`を呼び出すことをASTで検証．
+│                                        # order_040追加分：条件C（バッチサイズ32・33
+│                                        # エポック）が`CONDITIONS`に含まれ全4条件であること，
+│                                        # `_build_tasks(32)`が4手法x5Seed=20タスクを正しく
+│                                        # 生成すること，`if __name__ == "__main__"`ブロックが
+│                                        # `main(run_bs128=False, run_bs512=False, run_bs32=True,
+│                                        # run_sgd_double=False)`を呼び出すことをASTで検証，
+│                                        # `save_checkpoint`・`load_checkpoint`によるチェック
+│                                        # ポイントの往復（ASAI SVRGのOptimizer内部状態を
+│                                        # 別インスタンスへ完全復元できること）・SGDでは
+│                                        # スナップショット関連の値が`None`になることを検証
+│                                        # （計36テスト）
 ├── tests_old/                          # order_020以前の事前実験の単体テスト
 │   ├── test_optimizers.py              # 最適化手法クラスの単体テスト（pytest）
 │   ├── test_model.py                   # Ex001のモデル・勾配計算関数の単体テスト（pytest）
@@ -1180,6 +1234,21 @@ report_036.mdの主要な結論（バッチサイズ拡大によるASAI SVRGの�
 │                                        # 未到達）．見積もり時間（約46.8時間）は実測（約45.8
 │                                        # 時間）とほぼ一致．report_036.mdの主要な結論には
 │                                        # 影響しないと結論
+│   └── report_040.md                   # 実験ex0051条件C：バッチサイズ32（order_040）と
+│                                        # チェックポイント保存機構．条件B（バッチサイズ512）
+│                                        # と同様の実験をバッチサイズ32に変更して実施
+│                                        # （33エポック，総イテレーション数+2.8%の端数）．
+│                                        # ASAI SVRGが5Seed全てでチャンスレベル付近まで崩壊
+│                                        # （SVRGのみ安定）．崩壊パターンはex0023・ex0024
+│                                        # （CIFAR-10）と定性的に完全一致し，正規化層・
+│                                        # データセット・アーキテクチャに依存しない一般的な
+│                                        # 現象であることを3系列目の実験で確認．オラクル
+│                                        # 呼び出し効率も完全に逆転（ASAI SVRGが平均−0.3369
+│                                        # ポイント劣位）．`save_checkpoint`・
+│                                        # `load_checkpoint`関数（モデル・Optimizer内部状態・
+│                                        # データシャッフル順序を保存・復元）を実装し全20条件で
+│                                        # 検証済み．チェックポイントからの再開実験自体は別
+│                                        # オーダーで実施予定
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -1410,7 +1479,14 @@ report_036.mdの主要な結論（バッチサイズ拡大によるASAI SVRGの�
   別途追加実行できる。`.orders/order_039.md`により，条件Bと同一条件でSGDのみエポック数を
   倍（505→1010）にした追加学習用の`SGD_DOUBLE_EPOCH_CONDITION`・`_build_sgd_double_epoch_
   tasks`・`run_sgd_double_epoch_phase`が追加され，`main`関数の`run_sgd_double`引数で個別に
-  実行できる（実行済み，`.reports/report_039.md`）。
+  実行できる（実行済み，`.reports/report_039.md`）。`.orders/order_040.md`により，条件C
+  （バッチサイズ32・33エポック）が`CONDITIONS`に追加され，`run_bs32_phase`・`main`関数の
+  `run_bs32`引数で個別に実行できる（実行済み，`.reports/report_040.md`）。併せて，
+  `save_checkpoint`・`load_checkpoint`関数が追加され，`run_sgd`・`run_variance_reduced`の
+  学習終了時点でモデルの重み・Optimizerの内部状態（`optimizer.state_dict()`・`K`・
+  `_step_count`・`_target_k`）・データシャッフル順序（`torch.Generator`の状態）・スナップ
+  ショット点選択用乱数状態（`numpy.random.Generator`の状態）を`checkpoint.pth`として保存する
+  （将来のエポック数延長実験のための機構，条件Cの全20条件で保存を確認済み）。
 
 ### 3.2 事前実験（`programs_old/`，`.orders/order_011.md` まで）
 
@@ -1688,15 +1764,16 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 .venv_pytorch_gpu/bin/python programs/ex005_imagewoof_resnet18/train.py
 
 # 実験5b（ex0051，バッチサイズ128長期学習）・実験5c条件B（バッチサイズ512，order_036）・
-# SGD倍エポック追加学習（order_039）の学習実行（現状は`main(run_bs128=False, run_bs512=False,
-# run_sgd_double=True)`のためSGD倍エポック追加学習のみ実行．基準条件・条件B・SGD倍エポックは
-# 全て完了済み．本コマンドは実行済み）
+# SGD倍エポック追加学習（order_039）・条件C（バッチサイズ32，order_040）の学習実行（現状は
+# `main(run_bs128=False, run_bs512=False, run_bs32=True, run_sgd_double=False)`のため条件Cの
+# みを実行．基準条件・条件B・SGD倍エポック・条件Cは全て完了済み（学習終了時点でcheckpoint.pth
+# を保存）．本コマンドは実行済み）
 .venv_pytorch_gpu/bin/python programs/ex0051_imagewoof_resnet18_bs128_longrun/train.py
 
 # 実験5c条件A（バッチサイズ128・学習率0.0001，order_036）を追加実行する場合：train.pyの
-# `if __name__ == "__main__":`ブロックを`main(run_bs128=True, run_bs512=False,
-# run_sgd_double=False)`に変更してから実行する（条件B・SGD倍エポックは`is_run_completed`に
-# よりスキップされ条件Aのみ新規実行される，未実施）
+# `if __name__ == "__main__":`ブロックを`main(run_bs128=True, run_bs512=False, run_bs32=False,
+# run_sgd_double=False)`に変更してから実行する（条件B・SGD倍エポック・条件Cは
+# `is_run_completed`によりスキップされ条件Aのみ新規実行される，未実施）
 .venv_pytorch_gpu/bin/python programs/ex0051_imagewoof_resnet18_bs128_longrun/train.py
 
 # --- 事前実験（.orders/order_011.md まで）---
