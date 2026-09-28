@@ -517,6 +517,18 @@ $\lceil9088/283\rceil=33$エポック，総イテレーション数9339，基準
 SVRGを大幅に下回り（平均差−0.3369），条件B（バッチサイズ512）で見られた効率性優位性が
 完全に逆転することを確認した。詳細は`.reports/report_040.md`を参照。
 
+### 1.21 `.orders/order_041.md` による実験0-1（ex0001，a9a・L2正則化付きロジスティック回帰）
+
+実験0（NFG SVRG原論文付録A.1と同一の非凸の最小二乗損失，切片なし・正則化なし）の派生実験
+として，データ条件（a9a，無加工の0/1特徴量，9:1の層化分割）を実験0と同一に保ったまま，
+誤差関数・モデル・学習率の決定規則を実験1と同一（切片付きの線形結合＋シグモイド関数，
+L2正則化付きBCE損失，$ \lambda=0.03L_0 $，$ \eta_a=0.99/(3L) $・$ \rho=0.5 $ を満たす
+$ \eta_b $・$ \eta_c=1/(20L) $）に揃えた実験0-1（`programs/ex0001_a9a_logistic/`）を実施した．
+60条件全てが完了し，SVRG系3手法は全ての学習率で機械精度の水準まで線形収束した．フル勾配の
+計算回数あたりの収束はASAI SVRG > SVRG > NFG SVRGの順で，実験1と一致した．a9aでは
+$ \lambda=0.1125 $ が相対的に強く，最適解の検証精度は0.805（実験0は約0.85）であった．
+詳細は`.reports/report_041.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -528,6 +540,9 @@ SVRGを大幅に下回り（平均差−0.3369），条件B（バッチサイズ
 │   ├── ex000_a9a_least_squares/
 │   │   └── raw/                        # a9aデータセットの生データ（LIBSVM Data，自動ダウンロード）
 │   │                                    # ★ order_020以降の論文掲載用の実験0
+│   ├── ex0001_a9a_logistic/
+│   │   └── raw/                        # a9aデータセットの生データ（LIBSVM Data，自動ダウンロード）
+│   │                                    # ★ order_041の実験0-1
 │   ├── ex001_mushroom_logistic/
 │   │   └── raw/                        # UCI Mushroomデータセットの生データ（自動ダウンロード）
 │   │                                    # ★ order_021の論文掲載用の実験1
@@ -581,6 +596,14 @@ SVRGを大幅に下回り（平均差−0.3369），条件B（バッチサイズ
 │   │   └── train.py                    # 4手法 x 3学習率 x 5Seed = 60条件の学習を実行する
 │   │                                    # スクリプト（本体，order_020／チャットでの追加指示で
 │   │                                    # ASAI SVRG追加）
+│   ├── ex0001_a9a_logistic/            # 実験0-1：a9aの二値分類（BCE+L2正則化，強凸）．
+│   │   │                                # データは実験0，誤差関数・モデル・学習率規則は実験1と同一
+│   │   ├── data.py                     # 実験0と同一のa9a（無加工の0/1特徴量）のDataLoader構築
+│   │   ├── model.py                    # 実験1と同一のL2正則化付きロジスティック回帰（切片含む，
+│   │   │                                # 既定の入力次元123）
+│   │   └── train.py                    # 4手法 x 3学習率 x 5Seed = 60条件の学習を実行する
+│   │                                    # スクリプト（本体，order_041）．実験1のtrain.pyと同一の
+│   │                                    # L・lambda・rho・学習率の決定規則
 │   ├── ex001_mushroom_logistic/        # 実験1：Mushroomの二値分類（BCE+L2正則化，強凸）
 │   │   ├── data.py                     # マッシュルームデータセット（順序符号化+標準化，
 │   │   │                                # N=8124, d=22）の取得・前処理・DataLoader構築
@@ -799,6 +822,16 @@ SVRGを大幅に下回り（平均差−0.3369），条件B（バッチサイズ
 │   │   ├── comparison_all_axes_{eta}.png               # 3横軸 × 3評価指標の比較
 │   │   ├── accuracy_vs_epoch.png                       # 分類精度の推移
 │   │   └── final_epoch_summary.md                      # 最終エポックの評価指標の表
+│   ├── ex0001_a9a_logistic/
+│   │   ├── {method}/{hyperparams}/{seed}/
+│   │   │   ├── log.json                # ResultLoggerによる評価指標の履歴（objective_gap等）
+│   │   │   └── config.json             # L・lambda・rho等の理論的な根拠を含むメタデータ
+│   │   ├── train_stdout.log                            # train.pyの標準出力
+│   │   ├── grad_norm_sq_vs_full_grad_computations.png  # 原論文Figure 3形式の図
+│   │   ├── comparison_all_axes_{eta}.png               # 3横軸 × 3評価指標の比較
+│   │   ├── accuracy_vs_epoch.png                       # 分類精度の推移
+│   │   ├── cross_experiment_comparison_eta_1_20L.png   # 実験0・0-1・1の比較（eta=1/(20L)）
+│   │   └── final_epoch_summary.md                      # 最終エポックの評価指標の表
 │   ├── ex001_mushroom_logistic/
 │   │   ├── {method}/{hyperparams}/{seed}/
 │   │   │   ├── log.json                # ResultLoggerによる評価指標の履歴（objective_gap等）
@@ -939,6 +972,10 @@ SVRGを大幅に下回り（平均差−0.3369），条件B（バッチサイズ
 │   │                                    # 分割前の実装と同一結果になることも確認する
 │   ├── test_ex000_a9a_least_squares.py # 実験0のモデル・勾配・平滑性定数・学習率の上界・
 │   │                                    # オラクル呼び出し回数・3手法のスモークテスト
+│   ├── test_ex0001_a9a_logistic.py     # 実験0-1のモデル（切片・次元123）・正則化付きBCE損失・
+│   │                                    # 勾配・a9aの前処理が実験0と同一であること・a9aでの
+│   │                                    # L・lambda・学習率の解析値・4手法のスモークテスト・
+│   │                                    # オラクル呼び出し回数
 │   ├── test_ex001_mushroom_logistic.py # 実験1のモデル（重み・切片両方への正則化）・勾配・
 │   │                                    # 平滑性定数・収縮係数rhoのU字形・rho逆算の妥当性・
 │   │                                    # 4手法のスモークテスト・オラクル呼び出し回数．
@@ -1234,7 +1271,7 @@ SVRGを大幅に下回り（平均差−0.3369），条件B（バッチサイズ
 │                                        # 未到達）．見積もり時間（約46.8時間）は実測（約45.8
 │                                        # 時間）とほぼ一致．report_036.mdの主要な結論には
 │                                        # 影響しないと結論
-│   └── report_040.md                   # 実験ex0051条件C：バッチサイズ32（order_040）と
+│   ├── report_040.md                   # 実験ex0051条件C：バッチサイズ32（order_040）と
 │                                        # チェックポイント保存機構．条件B（バッチサイズ512）
 │                                        # と同様の実験をバッチサイズ32に変更して実施
 │                                        # （33エポック，総イテレーション数+2.8%の端数）．
@@ -1249,6 +1286,10 @@ SVRGを大幅に下回り（平均差−0.3369），条件B（バッチサイズ
 │                                        # データシャッフル順序を保存・復元）を実装し全20条件で
 │                                        # 検証済み．チェックポイントからの再開実験自体は別
 │                                        # オーダーで実施予定
+│   └── report_041.md                   # 実験0-1（ex0001，order_041）：a9aに実験1と同一の
+│                                        # L2正則化付きBCE損失・切片付きモデル・学習率規則を
+│                                        # 適用．SVRG系3手法が機械精度まで線形収束し，収束順序
+│                                        # （ASAI SVRG > SVRG > NFG SVRG）は実験1と一致
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -1277,6 +1318,15 @@ SVRGを大幅に下回り（平均差−0.3369），条件B（バッチサイズ
   `ResultLogger`，`set_seed`，および `scipy.optimize`（参考値 $ f(x^*) $ の算出）を利用し，
   学習全体を統括する．60条件をマルチプロセスで並列実行するため，NumPy・PyTorchのimportより
   前に `OMP_NUM_THREADS` 等を1に設定し，BLASによるスレッドの過剰起動を防いでいる．
+- `programs/ex0001_a9a_logistic/data.py`：`programs/ex000_a9a_least_squares/data.py` と同一の
+  処理（a9aの取得，{0,1}ラベルへの写像，9:1の層化分割，標準化なし）を，実験0-1用のデータ
+  ディレクトリ（`datasets/ex0001_a9a_logistic/`）に対して行う．
+- `programs/ex0001_a9a_logistic/model.py`：`programs/ex001_mushroom_logistic/model.py` と同一の
+  L2正則化付きロジスティック回帰モデル（切片を含み，正則化は重み・切片の両方に課す）．既定の
+  入力次元のみa9aの123に変更している．
+- `programs/ex0001_a9a_logistic/train.py`：`programs/ex001_mushroom_logistic/train.py` と同一の
+  学習ループ・平滑性定数・正則化係数（$ \lambda = 0.03L_0 $）・3つの学習率の決定規則を，
+  a9aに適用する．依存するモジュールも実験1と同一である．
 - `programs/ex001_mushroom_logistic/data.py`：`machine_learning_utils.py` の `set_seed` を
   利用する．UCI Machine Learning Repositoryからマッシュルームデータセットを取得し（初回の
   み），22種類のカテゴリ特徴量を順序符号化（`OrdinalEncoder`）した後，9:1に分割・標準化して
@@ -1718,6 +1768,10 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 # 既に完了した条件はスキップ）
 .venv_pytorch/bin/python programs/ex001_mushroom_logistic/train.py
 
+# 実験0-1の学習実行（a9a・L2正則化付きBCE．4手法 x 3学習率 x 5Seed = 60条件を物理コア数相当
+# （32プロセス）で並列実行．1プロセスあたりのRAMは約0.5GB．既に完了した条件はスキップ）
+.venv_pytorch/bin/python programs/ex0001_a9a_logistic/train.py
+
 # 実験2の学習実行（4手法 x 3バッチサイズ x 3学習率 x 5Seed = 180条件をGPUで8プロセス並列
 # 実行．既に完了した条件はスキップ．GPU対応の .venv_pytorch_gpu を用いる）
 .venv_pytorch_gpu/bin/python programs/ex002_cifar10_alexnet/train.py
@@ -1814,7 +1868,7 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 ## 7. 実験結果・文書の保存場所
 
 - 学習結果（各Seedのログ・メタデータ）：
-  `outputs/{ex000_a9a_least_squares,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex0024_cifar10_alexnet_layernorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer,ex0041_wikitext2_transformer_fixedreg,ex005_imagewoof_resnet18,ex0051_imagewoof_resnet18_bs128_longrun}/{method}/{hyperparams}/{seed}/`
+  `outputs/{ex000_a9a_least_squares,ex0001_a9a_logistic,ex001_mushroom_logistic,ex002_cifar10_alexnet,ex0021_cifar10_alexnet_norm,ex0022_cifar10_alexnet_groupnorm,ex0023_cifar10_alexnet_groupnorm_longrun,ex0024_cifar10_alexnet_layernorm_longrun,ex003_tinyshakespeare_transformer,ex0031_tinyshakespeare_transformer_longrun,ex004_wikitext2_transformer,ex0041_wikitext2_transformer_fixedreg,ex005_imagewoof_resnet18,ex0051_imagewoof_resnet18_bs128_longrun}/{method}/{hyperparams}/{seed}/`
   （論文掲載用），
   `outputs_old/{ex001_mushroom_svrg,...,ex006_a9a_least_squares}/{method}/{hyperparams}/{seed}/`（事前実験）
 - 可視化結果（グラフ画像）：上記各実験ディレクトリ直下

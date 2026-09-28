@@ -1,0 +1,22 @@
+{
+    "experiment": "ex0001_a9a_logistic",
+    "method": "ASAI_SVRG",
+    "seed": 1,
+    "eta": 0.011688677696503297,
+    "eta_rule": "eta_b_rho=0.5",
+    "eta_description": "rho(eta)=0.5を満たす学習率（数値的に逆算，大きい方の解）",
+    "reg_lambda": 0.11249999999999999,
+    "lambda_ratio": 0.03,
+    "K": 29304,
+    "epochs": 100,
+    "batch_size": 1,
+    "sampling": "random_reshuffle",
+    "L": 3.8625,
+    "mu": 0.11249999999999999,
+    "condition_number": 0.029126213592233007,
+    "rho": 0.49999999999999983,
+    "N_train": 29304,
+    "N_test": 3257,
+    "d": 123,
+    "f_star": 0.47424216491854576
+}

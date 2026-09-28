@@ -1,0 +1,22 @@
+{
+    "experiment": "ex0001_a9a_logistic",
+    "method": "SVRG",
+    "seed": 1,
+    "eta": 0.012944983818770227,
+    "eta_rule": "eta_c=1/(20L)",
+    "eta_description": "実験0・実験1と共通の学習率規則",
+    "reg_lambda": 0.11249999999999999,
+    "lambda_ratio": 0.03,
+    "K": 29304,
+    "epochs": 100,
+    "batch_size": 1,
+    "sampling": "random_reshuffle",
+    "L": 3.8625,
+    "mu": 0.11249999999999999,
+    "condition_number": 0.029126213592233007,
+    "rho": 0.5569794393323805,
+    "N_train": 29304,
+    "N_test": 3257,
+    "d": 123,
+    "f_star": 0.47424216491854576
+}
