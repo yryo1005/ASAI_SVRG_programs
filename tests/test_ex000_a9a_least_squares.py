@@ -132,6 +132,20 @@ def test_learning_rates_satisfy_upper_bound():
         assert eta <= 1.0 / (3.0 * L) + 1e-15
 
 
+def test_hyperparameter_list_includes_eta_near_upper_bound():
+    """`.orders/order_042.md` で追加した学習率 $ 0.99/(3L) $ が含まれ，既存の3つの学習率（既存の
+    出力ディレクトリ名）が変化しないことを確認する．"""
+    hyperparameter_list = ex000_train.build_hyperparameter_list()
+    rule_to_hp = {hp["eta_rule"]: hp for hp in hyperparameter_list}
+    L = hyperparameter_list[0]["L_individual"]
+
+    assert list(rule_to_hp) == ["1/(3L)", "1/(20L)", "1/(20Ln)", "0.99/(3L)"]
+    assert np.isclose(rule_to_hp["0.99/(3L)"]["eta"], 0.99 / (3.0 * L))
+    assert rule_to_hp["1/(3L)"]["hp_name"] == "eta1.545485e-01_K29304_epochs100"
+    assert rule_to_hp["1/(20L)"]["hp_name"] == "eta2.318228e-02_K29304_epochs100"
+    assert rule_to_hp["1/(20Ln)"]["hp_name"] == "eta7.910960e-07_K29304_epochs100"
+
+
 @pytest.mark.parametrize("method", ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"])
 def test_training_runs_without_error_on_synthetic_data(method):
     """4手法が合成データ上でエラーなく完走し，記録された評価指標の本数がエポック数+1と一致する

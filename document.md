@@ -529,6 +529,17 @@ $ \eta_b $・$ \eta_c=1/(20L) $）に揃えた実験0-1（`programs/ex0001_a9a_l
 $ \lambda=0.1125 $ が相対的に強く，最適解の検証精度は0.805（実験0は約0.85）であった．
 詳細は`.reports/report_041.md`を参照．
 
+### 1.22 `.orders/order_042.md` によるa9aの2実験（MSE・BCE）の学習率 $ \eta=0.99/(3L) $ での比較
+
+ASAI SVRG論文4.1節の実験（実験1）と同一の規則 $ \eta=0.99/(3L) $ で，a9aのMSE（実験0）と
+BCE（実験0-1）を比較した．実験0の`build_hyperparameter_list`に4つ目の学習率 $ 0.99/(3L) $
+（$ =0.1530 $）を追加して20条件を新規に学習した（既存の60条件は変更なし）．実験0-1は
+同一条件（$ \eta_a $）を`order_041`で実施済みであり，Seed 0の再実行でログがビット単位で
+一致することを確認して既存結果を用いた．BCEでは3手法とも全Seedで機械精度まで線形収束
+したが，MSEではSVRGのみが全Seedで参考値 $ f(x^*) $ に到達し，ASAI SVRGは2Seedが全て負例と
+予測するシグモイドの飽和状態（$ f=0.2408 $，精度0.759）に停滞した．詳細は
+`.reports/report_042.md`を参照．
+
 ## 2. ディレクトリ構成と各ファイルの役割
 
 ```text
@@ -593,9 +604,9 @@ $ \lambda=0.1125 $ が相対的に強く，最適解の検証精度は0.805（�
 │   │   │                                # DataLoader構築．標準化等は行わず0/1の特徴量をそのまま使用
 │   │   ├── model.py                    # 非線形最小二乗回帰モデル（切片なし線形結合+シグモイド，
 │   │   │                                # 倍精度）．勾配は自動微分で計算
-│   │   └── train.py                    # 4手法 x 3学習率 x 5Seed = 60条件の学習を実行する
+│   │   └── train.py                    # 4手法 x 4学習率 x 5Seed = 80条件の学習を実行する
 │   │                                    # スクリプト（本体，order_020／チャットでの追加指示で
-│   │                                    # ASAI SVRG追加）
+│   │                                    # ASAI SVRG追加／order_042で学習率 0.99/(3L) を追加）
 │   ├── ex0001_a9a_logistic/            # 実験0-1：a9aの二値分類（BCE+L2正則化，強凸）．
 │   │   │                                # データは実験0，誤差関数・モデル・学習率規則は実験1と同一
 │   │   ├── data.py                     # 実験0と同一のa9a（無加工の0/1特徴量）のDataLoader構築
@@ -821,7 +832,9 @@ $ \lambda=0.1125 $ が相対的に強く，最適解の検証精度は0.805（�
 │   │   ├── grad_norm_sq_vs_full_grad_computations.png  # 原論文Figure 3に対応する図
 │   │   ├── comparison_all_axes_{eta}.png               # 3横軸 × 3評価指標の比較
 │   │   ├── accuracy_vs_epoch.png                       # 分類精度の推移
-│   │   └── final_epoch_summary.md                      # 最終エポックの評価指標の表
+│   │   ├── a9a_mse_vs_bce_eta_0.99_3L.png              # MSE・BCEの比較（eta=0.99/(3L)，order_042）
+│   │   ├── train_stdout_order042.log                   # order_042の学習の標準出力
+│   │   └── final_epoch_summary.md                      # 最終エポックの評価指標の表（4学習率）
 │   ├── ex0001_a9a_logistic/
 │   │   ├── {method}/{hyperparams}/{seed}/
 │   │   │   ├── log.json                # ResultLoggerによる評価指標の履歴（objective_gap等）
@@ -1286,10 +1299,13 @@ $ \lambda=0.1125 $ が相対的に強く，最適解の検証精度は0.805（�
 │                                        # データシャッフル順序を保存・復元）を実装し全20条件で
 │                                        # 検証済み．チェックポイントからの再開実験自体は別
 │                                        # オーダーで実施予定
-│   └── report_041.md                   # 実験0-1（ex0001，order_041）：a9aに実験1と同一の
+│   ├── report_041.md                   # 実験0-1（ex0001，order_041）：a9aに実験1と同一の
 │                                        # L2正則化付きBCE損失・切片付きモデル・学習率規則を
 │                                        # 適用．SVRG系3手法が機械精度まで線形収束し，収束順序
 │                                        # （ASAI SVRG > SVRG > NFG SVRG）は実験1と一致
+│   └── report_042.md                   # a9aのMSE（実験0）・BCE（実験0-1）を eta=0.99/(3L)
+│                                        # で比較（order_042）．BCEは全手法が線形収束，MSEは
+│                                        # ASAI SVRGの2Seedがシグモイドの飽和状態に停滞
 ├── requirements_pytorch.txt
 ├── requirements_pytorch_gpu.txt        # 実験2用GPU環境の依存ライブラリ（torch 2.11.0+cu128等）
 ├── .venv_pytorch/                      # Python仮想環境（Git管理対象外）
@@ -1760,7 +1776,7 @@ VS CodeからJupyterカーネルとして利用する場合は，カーネル名
 ```bash
 # --- 論文掲載用の実験（.orders/order_020.md 以降）---
 
-# 実験0の学習実行（4手法 x 3学習率 x 5Seed = 60条件をCPUでマルチプロセス並列実行．
+# 実験0の学習実行（4手法 x 4学習率 x 5Seed = 80条件をCPUでマルチプロセス並列実行．
 # 既に完了した条件はスキップ）
 .venv_pytorch/bin/python programs/ex000_a9a_least_squares/train.py
 

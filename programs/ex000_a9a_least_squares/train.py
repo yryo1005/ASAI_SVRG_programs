@@ -37,7 +37,8 @@ SVRG・NFG SVRGと共通のものを用いる（`.orders/order_011.md` の指示
 
 `.orders/order_020.md` の指示に従い，学習率はデータから推定した平滑性定数 $ L $ に基づいて
 解析的に決定し，チューニング（グリッド探索等）は行わない．理論的な根拠を持つ3つの値を用いる
-（詳細は `build_hyperparameter_list` を参照）．
+（詳細は `build_hyperparameter_list` を参照）．`.orders/order_042.md` に基づき，ASAI SVRG論文
+4.1節の実験（実験1）と同一の規則 $ \\eta = 0.99/(3L) $ を4つ目の学習率として追加した．
 """
 
 import itertools
@@ -47,7 +48,7 @@ import sys
 import time
 from multiprocessing import Pool
 
-# 本実験は60条件をマルチプロセスで並列実行するため，各プロセス内でBLAS（NumPy・SciPy）が
+# 本実験は80条件をマルチプロセスで並列実行するため，各プロセス内でBLAS（NumPy・SciPy）が
 # さらにスレッドを起動するとスレッド数がCPUコア数を大きく超過し，かえって実行が遅くなる．
 # NumPy・PyTorchのimportより前に環境変数を設定し，各プロセスを1スレッドに制限する．
 for _thread_env in (
@@ -89,6 +90,10 @@ SEEDS = [0, 1, 2, 3, 4]
 METHODS = ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"]
 EPOCHS = 100
 BATCH_SIZE = 1
+
+# 学習率 0.99/(3L) に用いる 1/(3L) に対する係数．ASAI SVRG論文4.1節の実験（実験1の
+# `ETA_A_MARGIN`）と同一の値とする．
+ETA_A_MARGIN = 0.99
 
 # 記録する評価指標の名前．
 METRIC_NAMES = (
@@ -474,7 +479,7 @@ def build_hyperparameter_list() -> list:
     """
     概要: 全手法・全Seedで共通して用いる学習率の候補を構築する．`.orders/order_020.md` の指示に
         従い，学習率はデータから推定した平滑性定数 $ L $ に基づいて解析的に決定し，
-        チューニング（グリッド探索等）は行わない．理論的な根拠を持つ次の3つの値を用いる．
+        チューニング（グリッド探索等）は行わない．理論的な根拠を持つ次の4つの値を用いる．
 
         1. η = 1/(3L)．ASAI SVRG論文（`references/ASAI_SVRG_paper.pdf`）の式(28)が定める
            係数 c_1 = 2η(1 - 3ηL) が正となるための上界であり，SVRG系手法の解析が成立する
@@ -483,6 +488,8 @@ def build_hyperparameter_list() -> list:
            よる縮小を除いた値である．原論文の定数 1/20 を保ちながら，1エポックあたりの
            実質的な移動量が n に依存して消失しないようにした，実用的な理論ステップ幅である．
         3. η = 1/(20Ln)．NFG SVRG原論文Theorem 1（非凸設定）の上界そのものである．
+        4. η = 0.99/(3L)．ASAI SVRG論文4.1節の実験（実験1）と同一の規則であり，補題3の条件
+           0 < η < 1/(3L) の上界近傍に対応する（`.orders/order_042.md`）．
 
         いずれの値も上界 1/(3L) 以下であり，`.orders/order_020.md` の条件を満たす．
         平滑性定数は，原論文およびASAI SVRG論文のAssumption 1（各 f_i が L-平滑）に対応する
@@ -513,6 +520,11 @@ def build_hyperparameter_list() -> list:
             1.0 / (20.0 * L_individual * N_train),
             "NFG SVRG原論文 Theorem 1（非凸設定）が与える上界そのもの",
         ),
+        (
+            "0.99/(3L)",
+            ETA_A_MARGIN / (3.0 * L_individual),
+            "ASAI SVRG論文4.1節の実験と同一の規則．補題3の上界 1/(3L) の近傍",
+        ),
     ]
 
     return [
@@ -530,7 +542,7 @@ def build_hyperparameter_list() -> list:
 
 def main():
     """
-    概要: 実験0の全条件（4手法 × 3学習率 × 5Seed = 60条件）をマルチプロセスで並列に学習する．
+    概要: 実験0の全条件（4手法 × 4学習率 × 5Seed = 80条件）をマルチプロセスで並列に学習する．
     引数: なし
     戻り値: なし
     """
