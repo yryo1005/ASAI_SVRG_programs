@@ -218,3 +218,27 @@ def test_asai_snapshot_is_average_of_inner_iterates():
     for j, z in enumerate(optimizer.get_snapshot_params()):
         expected = sum(it[j] for it in iterates) / 3
         assert torch.allclose(z, expected, atol=1e-12)
+
+
+def test_build_tasks_with_epochs_by_batch_size():
+    """
+    概要: `epochs_by_batch_size` を持つ実験の定義（付録B）で，バッチサイズごとのエポック数と保存先の
+        ディレクトリ名が正しく構築され，`batch_size`・`epochs` だけを持つ定義（E0）の動作が変わらないことを確認する．
+    引数: なし
+    戻り値: なし
+    """
+    import e0_runner
+
+    spec = {"experiment": "exp", "learning_rate": 0.001, "reg_lambda": 5e-4, "epochs_by_batch_size": {32: 12, 512: 192}}
+    tasks = e0_runner.build_tasks(spec, ["ASAI_SVRG"], ["snapshot"], [0, 1], None, "/out")
+    assert [(t["run_config"]["batch_size"], t["run_config"]["epochs"], t["seed"]) for t in tasks] == \
+        [(32, 12, 0), (32, 12, 1), (512, 192, 0), (512, 192, 1)]
+    assert tasks[0]["target_dir"] == "/out/ASAI_SVRG/inner_snapshot_lr0.001_bs32_lambda0.0005_epochs12/0"
+    only_512 = e0_runner.build_tasks(spec, ["SVRG"], ["snapshot"], [0], 2, "/out", [512])
+    assert only_512[0]["run_config"] == {"learning_rate": 0.001, "batch_size": 512, "epochs": 2}
+
+    e0_spec = {"experiment": "exp", "learning_rate": 0.001, "reg_lambda": 5e-4, "batch_size": 128, "epochs": 48}
+    e0_tasks = e0_runner.build_tasks(e0_spec, ["SVRG"], ["last_iterate", "snapshot"], [0], None, "/out")
+    assert [t["target_dir"] for t in e0_tasks] == [
+        "/out/SVRG/inner_last_iterate_lr0.001_bs128_lambda0.0005_epochs48/0",
+        "/out/SVRG/inner_snapshot_lr0.001_bs128_lambda0.0005_epochs48/0"]

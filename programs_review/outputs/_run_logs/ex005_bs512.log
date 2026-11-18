@@ -1,0 +1,56 @@
+タスク数: 15，並列プロセス数: 3
+multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/home/user/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/user/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/pool.py", line 48, in mapstar
+    return list(map(*args))
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/common/e0_runner.py", line 121, in __call__
+    run_single_experiment(task, self.build_problem())
+  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/common/vr_image_training.py", line 444, in run_single_experiment
+    run_variance_reduced(task["method"], task["inner_start"], target_dir, problem, run_config,
+  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/common/vr_image_training.py", line 316, in run_variance_reduced
+    model = problem["build_model"](seed).to(device)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1384, in to
+    return self._apply(convert)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 934, in _apply
+    module._apply(fn)
+  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 934, in _apply
+    module._apply(fn)
+  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 965, in _apply
+    param_applied = fn(param)
+                    ^^^^^^^^^
+  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1370, in convert
+    return t.to(
+           ^^^^^
+torch.AcceleratorError: CUDA error: out of memory
+Search for `cudaErrorMemoryAllocation' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/ex005_appb_imagewoof_resnet18_layernorm/train.py", line 84, in <module>
+    run_main(SPEC, build_problem, prepare_cache, __doc__)
+  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/common/e0_runner.py", line 146, in run_main
+    pool.map(worker, tasks, chunksize=1)
+  File "/home/user/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/pool.py", line 367, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/pool.py", line 774, in get
+    raise self._value
+torch.AcceleratorError: CUDA error: out of memory
+Search for `cudaErrorMemoryAllocation' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+

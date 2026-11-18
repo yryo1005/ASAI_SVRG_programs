@@ -5,7 +5,13 @@ NOLTA投稿論文（Manuscript ID: 2027NPP0002，ASA-SVRG）の条件付き採�
 切り出すことを想定しており，本ディレクトリの外のファイルを import・参照しない（既存の結果との比較に
 用いる `programs/compare_with_existing_logs.py` は，既存の結果のパスをコマンドライン引数で受け取る）．
 
-現在実装している実験は E0（内側ループの開始点の影響確認）のみである．
+現在実装している実験は次の2つである．
+
+- E0（内側ループの開始点の影響確認）．
+- 付録B（バッチサイズ32・512）の再実施．
+  - 著者の判断により，以降の実験は内側ループの開始点を論文のAlgorithm通りとする．
+    すなわち `inner_start="snapshot"`（$ {\mathbf w}_{s}^{0} \leftarrow {\mathbf z}_{s} $）である（`.reports/report_044.md`）．
+  - 付録Bは `snapshot` で再実施する．`last_iterate` とSGDの結果には既存のログを用いる．
 
 ## 1. ディレクトリ構成
 
@@ -17,21 +23,27 @@ programs_review/
 │   │   ├── optimizers/                  # SGD，SVRG，NFG-SVRG，ASA-SVRG 等（既存の実装のコピー，変更なし）
 │   │   ├── cached_loader.py             # 前処理済みテンソルからミニバッチを読み出すローダー
 │   │   ├── vr_image_training.py         # 画像分類のSVRG系手法の学習ループ（inner_start を追加）
-│   │   └── e0_runner.py                 # E0の画像分類のタスク構築と並列実行
+│   │   └── e0_runner.py                 # 画像分類のタスク構築と並列実行（E0，付録B）
 │   ├── ex001_e0_mushroom_logistic/      # E0 (i) Mushroom（data.py，model.py，train.py）
 │   ├── ex002_e0_cifar10_alexnet_layernorm/   # E0 (ii) CIFAR-10（data.py，model.py，train.py）
 │   ├── ex003_e0_imagewoof_resnet18_layernorm/ # E0 (iii) ImageWoof（data.py，model.py，train.py）
+│   ├── ex004_appb_cifar10_alexnet_layernorm/  # 付録B.2 CIFAR-10 バッチサイズ32・512（snapshot）
+│   ├── ex005_appb_imagewoof_resnet18_layernorm/ # 付録B.3 ImageWoof バッチサイズ32・512（snapshot）
 │   ├── compare_with_existing_logs.py    # 既存の結果との一致の確認
 │   ├── analysis_e0.py                   # E0の図と表の作成
-│   └── analysis_e0_with_sgd.py          # E0の結果とSGD（既存のログ）の比較
+│   ├── analysis_e0_with_sgd.py          # E0の結果とSGD（既存のログ）の比較
+│   └── analysis_appb.py                 # 付録Bの図と表（既存の last_iterate・SGD と比較）
 ├── tests/test_e0_programs.py            # pytest
 ├── visualize_result.ipynb               # 可視化（analysis_e0.py を呼ぶ）
 ├── datasets/                            # データ（Git管理外）
 ├── outputs/                             # 結果
 │   ├── ex00{1,2,3}_e0_*/{手法}/{条件}/{seed}/{config.json,log.json,best_model.pth}
+│   ├── ex00{4,5}_appb_*/{手法}/{条件}/{seed}/...   # 付録Bの再実施
 │   ├── ex00{1,2,3}_e0_*/figures/        # 図
 │   ├── ex00{1,2,3}_e0_*/consistency_with_existing.md  # 既存の結果との一致の確認
-│   ├── e0_summary.md                    # 集計表
+│   ├── e0_summary.md                    # 集計表（E0）
+│   ├── e0_with_sgd_summary.md           # 集計表（E0とSGDの比較）
+│   ├── appb_summary.md                  # 集計表（付録B）
 │   └── _run_logs/                       # 実行時の標準出力
 ├── requirements_pytorch_gpu.txt
 └── document.md
@@ -63,6 +75,8 @@ graph TD
     T3 --> D3[ex003 data.py] --> C
     T2 --> M2[ex002 model.py]
     T3 --> M3[ex003 model.py]
+    T4[ex004/ex005 train.py] --> R
+    AB[analysis_appb.py] --> AS
     A[analysis_e0.py] --> OUT[(outputs/)]
     NB[visualize_result.ipynb] --> A
     CMP[compare_with_existing_logs.py] --> OUT
@@ -125,6 +139,12 @@ python ex002_e0_cifar10_alexnet_layernorm/train.py --inner-starts last_iterate -
 python compare_with_existing_logs.py --new-root ../outputs/_verify/ex002 \
     --existing-root <既存の outputs>/ex0024_cifar10_alexnet_layernorm_longrun \
     --hp-map inner_last_iterate_lr0.001_bs128_lambda0.0005_epochs3=lr0.001_bs128_normlayernorm_lambda0.0005_epochs48
+# 付録B（バッチサイズ32・512，snapshot）．ImageWoofのバッチサイズ512は1プロセスで約22GBのGPUメモリを使う
+python ex004_appb_cifar10_alexnet_layernorm/train.py --workers 6
+python ex005_appb_imagewoof_resnet18_layernorm/train.py --batch-sizes 32 --workers 8
+python ex005_appb_imagewoof_resnet18_layernorm/train.py --batch-sizes 512 --workers 3
+python analysis_appb.py --existing ex004_appb_cifar10_alexnet_layernorm=<既存の outputs>/ex0024_cifar10_alexnet_layernorm_longrun \
+    ex005_appb_imagewoof_resnet18_layernorm=<既存の outputs>/ex0051_imagewoof_resnet18_bs128_longrun
 # 集計と図
 python analysis_e0.py
 # SGD（既存のログ．パスは引数で渡す）との比較

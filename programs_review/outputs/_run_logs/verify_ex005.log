@@ -1,0 +1,41 @@
+タスク数: 1，並列プロセス数: 1
+ASAI_SVRG last_iterate bs=512 seed=0:   0%|          | 0/2 [00:00<?, ?it/s]
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:   0%|          | 0/18 [00:00<?, ?it/s][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:   6%|▌         | 1/18 [00:01<00:19,  1.13s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  11%|█         | 2/18 [00:02<00:22,  1.41s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  17%|█▋        | 3/18 [00:04<00:22,  1.52s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  22%|██▏       | 4/18 [00:06<00:22,  1.58s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  28%|██▊       | 5/18 [00:07<00:20,  1.57s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  33%|███▎      | 6/18 [00:09<00:19,  1.59s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  39%|███▉      | 7/18 [00:10<00:17,  1.60s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  44%|████▍     | 8/18 [00:12<00:16,  1.63s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  50%|█████     | 9/18 [00:14<00:14,  1.59s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  56%|█████▌    | 10/18 [00:15<00:12,  1.61s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  61%|██████    | 11/18 [00:17<00:11,  1.61s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  67%|██████▋   | 12/18 [00:18<00:09,  1.62s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  72%|███████▏  | 13/18 [00:20<00:08,  1.63s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  78%|███████▊  | 14/18 [00:22<00:06,  1.62s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  83%|████████▎ | 15/18 [00:23<00:04,  1.64s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  89%|████████▉ | 16/18 [00:25<00:03,  1.65s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep1:  94%|█████████▍| 17/18 [00:27<00:01,  1.67s/it][A
+                                                                                         [AASAI_SVRG last_iterate bs=512 seed=0:  50%|█████     | 1/2 [00:47<00:47, 47.96s/it]
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:   0%|          | 0/18 [00:00<?, ?it/s][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:   6%|▌         | 1/18 [00:01<00:19,  1.16s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  11%|█         | 2/18 [00:02<00:22,  1.43s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  17%|█▋        | 3/18 [00:04<00:23,  1.53s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  22%|██▏       | 4/18 [00:06<00:22,  1.58s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  28%|██▊       | 5/18 [00:07<00:20,  1.59s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  33%|███▎      | 6/18 [00:09<00:18,  1.58s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  44%|████▍     | 8/18 [00:10<00:11,  1.17s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  50%|█████     | 9/18 [00:12<00:11,  1.31s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  56%|█████▌    | 10/18 [00:14<00:11,  1.38s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  61%|██████    | 11/18 [00:15<00:10,  1.47s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  67%|██████▋   | 12/18 [00:17<00:09,  1.53s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  72%|███████▏  | 13/18 [00:19<00:07,  1.58s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  78%|███████▊  | 14/18 [00:20<00:06,  1.57s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  83%|████████▎ | 15/18 [00:22<00:04,  1.55s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  89%|████████▉ | 16/18 [00:23<00:02,  1.48s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2:  94%|█████████▍| 17/18 [00:24<00:01,  1.46s/it][A
+ASAI_SVRG last_iterate bs=512 seed=0 ep2: 100%|██████████| 18/18 [00:26<00:00,  1.36s/it][A
+                                                                                         [AASAI_SVRG last_iterate bs=512 seed=0: 100%|██████████| 2/2 [01:28<00:00, 43.51s/it]                                                                                   [done] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/_verify/ex005/ASAI_SVRG/inner_last_iterate_lr0.001_bs512_lambda0.0005_epochs2/0
+全ての学習が終了しました．

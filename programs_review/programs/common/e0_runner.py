@@ -12,8 +12,37 @@ import argparse
 import itertools
 import multiprocessing
 import os
+import time
+import traceback
 
-from vr_image_training import INNER_STARTS, run_single_experiment
+from vr_image_training import INNER_STARTS, is_run_completed, run_single_experiment
+
+# WSL2 では，他のプロセスがGPUを高頻度に使用している間，新しいプロセスのCUDAの初期化が一時的に
+# 失敗することがある（dxg の vmbus_sendpacket が EAGAIN を返し，`CUDA error: out of memory` となる）．
+# 初期化を待ち時間を空けて再試行し，それでも失敗したタスクは新しいプロセスで再実行する．
+CUDA_INIT_ATTEMPTS = 5
+CUDA_INIT_WAIT_SECONDS = 20
+MAX_ROUNDS = 5
+
+
+def _init_cuda() -> None:
+    """
+    概要: CUDAを初期化する．失敗した場合は待ち時間を空けて再試行する．
+    引数: なし
+    戻り値: なし（`CUDA_INIT_ATTEMPTS` 回失敗した場合は最後の例外を送出する）
+    """
+    import torch
+
+    if not torch.cuda.is_available():
+        return
+    for attempt in range(CUDA_INIT_ATTEMPTS):
+        try:
+            torch.zeros(1, device="cuda")
+            return
+        except RuntimeError:
+            if attempt == CUDA_INIT_ATTEMPTS - 1:
+                raise
+            time.sleep(CUDA_INIT_WAIT_SECONDS)
 
 
 def epochs_by_batch_size(spec: dict) -> dict:
@@ -112,13 +141,19 @@ class _Worker:
         """
         self.build_problem = build_problem
 
-    def __call__(self, task: dict) -> None:
+    def __call__(self, task: dict) -> bool:
         """
-        概要: 1つのタスクを実行する．
+        概要: 1つのタスクを実行する．例外は送出せずに表示し，他のタスクの実行を続ける．
         引数: task (dict)．`build_tasks` が返すタスク．
-        戻り値: なし
+        戻り値: success (bool)．
         """
-        run_single_experiment(task, self.build_problem())
+        try:
+            _init_cuda()
+            run_single_experiment(task, self.build_problem())
+            return True
+        except Exception:  # noqa: BLE001  失敗したタスクは run_main が再実行する
+            print(f"[failed] {task['target_dir']}\n{traceback.format_exc()}", flush=True)
+            return False
 
 
 def run_main(spec: dict, build_problem, prepare_cache, description: str) -> None:
@@ -138,10 +173,17 @@ def run_main(spec: dict, build_problem, prepare_cache, description: str) -> None
     num_workers = max(1, min(args.workers, len(tasks)))
     print(f"タスク数: {len(tasks)}，並列プロセス数: {num_workers}", flush=True)
     worker = _Worker(build_problem)
-    if num_workers == 1:
-        for task in tasks:
-            worker(task)
+    remaining = tasks
+    for round_index in range(MAX_ROUNDS):
+        # 1タスクごとに新しいプロセスで実行する（CUDAの初期化の失敗が他のタスクに影響しないようにする）．
+        with multiprocessing.get_context("spawn").Pool(processes=min(num_workers, len(remaining)),
+                                                       maxtasksperchild=1) as pool:
+            pool.map(worker, remaining, chunksize=1)
+        remaining = [t for t in remaining if not is_run_completed(t["target_dir"], t["run_config"]["epochs"])]
+        if not remaining:
+            break
+        print(f"未完了のタスク {len(remaining)} 件を再実行します（{round_index + 2}回目）．", flush=True)
+    if remaining:
+        print(f"完了しなかったタスク: {[t['target_dir'] for t in remaining]}", flush=True)
     else:
-        with multiprocessing.get_context("spawn").Pool(processes=num_workers) as pool:
-            pool.map(worker, tasks, chunksize=1)
-    print("全ての学習が終了しました．", flush=True)
+        print("全ての学習が終了しました．", flush=True)
