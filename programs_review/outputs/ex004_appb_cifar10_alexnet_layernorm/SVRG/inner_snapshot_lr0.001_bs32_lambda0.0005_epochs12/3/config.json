@@ -1,0 +1,25 @@
+{
+    "experiment": "ex004_appb_cifar10_alexnet_layernorm",
+    "method": "SVRG",
+    "inner_start": "snapshot",
+    "seed": 3,
+    "learning_rate": 0.001,
+    "batch_size": 32,
+    "epochs": 12,
+    "reg_lambda": 0.0005,
+    "evaluation_point": "snapshot z_s",
+    "sampling": "random_reshuffle",
+    "terminated": false,
+    "recorded_epochs": 12,
+    "environment": {
+        "torch": "2.11.0+cu128",
+        "torchvision": "0.26.0+cu128",
+        "cuda": "12.8",
+        "cudnn": 91900,
+        "gpu": "NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition",
+        "pillow": "13.0.0"
+    },
+    "dataset": "CIFAR-10",
+    "model": "AlexNetCIFARNorm",
+    "norm_type": "layernorm"
+}
