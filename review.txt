@@ -1,0 +1,143 @@
+[Notification of Conditional Acceptance]
+
+November 13, 2026.
+
+Manuscript ID: 2027NPP0002
+Paper/Letter: Paper
+Issue: EN
+Regular/Special: Special
+Title of Special Section: Recent Advances in Nonlinear Problems
+Title: Averaged Snapshots and Approximated Full Gradients for the Stochastic Variance-Reduced Gradient Method
+Date of Evaluation: November 10, 2026.
+
+Deadline for revision (Japan time): December 10, 2026.
+===============
+!! ATTENTION !!
+
+Click the following URL right now to let us know that you receive this e-mail.
+(This URL is available for only one time.)
+https://review.ieice.org/judgement/judgement_receipt_e.aspx?lid=2027NPP0002&code=2611132041422
+
+---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---
+How to submit your revised manuscript, reply letter and electronic
+source files for publishing:
+https://review.ieice.org/replyreg/reply_regist_e.aspx?param=Avmm9V7oYqlA4%2FwIKW8b3gGorxUiE8jdSVp65X4jj9v%2BVYZQDjRWIOD%2BAj7oaWAr
+---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---
+
+Dr. Ryo Yamatomi
+Shonan Institute of Technology
+
+Dear Dr. Ryo Yamatomi,
+The above manuscript has been reviewed for publication in the NOLTA,
+IEICE.
+We are afraid to inform you that we cannot publish the manuscript in
+its present form. Our Panel of Reviewers, however, found the manuscript
+interesting and requested a few modifications to the original. We would
+like to encourage you to submit a revised version, reflecting the
+Reviewers' comments, which are given below.
+
+Please note that NOLTA's Editorial policy stipulates that
+authors be granted 60 days (this may be shorten for the case of Special
+Issue. Check the above deadline carefully.) to revise their manuscripts. In order to
+receive a 2nd Review, the Author(s) must submit a revised manuscript
+before the date specified above.
+If we receive a revision after this date, the manuscript will be
+considered to be a new submission.   
+
+When revising your manuscript, please note the followings:
+
+1. Resubmission is allowed only once. Therefore, please revise your
+manuscript carefully.
+2. When revising the manuscript in accordance with the Reviewers'
+comments attached hereafter, please ensure that any discrepancies do
+not arise in the context due to the revisions.
+3. When the Authors make any additions or corrections, the section(s)
+should be MARKED so that the Reviewer can clearly see all the changes
+made.
+4. We do not accept any change of the authors' names including the
+order of the listed authors since the initial submission.
+5. When you submit the revised manuscript, you are requested to upload
+the followings.
+ (1) PDF files for review (upper limit:2MB per one file)
+  a. Revised Manuscript PDF file with marks for reviewer including all
+figures, tables, etc.
+  b. Reviewers’ comments and Reply Letter PDF file
+ (2) Electronic source files for publishing (upper limit:5MB per one
+file )
+  c. Revised Manuscript PDF file without marks including all figures,
+tables, etc.
+  d. Revised Manuscript body LaTex file
+  e. Source files of each figure and table (EX. eps, jpg, ppt, etc.)
+*Multiple files should be compressed using .zip, .lzh, or self-
+extracting archive.
+
+Thank you for submitting the results of your research to NOLTA, IEICE.
+I look forward to receiving your revised manuscript.
+
+Sincerely yours,
+
+
+
+
+
+Yoshikazu Yamanaka
+Associate Editor of the IEICE Transactions
+
+Utsunomiya University
+
+Tel:
+Email: yyamanaka@katzlab.jp
+
+
+------------
+Reviewer A
+------------
+The authors propose ASA-SVRG, which employs an average of stochastic gradients and an average of the parameters. ASA-SVRG is compared with SGD, SVRG and NFG-SVRG.
+The theoretical analysis appears to be reasonable. However, several points remain unclear, and the authors should address the following comments.
+
+(1) The authors refer readers to the experimental results in the Appendix. However, the Appendix should contain supplementary information. The authors should explain the experimental results that support their claims in the main text.
+
+(2) In the second paragraph of Section 4.1, the authors state:
+
+"Consequently, the rapid decrease of the objective observed in these experiments is not itself the linear convergence
+(the contraction under ?? < 1) guaranteed by Theorem 1."
+
+However, the experimental results supporting this discussion are not clearly presented.
+The authors should provide experimental results for different values of $\rho$ and discuss the relationship between $\rho$ and the actual convergence behavior.
+
+(3) The theoretical analysis of the proposed method strongly relies on the assumptions of L-smooth and mu-strong convexity. However, it is unclear whether these assumptions hold for general machine learning problems, particularly for nonconvex optimization problems. When these assumptions are not satisfied, the proposed method is not necessarily guaranteed to reduce the deviation from the full gradient.
+In fact, the experimental results in Sections 4.2 and 4.3 show that the proposed method performs worse than SGD in terms of loss and accuracy. Although the proposed method achieves better results than SVRG and NFG-SVRG and appears to reduce the approximation error, its advantages over SGD are not clearly demonstrated.
+
+Therefore, the authors should provide more detailed experimental analyses and discussions in addition to comparing accuracy, loss, and approximation error. In particular, the authors should investigate the differences among the snapshot selection strategies, how the accumulated approximation error in the proposed method and NFG-SVRG affects training performance, and the computational cost associated with full-gradient calculations.
+
+For example, in the second paragraph of Section 4.2, the authors state:
+
+"In NFG-SVRG, the accumulated approximation error appears to affect the whole training as a bias of the corrected gradient, manifesting itself as a drop in accuracy and instability across trials."
+
+However, this conclusion cannot be drawn from Fig. 2 alone. The authors should provide additional experimental results and discuss them to support this conclusion.
+
+
+------------
+Reviewer B
+------------
+The paper proposes ASA-SVRG, which uses the average of the inner-loop iterates as the snapshot in NFG-SVRG. The authors show that this choice minimizes the snapshot-dependent term in an upper bound on the full-gradient approximation error. The experimental results demonstrate that ASA-SVRG achieves smaller approximation errors than NFG-SVRG while maintaining stable training on nonconvex image classification tasks.
+
+The method is simple, the paper is clearly written, and its limitations are stated honestly. The following points can be addressed through textual revisions, and no additional experiments are required.
+
+Major comments
+1)
+Averaged snapshots have already been used in SVRG-type methods. For example, Prox-SVRG [R1] uses the average of the inner-loop iterates as the snapshot and also starts the next stage from it, which is the same snapshot rule as in ASA-SVRG. Please cite the relevant prior work and clarify that the novelty of the present study lies in combining an averaged snapshot with NFG-SVRG and in analyzing the resulting approximation error.
+[R1] Lin Xiao and Tong Zhang, "A Proximal Stochastic Gradient Method with Progressive Variance Reduction", SIAM Journal on Optimization, vol. 24, no. 4, pp. 2057-2075, 2014.
+https://doi.org/10.1137/140961791
+
+2)
+The analysis assumes uniform sampling, whereas the experiments use random reshuffling. Please explicitly acknowledge this difference between the theoretical and experimental settings. In addition, no error floor is visible in Figs. 1(A) and B-2(A), where the objective error decreases to approximately 10^-15. Please explain this behavior and clarify that the error floor discussed in Section 3 refers to an upper bound. One possible explanation is that, under random reshuffling with K = N, the epoch-averaged gradient approaches the exact full gradient as the iterates converge, so the approximation error vanishes.
+
+
+Minor comments
+3) Section 3.1: "(Theorem 2)" should be corrected to "(Theorem 3)."
+4) Figure 1(B): Please explain why the curves for NFG-SVRG and ASA-SVRG coincide exactly despite the use of different snapshots.
+5) Please mention the instability of ASA-SVRG with small mini-batch sizes, as observed in Appendices B.2 and B.3, in the Abstract or Conclusions.
+6) Please specify at which parameters (e.g., the snapshot z_s or the last inner-loop iterate) the loss and accuracy are evaluated. In addition, please indicate in the captions of Figs. B-4 and B-6 that the ASA-SVRG runs were terminated when divergence was observed.
+7) Please use consistent notation and terminology throughout the paper, for example, "=" vs. "←" in the algorithms and "Test Accuracy" vs. "validation data."
+

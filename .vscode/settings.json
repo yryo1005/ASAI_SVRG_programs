@@ -1,3 +1,6 @@
 {
-    "python.venvPath": "${workspaceFolder}"
+    "python.venvPath": "${workspaceFolder}",
+    "markdown-pdf.styles": [
+        ".vscode/pdf-style.css"
+    ]
 }
