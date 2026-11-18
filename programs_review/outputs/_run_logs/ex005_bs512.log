@@ -1,56 +1,627 @@
 タスク数: 15，並列プロセス数: 3
-multiprocessing.pool.RemoteTraceback: 
-"""
-Traceback (most recent call last):
-  File "/home/user/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/pool.py", line 125, in worker
-    result = (True, func(*args, **kwds))
-                    ^^^^^^^^^^^^^^^^^^^
-  File "/home/user/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/pool.py", line 48, in mapstar
-    return list(map(*args))
-           ^^^^^^^^^^^^^^^^
-  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/common/e0_runner.py", line 121, in __call__
-    run_single_experiment(task, self.build_problem())
-  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/common/vr_image_training.py", line 444, in run_single_experiment
-    run_variance_reduced(task["method"], task["inner_start"], target_dir, problem, run_config,
-  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/common/vr_image_training.py", line 316, in run_variance_reduced
-    model = problem["build_model"](seed).to(device)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1384, in to
-    return self._apply(convert)
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 934, in _apply
-    module._apply(fn)
-  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 934, in _apply
-    module._apply(fn)
-  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 965, in _apply
-    param_applied = fn(param)
-                    ^^^^^^^^^
-  File "/home/user/workspace/ASAI_SVRG_programs/.venv_pytorch/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1370, in convert
-    return t.to(
-           ^^^^^
-torch.AcceleratorError: CUDA error: out of memory
-Search for `cudaErrorMemoryAllocation' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
-CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
-For debugging consider passing CUDA_LAUNCH_BLOCKING=1
-Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
-
-"""
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/ex005_appb_imagewoof_resnet18_layernorm/train.py", line 84, in <module>
-    run_main(SPEC, build_problem, prepare_cache, __doc__)
-  File "/home/user/workspace/ASAI_SVRG_programs/programs_review/programs/common/e0_runner.py", line 146, in run_main
-    pool.map(worker, tasks, chunksize=1)
-  File "/home/user/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/pool.py", line 367, in map
-    return self._map_async(func, iterable, mapstar, chunksize).get()
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/user/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/pool.py", line 774, in get
-    raise self._value
-torch.AcceleratorError: CUDA error: out of memory
-Search for `cudaErrorMemoryAllocation' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
-CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
-For debugging consider passing CUDA_LAUNCH_BLOCKING=1
-Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
-
+ASAI_SVRG snapshot bs=512 seed=0:   0%|          | 0/505 [00:00<?, ?it/s]
+ASAI_SVRG snapshot bs=512 seed=0 ep1:   0%|          | 0/18 [00:00<?, ?it/s][ANFG_SVRG snapshot bs=512 seed=0:   0%|          | 0/505 [00:00<?, ?it/s]
+NFG_SVRG snapshot bs=512 seed=0 ep1:   0%|          | 0/18 [00:00<?, ?it/s][ASVRG snapshot bs=512 seed=0:   0%|          | 0/505 [00:00<?, ?it/s]
+SVRG snapshot bs=512 seed=0 ep1:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep1:   6%|▌         | 1/18 [00:01<00:32,  1.92s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:   6%|▌         | 1/18 [00:01<00:33,  1.95s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:   6%|▌         | 1/18 [00:02<00:34,  2.03s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  11%|█         | 2/18 [00:04<00:38,  2.40s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  11%|█         | 2/18 [00:04<00:39,  2.46s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  11%|█         | 2/18 [00:04<00:40,  2.51s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  17%|█▋        | 3/18 [00:07<00:39,  2.63s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  17%|█▋        | 3/18 [00:07<00:40,  2.67s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  17%|█▋        | 3/18 [00:07<00:39,  2.66s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  22%|██▏       | 4/18 [00:10<00:37,  2.66s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  22%|██▏       | 4/18 [00:10<00:37,  2.67s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  22%|██▏       | 4/18 [00:10<00:37,  2.71s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  28%|██▊       | 5/18 [00:13<00:34,  2.69s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  28%|██▊       | 5/18 [00:13<00:35,  2.71s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  28%|██▊       | 5/18 [00:13<00:35,  2.74s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  33%|███▎      | 6/18 [00:15<00:33,  2.76s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  33%|███▎      | 6/18 [00:16<00:33,  2.76s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  33%|███▎      | 6/18 [00:14<00:25,  2.10s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  39%|███▉      | 7/18 [00:16<00:23,  2.16s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  39%|███▉      | 7/18 [00:16<00:23,  2.16s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  39%|███▉      | 7/18 [00:16<00:25,  2.33s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  44%|████▍     | 8/18 [00:19<00:23,  2.32s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  44%|████▍     | 8/18 [00:19<00:23,  2.32s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  44%|████▍     | 8/18 [00:19<00:24,  2.46s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  50%|█████     | 9/18 [00:22<00:22,  2.47s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  50%|█████     | 9/18 [00:22<00:22,  2.46s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  50%|█████     | 9/18 [00:22<00:23,  2.56s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  56%|█████▌    | 10/18 [00:25<00:20,  2.57s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  56%|█████▌    | 10/18 [00:25<00:20,  2.56s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  56%|█████▌    | 10/18 [00:25<00:21,  2.63s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  61%|██████    | 11/18 [00:27<00:18,  2.61s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  61%|██████    | 11/18 [00:27<00:18,  2.61s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  61%|██████    | 11/18 [00:27<00:18,  2.64s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  67%|██████▋   | 12/18 [00:30<00:15,  2.66s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  67%|██████▋   | 12/18 [00:30<00:15,  2.67s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  67%|██████▋   | 12/18 [00:30<00:16,  2.71s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  72%|███████▏  | 13/18 [00:33<00:13,  2.71s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  72%|███████▏  | 13/18 [00:33<00:13,  2.71s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  72%|███████▏  | 13/18 [00:33<00:13,  2.73s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  78%|███████▊  | 14/18 [00:36<00:10,  2.70s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  78%|███████▊  | 14/18 [00:36<00:10,  2.69s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  78%|███████▊  | 14/18 [00:36<00:10,  2.72s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  83%|████████▎ | 15/18 [00:38<00:08,  2.71s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  83%|████████▎ | 15/18 [00:38<00:08,  2.74s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  83%|████████▎ | 15/18 [00:39<00:08,  2.73s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  89%|████████▉ | 16/18 [00:41<00:05,  2.77s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  89%|████████▉ | 16/18 [00:41<00:05,  2.78s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  89%|████████▉ | 16/18 [00:41<00:05,  2.76s/it][A
+SVRG snapshot bs=512 seed=0 ep1:  94%|█████████▍| 17/18 [00:44<00:02,  2.75s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep1:  94%|█████████▍| 17/18 [00:44<00:02,  2.74s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep1:  94%|█████████▍| 17/18 [00:44<00:02,  2.74s/it][A
+SVRG snapshot bs=512 seed=0 ep1: 100%|██████████| 18/18 [00:46<00:00,  2.58s/it][A
+                                                                                [A
+                                                                                    [A
+                                                                                     [ASVRG snapshot bs=512 seed=0:   0%|          | 1/505 [01:16<10:41:32, 76.37s/it]
+SVRG snapshot bs=512 seed=0 ep2:   0%|          | 0/18 [00:00<?, ?it/s][ANFG_SVRG snapshot bs=512 seed=0:   0%|          | 1/505 [01:16<10:45:50, 76.88s/it]ASAI_SVRG snapshot bs=512 seed=0:   0%|          | 1/505 [01:16<10:45:53, 76.89s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep2:   0%|          | 0/18 [00:00<?, ?it/s][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep2:   6%|▌         | 1/18 [00:01<00:29,  1.73s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:   6%|▌         | 1/18 [00:01<00:33,  1.95s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:   6%|▌         | 1/18 [00:02<00:34,  2.06s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  11%|█         | 2/18 [00:04<00:36,  2.29s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  11%|█         | 2/18 [00:04<00:39,  2.45s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  11%|█         | 2/18 [00:04<00:39,  2.49s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  17%|█▋        | 3/18 [00:06<00:36,  2.43s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  17%|█▋        | 3/18 [00:07<00:38,  2.56s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  17%|█▋        | 3/18 [00:07<00:38,  2.57s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  22%|██▏       | 4/18 [00:09<00:34,  2.49s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  22%|██▏       | 4/18 [00:10<00:37,  2.65s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  22%|██▏       | 4/18 [00:10<00:37,  2.68s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  28%|██▊       | 5/18 [00:12<00:33,  2.60s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  28%|██▊       | 5/18 [00:13<00:35,  2.74s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  28%|██▊       | 5/18 [00:13<00:35,  2.74s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  33%|███▎      | 6/18 [00:15<00:32,  2.67s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  33%|███▎      | 6/18 [00:15<00:32,  2.73s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  33%|███▎      | 6/18 [00:16<00:33,  2.76s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  39%|███▉      | 7/18 [00:17<00:29,  2.66s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  39%|███▉      | 7/18 [00:18<00:30,  2.78s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  39%|███▉      | 7/18 [00:18<00:30,  2.79s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  44%|████▍     | 8/18 [00:20<00:26,  2.66s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  44%|████▍     | 8/18 [00:21<00:28,  2.83s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  44%|████▍     | 8/18 [00:21<00:28,  2.83s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  50%|█████     | 9/18 [00:23<00:24,  2.67s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  50%|█████     | 9/18 [00:24<00:25,  2.81s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  50%|█████     | 9/18 [00:24<00:25,  2.80s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  56%|█████▌    | 10/18 [00:25<00:21,  2.67s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  56%|█████▌    | 10/18 [00:27<00:22,  2.82s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  56%|█████▌    | 10/18 [00:27<00:22,  2.81s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  61%|██████    | 11/18 [00:28<00:18,  2.70s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  61%|██████    | 11/18 [00:30<00:19,  2.81s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  61%|██████    | 11/18 [00:30<00:19,  2.80s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  67%|██████▋   | 12/18 [00:29<00:12,  2.04s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  67%|██████▋   | 12/18 [00:30<00:12,  2.16s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  67%|██████▋   | 12/18 [00:30<00:12,  2.14s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  72%|███████▏  | 13/18 [00:31<00:11,  2.21s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  72%|███████▏  | 13/18 [00:33<00:11,  2.37s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  78%|███████▊  | 14/18 [00:34<00:09,  2.26s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  72%|███████▏  | 13/18 [00:33<00:11,  2.37s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  83%|████████▎ | 15/18 [00:37<00:07,  2.45s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  78%|███████▊  | 14/18 [00:36<00:10,  2.56s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  78%|███████▊  | 14/18 [00:36<00:10,  2.57s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  89%|████████▉ | 16/18 [00:39<00:05,  2.59s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  83%|████████▎ | 15/18 [00:39<00:08,  2.69s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  83%|████████▎ | 15/18 [00:39<00:08,  2.68s/it][A
+SVRG snapshot bs=512 seed=0 ep2:  94%|█████████▍| 17/18 [00:42<00:02,  2.69s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  89%|████████▉ | 16/18 [00:42<00:05,  2.75s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  89%|████████▉ | 16/18 [00:42<00:05,  2.75s/it][A
+SVRG snapshot bs=512 seed=0 ep2: 100%|██████████| 18/18 [00:45<00:00,  2.58s/it][A
+                                                                                [A
+NFG_SVRG snapshot bs=512 seed=0 ep2:  94%|█████████▍| 17/18 [00:45<00:02,  2.80s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep2:  94%|█████████▍| 17/18 [00:45<00:02,  2.79s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep2: 100%|██████████| 18/18 [00:47<00:00,  2.64s/it][A
+                                                                                    [A
+ASAI_SVRG snapshot bs=512 seed=0 ep2: 100%|██████████| 18/18 [00:47<00:00,  2.63s/it][A
+                                                                                     [ASVRG snapshot bs=512 seed=0:   0%|          | 2/505 [02:33<10:45:27, 76.99s/it]
+SVRG snapshot bs=512 seed=0 ep3:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep3:   6%|▌         | 1/18 [00:01<00:32,  1.91s/it][AASAI_SVRG snapshot bs=512 seed=0:   0%|          | 2/505 [02:36<11:00:24, 78.78s/it]
+ASAI_SVRG snapshot bs=512 seed=0 ep3:   0%|          | 0/18 [00:00<?, ?it/s][ANFG_SVRG snapshot bs=512 seed=0:   0%|          | 2/505 [02:37<11:00:35, 78.80s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep3:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep3:  11%|█         | 2/18 [00:04<00:37,  2.34s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:   6%|▌         | 1/18 [00:01<00:33,  1.95s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:   6%|▌         | 1/18 [00:02<00:34,  2.06s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  17%|█▋        | 3/18 [00:07<00:37,  2.52s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  11%|█         | 2/18 [00:04<00:39,  2.48s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  11%|█         | 2/18 [00:04<00:40,  2.55s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  22%|██▏       | 4/18 [00:10<00:36,  2.62s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  17%|█▋        | 3/18 [00:07<00:39,  2.63s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  17%|█▋        | 3/18 [00:07<00:40,  2.67s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  28%|██▊       | 5/18 [00:12<00:33,  2.61s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  22%|██▏       | 4/18 [00:10<00:37,  2.66s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  22%|██▏       | 4/18 [00:10<00:37,  2.66s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  33%|███▎      | 6/18 [00:13<00:22,  1.89s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  28%|██▊       | 5/18 [00:11<00:25,  1.99s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  28%|██▊       | 5/18 [00:11<00:25,  2.00s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  39%|███▉      | 7/18 [00:15<00:23,  2.16s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  33%|███▎      | 6/18 [00:14<00:27,  2.33s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  33%|███▎      | 6/18 [00:14<00:27,  2.31s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  44%|████▍     | 8/18 [00:18<00:23,  2.37s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  39%|███▉      | 7/18 [00:16<00:26,  2.43s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  39%|███▉      | 7/18 [00:16<00:26,  2.45s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  50%|█████     | 9/18 [00:21<00:21,  2.41s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  44%|████▍     | 8/18 [00:19<00:25,  2.52s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  44%|████▍     | 8/18 [00:19<00:25,  2.53s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  56%|█████▌    | 10/18 [00:23<00:20,  2.53s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  50%|█████     | 9/18 [00:22<00:23,  2.65s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  50%|█████     | 9/18 [00:22<00:23,  2.64s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  61%|██████    | 11/18 [00:26<00:18,  2.60s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  56%|█████▌    | 10/18 [00:25<00:22,  2.76s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  56%|█████▌    | 10/18 [00:25<00:22,  2.76s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  67%|██████▋   | 12/18 [00:29<00:16,  2.69s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  61%|██████    | 11/18 [00:28<00:19,  2.82s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  61%|██████    | 11/18 [00:28<00:19,  2.83s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  72%|███████▏  | 13/18 [00:32<00:13,  2.73s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  67%|██████▋   | 12/18 [00:31<00:17,  2.86s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  67%|██████▋   | 12/18 [00:31<00:17,  2.88s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  78%|███████▊  | 14/18 [00:35<00:11,  2.79s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  72%|███████▏  | 13/18 [00:34<00:14,  2.89s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  72%|███████▏  | 13/18 [00:34<00:14,  2.90s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  83%|████████▎ | 15/18 [00:38<00:08,  2.82s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  78%|███████▊  | 14/18 [00:37<00:11,  2.92s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  78%|███████▊  | 14/18 [00:37<00:11,  2.92s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  89%|████████▉ | 16/18 [00:41<00:05,  2.82s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  83%|████████▎ | 15/18 [00:40<00:08,  2.90s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  83%|████████▎ | 15/18 [00:40<00:08,  2.89s/it][A
+SVRG snapshot bs=512 seed=0 ep3:  94%|█████████▍| 17/18 [00:43<00:02,  2.78s/it][A
+                                                                                [A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  89%|████████▉ | 16/18 [00:40<00:04,  2.06s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  89%|████████▉ | 16/18 [00:40<00:04,  2.11s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3:  94%|█████████▍| 17/18 [00:42<00:02,  2.21s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep3:  94%|█████████▍| 17/18 [00:43<00:02,  2.24s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep3: 100%|██████████| 18/18 [00:44<00:00,  2.21s/it][A
+                                                                                    [A
+ASAI_SVRG snapshot bs=512 seed=0 ep3: 100%|██████████| 18/18 [00:45<00:00,  2.26s/it][A
+                                                                                     [ASVRG snapshot bs=512 seed=0:   1%|          | 3/505 [03:47<10:30:47, 75.39s/it]
+SVRG snapshot bs=512 seed=0 ep4:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep4:   6%|▌         | 1/18 [00:01<00:24,  1.42s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  11%|█         | 2/18 [00:03<00:33,  2.10s/it][ANFG_SVRG snapshot bs=512 seed=0:   1%|          | 3/505 [03:52<10:47:16, 77.36s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep4:   0%|          | 0/18 [00:00<?, ?it/s][AASAI_SVRG snapshot bs=512 seed=0:   1%|          | 3/505 [03:53<10:49:39, 77.65s/it]
+ASAI_SVRG snapshot bs=512 seed=0 ep4:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep4:  17%|█▋        | 3/18 [00:06<00:34,  2.33s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:   6%|▌         | 1/18 [00:01<00:31,  1.85s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:   6%|▌         | 1/18 [00:02<00:35,  2.06s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  22%|██▏       | 4/18 [00:09<00:33,  2.42s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  11%|█         | 2/18 [00:04<00:39,  2.45s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  11%|█         | 2/18 [00:04<00:40,  2.55s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  28%|██▊       | 5/18 [00:11<00:33,  2.55s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  17%|█▋        | 3/18 [00:07<00:38,  2.56s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  17%|█▋        | 3/18 [00:07<00:39,  2.64s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  33%|███▎      | 6/18 [00:14<00:31,  2.59s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  22%|██▏       | 4/18 [00:10<00:36,  2.61s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  22%|██▏       | 4/18 [00:10<00:39,  2.79s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  39%|███▉      | 7/18 [00:17<00:28,  2.62s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  28%|██▊       | 5/18 [00:12<00:34,  2.69s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  28%|██▊       | 5/18 [00:13<00:36,  2.79s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  44%|████▍     | 8/18 [00:19<00:26,  2.64s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  33%|███▎      | 6/18 [00:15<00:33,  2.75s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  50%|█████     | 9/18 [00:22<00:23,  2.57s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  33%|███▎      | 6/18 [00:16<00:34,  2.86s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  39%|███▉      | 7/18 [00:18<00:30,  2.81s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  56%|█████▌    | 10/18 [00:25<00:21,  2.65s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  39%|███▉      | 7/18 [00:19<00:31,  2.87s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  44%|████▍     | 8/18 [00:21<00:28,  2.83s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  61%|██████    | 11/18 [00:28<00:18,  2.70s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  44%|████▍     | 8/18 [00:22<00:28,  2.89s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  50%|█████     | 9/18 [00:24<00:25,  2.84s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  67%|██████▋   | 12/18 [00:30<00:16,  2.70s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  50%|█████     | 9/18 [00:25<00:25,  2.85s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  56%|█████▌    | 10/18 [00:25<00:17,  2.21s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  72%|███████▏  | 13/18 [00:31<00:10,  2.11s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  56%|█████▌    | 10/18 [00:25<00:17,  2.18s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  61%|██████    | 11/18 [00:28<00:17,  2.47s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  78%|███████▊  | 14/18 [00:34<00:09,  2.33s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  61%|██████    | 11/18 [00:28<00:16,  2.40s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  67%|██████▋   | 12/18 [00:31<00:15,  2.60s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  83%|████████▎ | 15/18 [00:36<00:07,  2.40s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  67%|██████▋   | 12/18 [00:31<00:15,  2.51s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  72%|███████▏  | 13/18 [00:34<00:13,  2.66s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  89%|████████▉ | 16/18 [00:39<00:04,  2.44s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  72%|███████▏  | 13/18 [00:34<00:13,  2.62s/it][A
+SVRG snapshot bs=512 seed=0 ep4:  94%|█████████▍| 17/18 [00:42<00:02,  2.49s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  78%|███████▊  | 14/18 [00:36<00:10,  2.67s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  78%|███████▊  | 14/18 [00:37<00:10,  2.72s/it][A
+SVRG snapshot bs=512 seed=0 ep4: 100%|██████████| 18/18 [00:44<00:00,  2.41s/it][A
+                                                                                [A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  83%|████████▎ | 15/18 [00:39<00:08,  2.69s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  83%|████████▎ | 15/18 [00:39<00:08,  2.72s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  89%|████████▉ | 16/18 [00:42<00:05,  2.66s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  89%|████████▉ | 16/18 [00:42<00:05,  2.73s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4:  94%|█████████▍| 17/18 [00:44<00:02,  2.73s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep4:  94%|█████████▍| 17/18 [00:45<00:02,  2.78s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep4: 100%|██████████| 18/18 [00:47<00:00,  2.56s/it][A
+                                                                                    [A
+ASAI_SVRG snapshot bs=512 seed=0 ep4: 100%|██████████| 18/18 [00:47<00:00,  2.56s/it][A
+                                                                                     [ASVRG snapshot bs=512 seed=0:   1%|          | 4/505 [05:03<10:32:31, 75.75s/it]
+SVRG snapshot bs=512 seed=0 ep5:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep5:   6%|▌         | 1/18 [00:01<00:29,  1.75s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  11%|█         | 2/18 [00:03<00:28,  1.80s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  17%|█▋        | 3/18 [00:05<00:28,  1.90s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  22%|██▏       | 4/18 [00:08<00:31,  2.22s/it][ANFG_SVRG snapshot bs=512 seed=0:   1%|          | 4/505 [05:12<10:54:07, 78.34s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep5:   0%|          | 0/18 [00:00<?, ?it/s][AASAI_SVRG snapshot bs=512 seed=0:   1%|          | 4/505 [05:13<10:57:32, 78.75s/it]
+ASAI_SVRG snapshot bs=512 seed=0 ep5:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:   6%|▌         | 1/18 [00:01<00:31,  1.85s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  28%|██▊       | 5/18 [00:10<00:29,  2.31s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:   6%|▌         | 1/18 [00:01<00:32,  1.94s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  11%|█         | 2/18 [00:04<00:39,  2.44s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  33%|███▎      | 6/18 [00:13<00:30,  2.50s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  11%|█         | 2/18 [00:04<00:39,  2.50s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  17%|█▋        | 3/18 [00:07<00:38,  2.59s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  39%|███▉      | 7/18 [00:14<00:20,  1.90s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  17%|█▋        | 3/18 [00:05<00:26,  1.76s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  44%|████▍     | 8/18 [00:17<00:21,  2.15s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  22%|██▏       | 4/18 [00:08<00:25,  1.82s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  22%|██▏       | 4/18 [00:08<00:31,  2.23s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  50%|█████     | 9/18 [00:19<00:21,  2.37s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  28%|██▊       | 5/18 [00:10<00:28,  2.20s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  28%|██▊       | 5/18 [00:11<00:33,  2.56s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  56%|█████▌    | 10/18 [00:22<00:20,  2.54s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  33%|███▎      | 6/18 [00:13<00:29,  2.48s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  33%|███▎      | 6/18 [00:14<00:32,  2.73s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  61%|██████    | 11/18 [00:25<00:18,  2.59s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  39%|███▉      | 7/18 [00:16<00:28,  2.56s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  39%|███▉      | 7/18 [00:17<00:30,  2.79s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  67%|██████▋   | 12/18 [00:28<00:15,  2.59s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  44%|████▍     | 8/18 [00:19<00:26,  2.62s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  72%|███████▏  | 13/18 [00:30<00:13,  2.69s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  44%|████▍     | 8/18 [00:20<00:29,  2.92s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  50%|█████     | 9/18 [00:22<00:23,  2.65s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  78%|███████▊  | 14/18 [00:33<00:11,  2.78s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  56%|█████▌    | 10/18 [00:25<00:21,  2.74s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  50%|█████     | 9/18 [00:23<00:26,  2.95s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  83%|████████▎ | 15/18 [00:36<00:08,  2.77s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  61%|██████    | 11/18 [00:27<00:19,  2.75s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  56%|█████▌    | 10/18 [00:26<00:23,  2.92s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  89%|████████▉ | 16/18 [00:39<00:05,  2.78s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  67%|██████▋   | 12/18 [00:30<00:16,  2.79s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  61%|██████    | 11/18 [00:29<00:20,  2.90s/it][A
+SVRG snapshot bs=512 seed=0 ep5:  94%|█████████▍| 17/18 [00:42<00:02,  2.82s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  72%|███████▏  | 13/18 [00:33<00:13,  2.79s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  67%|██████▋   | 12/18 [00:32<00:17,  2.88s/it][A
+SVRG snapshot bs=512 seed=0 ep5: 100%|██████████| 18/18 [00:44<00:00,  2.63s/it][A
+                                                                                [A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  78%|███████▊  | 14/18 [00:36<00:11,  2.79s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  72%|███████▏  | 13/18 [00:35<00:14,  2.85s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  83%|████████▎ | 15/18 [00:36<00:06,  2.04s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  78%|███████▊  | 14/18 [00:35<00:08,  2.12s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  89%|████████▉ | 16/18 [00:39<00:04,  2.28s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  83%|████████▎ | 15/18 [00:38<00:06,  2.28s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5:  94%|█████████▍| 17/18 [00:42<00:02,  2.41s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  89%|████████▉ | 16/18 [00:41<00:04,  2.41s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep5: 100%|██████████| 18/18 [00:44<00:00,  2.38s/it][A
+                                                                                    [A
+ASAI_SVRG snapshot bs=512 seed=0 ep5:  94%|█████████▍| 17/18 [00:43<00:02,  2.56s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep5: 100%|██████████| 18/18 [00:46<00:00,  2.40s/it][A
+                                                                                     [ASVRG snapshot bs=512 seed=0:   1%|          | 5/505 [06:19<10:32:49, 75.94s/it]
+SVRG snapshot bs=512 seed=0 ep6:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep6:  11%|█         | 2/18 [00:02<00:21,  1.32s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  17%|█▋        | 3/18 [00:04<00:24,  1.67s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  22%|██▏       | 4/18 [00:06<00:24,  1.76s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  28%|██▊       | 5/18 [00:09<00:25,  1.98s/it][ANFG_SVRG snapshot bs=512 seed=0:   1%|          | 5/505 [06:29<10:48:35, 77.83s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep6:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:   6%|▌         | 1/18 [00:01<00:33,  1.95s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  33%|███▎      | 6/18 [00:11<00:27,  2.26s/it][AASAI_SVRG snapshot bs=512 seed=0:   1%|          | 5/505 [06:32<10:55:44, 78.69s/it]
+ASAI_SVRG snapshot bs=512 seed=0 ep6:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep6:  39%|███▉      | 7/18 [00:14<00:26,  2.37s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  11%|█         | 2/18 [00:04<00:41,  2.58s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:   6%|▌         | 1/18 [00:02<00:36,  2.14s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  44%|████▍     | 8/18 [00:17<00:25,  2.53s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  17%|█▋        | 3/18 [00:07<00:41,  2.73s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  11%|█         | 2/18 [00:05<00:42,  2.67s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  50%|█████     | 9/18 [00:20<00:23,  2.59s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  22%|██▏       | 4/18 [00:10<00:38,  2.75s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  17%|█▋        | 3/18 [00:07<00:40,  2.72s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  56%|█████▌    | 10/18 [00:22<00:21,  2.66s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  28%|██▊       | 5/18 [00:13<00:35,  2.77s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  22%|██▏       | 4/18 [00:10<00:38,  2.74s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  61%|██████    | 11/18 [00:25<00:19,  2.74s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  33%|███▎      | 6/18 [00:16<00:33,  2.81s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  28%|██▊       | 5/18 [00:13<00:36,  2.81s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  67%|██████▋   | 12/18 [00:28<00:16,  2.80s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  39%|███▉      | 7/18 [00:19<00:31,  2.84s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  33%|███▎      | 6/18 [00:16<00:34,  2.84s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  72%|███████▏  | 13/18 [00:29<00:10,  2.12s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  44%|████▍     | 8/18 [00:19<00:21,  2.14s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  39%|███▉      | 7/18 [00:17<00:22,  2.08s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  78%|███████▊  | 14/18 [00:31<00:09,  2.27s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  50%|█████     | 9/18 [00:22<00:20,  2.30s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  44%|████▍     | 8/18 [00:19<00:22,  2.29s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  83%|████████▎ | 15/18 [00:34<00:07,  2.46s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  56%|█████▌    | 10/18 [00:25<00:19,  2.47s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  50%|█████     | 9/18 [00:22<00:22,  2.47s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  89%|████████▉ | 16/18 [00:37<00:05,  2.59s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  61%|██████    | 11/18 [00:28<00:18,  2.60s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  56%|█████▌    | 10/18 [00:25<00:20,  2.60s/it][A
+SVRG snapshot bs=512 seed=0 ep6:  94%|█████████▍| 17/18 [00:40<00:02,  2.66s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  67%|██████▋   | 12/18 [00:31<00:15,  2.66s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  61%|██████    | 11/18 [00:28<00:18,  2.65s/it][A
+SVRG snapshot bs=512 seed=0 ep6: 100%|██████████| 18/18 [00:42<00:00,  2.53s/it][A
+                                                                                [A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  72%|███████▏  | 13/18 [00:33<00:13,  2.67s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  67%|██████▋   | 12/18 [00:31<00:16,  2.67s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  78%|███████▊  | 14/18 [00:36<00:10,  2.64s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  72%|███████▏  | 13/18 [00:33<00:13,  2.71s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  83%|████████▎ | 15/18 [00:39<00:08,  2.69s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  78%|███████▊  | 14/18 [00:36<00:10,  2.72s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  89%|████████▉ | 16/18 [00:42<00:05,  2.76s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  83%|████████▎ | 15/18 [00:39<00:08,  2.73s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6:  94%|█████████▍| 17/18 [00:45<00:02,  2.83s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  89%|████████▉ | 16/18 [00:42<00:05,  2.80s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep6: 100%|██████████| 18/18 [00:47<00:00,  2.66s/it][A
+                                                                                    [A
+ASAI_SVRG snapshot bs=512 seed=0 ep6:  94%|█████████▍| 17/18 [00:45<00:02,  2.80s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep6: 100%|██████████| 18/18 [00:47<00:00,  2.62s/it][A
+                                                                                     [ASVRG snapshot bs=512 seed=0:   1%|          | 6/505 [07:34<10:28:22, 75.56s/it]
+SVRG snapshot bs=512 seed=0 ep7:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep7:   6%|▌         | 1/18 [00:01<00:31,  1.85s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  11%|█         | 2/18 [00:04<00:39,  2.49s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  17%|█▋        | 3/18 [00:07<00:39,  2.63s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  22%|██▏       | 4/18 [00:09<00:34,  2.44s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  28%|██▊       | 5/18 [00:11<00:30,  2.36s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  33%|███▎      | 6/18 [00:14<00:28,  2.35s/it][ANFG_SVRG snapshot bs=512 seed=0:   1%|          | 6/505 [07:49<10:53:29, 78.58s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep7:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:   6%|▌         | 1/18 [00:01<00:29,  1.74s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  39%|███▉      | 7/18 [00:14<00:19,  1.77s/it][AASAI_SVRG snapshot bs=512 seed=0:   1%|          | 6/505 [07:50<10:51:57, 78.39s/it]
+ASAI_SVRG snapshot bs=512 seed=0 ep7:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  11%|█         | 2/18 [00:02<00:18,  1.15s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:   6%|▌         | 1/18 [00:02<00:35,  2.08s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  44%|████▍     | 8/18 [00:17<00:20,  2.06s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  50%|█████     | 9/18 [00:20<00:20,  2.27s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  17%|█▋        | 3/18 [00:05<00:30,  2.00s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  11%|█         | 2/18 [00:04<00:40,  2.54s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  56%|█████▌    | 10/18 [00:23<00:19,  2.44s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  22%|██▏       | 4/18 [00:08<00:33,  2.37s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  17%|█▋        | 3/18 [00:07<00:40,  2.72s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  61%|██████    | 11/18 [00:26<00:18,  2.59s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  28%|██▊       | 5/18 [00:11<00:33,  2.58s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  22%|██▏       | 4/18 [00:10<00:39,  2.81s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  67%|██████▋   | 12/18 [00:28<00:16,  2.68s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  33%|███▎      | 6/18 [00:14<00:32,  2.68s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  28%|██▊       | 5/18 [00:13<00:36,  2.83s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  72%|███████▏  | 13/18 [00:31<00:13,  2.68s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  39%|███▉      | 7/18 [00:17<00:29,  2.71s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  33%|███▎      | 6/18 [00:16<00:33,  2.79s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  78%|███████▊  | 14/18 [00:34<00:10,  2.74s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  44%|████▍     | 8/18 [00:19<00:27,  2.73s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  39%|███▉      | 7/18 [00:19<00:31,  2.82s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  83%|████████▎ | 15/18 [00:37<00:08,  2.76s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  50%|█████     | 9/18 [00:22<00:24,  2.75s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  44%|████▍     | 8/18 [00:22<00:28,  2.81s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  89%|████████▉ | 16/18 [00:40<00:05,  2.82s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  56%|█████▌    | 10/18 [00:25<00:22,  2.79s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  50%|█████     | 9/18 [00:24<00:25,  2.83s/it][A
+SVRG snapshot bs=512 seed=0 ep7:  94%|█████████▍| 17/18 [00:43<00:02,  2.82s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  61%|██████    | 11/18 [00:28<00:19,  2.81s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  56%|█████▌    | 10/18 [00:27<00:22,  2.83s/it][A
+SVRG snapshot bs=512 seed=0 ep7: 100%|██████████| 18/18 [00:45<00:00,  2.63s/it][A
+                                                                                [A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  67%|██████▋   | 12/18 [00:30<00:16,  2.76s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  61%|██████    | 11/18 [00:30<00:19,  2.76s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  72%|███████▏  | 13/18 [00:31<00:10,  2.06s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  67%|██████▋   | 12/18 [00:30<00:12,  2.06s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  78%|███████▊  | 14/18 [00:34<00:09,  2.28s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  72%|███████▏  | 13/18 [00:33<00:11,  2.33s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  83%|████████▎ | 15/18 [00:37<00:07,  2.46s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  78%|███████▊  | 14/18 [00:36<00:10,  2.52s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  89%|████████▉ | 16/18 [00:39<00:05,  2.56s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  83%|████████▎ | 15/18 [00:39<00:07,  2.62s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7:  94%|█████████▍| 17/18 [00:42<00:02,  2.68s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  89%|████████▉ | 16/18 [00:42<00:05,  2.71s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep7: 100%|██████████| 18/18 [00:45<00:00,  2.55s/it][A
+                                                                                    [A
+ASAI_SVRG snapshot bs=512 seed=0 ep7:  94%|█████████▍| 17/18 [00:45<00:02,  2.74s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep7: 100%|██████████| 18/18 [00:47<00:00,  2.59s/it][A
+                                                                                     [ASVRG snapshot bs=512 seed=0:   1%|▏         | 7/505 [08:51<10:30:09, 75.92s/it]
+SVRG snapshot bs=512 seed=0 ep8:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep8:  11%|█         | 2/18 [00:02<00:17,  1.11s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  17%|█▋        | 3/18 [00:05<00:28,  1.87s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  22%|██▏       | 4/18 [00:07<00:30,  2.19s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  28%|██▊       | 5/18 [00:09<00:27,  2.15s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  33%|███▎      | 6/18 [00:12<00:25,  2.15s/it][ANFG_SVRG snapshot bs=512 seed=0:   1%|▏         | 7/505 [09:05<10:45:04, 77.72s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep8:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep8:  39%|███▉      | 7/18 [00:14<00:25,  2.28s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:   6%|▌         | 1/18 [00:01<00:32,  1.92s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  44%|████▍     | 8/18 [00:17<00:24,  2.42s/it][AASAI_SVRG snapshot bs=512 seed=0:   1%|▏         | 7/505 [09:08<10:51:45, 78.53s/it]
+ASAI_SVRG snapshot bs=512 seed=0 ep8:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  11%|█         | 2/18 [00:04<00:38,  2.42s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:   6%|▌         | 1/18 [00:02<00:36,  2.16s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  50%|█████     | 9/18 [00:20<00:22,  2.49s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  17%|█▋        | 3/18 [00:07<00:40,  2.67s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  56%|█████▌    | 10/18 [00:22<00:20,  2.58s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  11%|█         | 2/18 [00:05<00:43,  2.75s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  22%|██▏       | 4/18 [00:10<00:39,  2.80s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  61%|██████    | 11/18 [00:25<00:18,  2.64s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  17%|█▋        | 3/18 [00:08<00:42,  2.81s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  28%|██▊       | 5/18 [00:13<00:37,  2.85s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  67%|██████▋   | 12/18 [00:28<00:16,  2.71s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  22%|██▏       | 4/18 [00:11<00:39,  2.83s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  33%|███▎      | 6/18 [00:16<00:34,  2.86s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  72%|███████▏  | 13/18 [00:29<00:10,  2.10s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  28%|██▊       | 5/18 [00:11<00:27,  2.12s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  39%|███▉      | 7/18 [00:17<00:24,  2.21s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  78%|███████▊  | 14/18 [00:31<00:09,  2.29s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  33%|███▎      | 6/18 [00:14<00:28,  2.38s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  44%|████▍     | 8/18 [00:20<00:23,  2.38s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  83%|████████▎ | 15/18 [00:34<00:07,  2.44s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  39%|███▉      | 7/18 [00:17<00:28,  2.56s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  50%|█████     | 9/18 [00:22<00:22,  2.51s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  89%|████████▉ | 16/18 [00:37<00:05,  2.55s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  44%|████▍     | 8/18 [00:20<00:27,  2.71s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  56%|█████▌    | 10/18 [00:25<00:20,  2.60s/it][A
+SVRG snapshot bs=512 seed=0 ep8:  94%|█████████▍| 17/18 [00:40<00:02,  2.56s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  50%|█████     | 9/18 [00:23<00:25,  2.78s/it][A
+SVRG snapshot bs=512 seed=0 ep8: 100%|██████████| 18/18 [00:41<00:00,  2.37s/it][A
+                                                                                [A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  61%|██████    | 11/18 [00:28<00:18,  2.62s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  56%|█████▌    | 10/18 [00:26<00:22,  2.75s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  67%|██████▋   | 12/18 [00:30<00:15,  2.61s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  61%|██████    | 11/18 [00:29<00:19,  2.79s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  72%|███████▏  | 13/18 [00:33<00:13,  2.74s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  67%|██████▋   | 12/18 [00:32<00:17,  2.84s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  78%|███████▊  | 14/18 [00:36<00:10,  2.73s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  72%|███████▏  | 13/18 [00:35<00:14,  2.85s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  83%|████████▎ | 15/18 [00:39<00:08,  2.77s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  78%|███████▊  | 14/18 [00:37<00:11,  2.86s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  89%|████████▉ | 16/18 [00:42<00:05,  2.81s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  83%|████████▎ | 15/18 [00:40<00:08,  2.84s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8:  94%|█████████▍| 17/18 [00:45<00:02,  2.81s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  89%|████████▉ | 16/18 [00:43<00:05,  2.87s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep8: 100%|██████████| 18/18 [00:45<00:00,  2.04s/it][A
+                                                                                    [A
+ASAI_SVRG snapshot bs=512 seed=0 ep8:  94%|█████████▍| 17/18 [00:44<00:02,  2.21s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep8: 100%|██████████| 18/18 [00:46<00:00,  2.30s/it][A
+                                                                                     [ASVRG snapshot bs=512 seed=0:   2%|▏         | 8/505 [10:04<10:22:47, 75.19s/it]
+SVRG snapshot bs=512 seed=0 ep9:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep9:   6%|▌         | 1/18 [00:01<00:28,  1.70s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  11%|█         | 2/18 [00:04<00:37,  2.37s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  17%|█▋        | 3/18 [00:07<00:39,  2.60s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  22%|██▏       | 4/18 [00:10<00:36,  2.62s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  28%|██▊       | 5/18 [00:12<00:33,  2.60s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  33%|███▎      | 6/18 [00:14<00:29,  2.50s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  39%|███▉      | 7/18 [00:17<00:27,  2.48s/it][ANFG_SVRG snapshot bs=512 seed=0:   2%|▏         | 8/505 [10:21<10:40:38, 77.34s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep9:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:   6%|▌         | 1/18 [00:01<00:29,  1.75s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  50%|█████     | 9/18 [00:20<00:18,  2.01s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  11%|█         | 2/18 [00:04<00:39,  2.44s/it][AASAI_SVRG snapshot bs=512 seed=0:   2%|▏         | 8/505 [10:27<10:49:27, 78.40s/it]
+ASAI_SVRG snapshot bs=512 seed=0 ep9:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep9:  56%|█████▌    | 10/18 [00:23<00:17,  2.21s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:   6%|▌         | 1/18 [00:02<00:36,  2.16s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  17%|█▋        | 3/18 [00:07<00:38,  2.56s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  61%|██████    | 11/18 [00:25<00:16,  2.34s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  22%|██▏       | 4/18 [00:10<00:36,  2.63s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  11%|█         | 2/18 [00:04<00:40,  2.56s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  67%|██████▋   | 12/18 [00:28<00:14,  2.42s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  28%|██▊       | 5/18 [00:12<00:35,  2.71s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  17%|█▋        | 3/18 [00:07<00:40,  2.70s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  72%|███████▏  | 13/18 [00:31<00:12,  2.46s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  33%|███▎      | 6/18 [00:15<00:33,  2.77s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  22%|██▏       | 4/18 [00:10<00:39,  2.81s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  78%|███████▊  | 14/18 [00:33<00:10,  2.55s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  39%|███▉      | 7/18 [00:18<00:30,  2.79s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  28%|██▊       | 5/18 [00:13<00:36,  2.82s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  83%|████████▎ | 15/18 [00:36<00:07,  2.64s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  44%|████▍     | 8/18 [00:21<00:28,  2.83s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  33%|███▎      | 6/18 [00:16<00:34,  2.85s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  89%|████████▉ | 16/18 [00:39<00:05,  2.69s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  50%|█████     | 9/18 [00:24<00:25,  2.79s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  39%|███▉      | 7/18 [00:19<00:30,  2.80s/it][A
+SVRG snapshot bs=512 seed=0 ep9:  94%|█████████▍| 17/18 [00:42<00:02,  2.67s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  56%|█████▌    | 10/18 [00:27<00:22,  2.78s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  44%|████▍     | 8/18 [00:22<00:27,  2.80s/it][A
+SVRG snapshot bs=512 seed=0 ep9: 100%|██████████| 18/18 [00:44<00:00,  2.50s/it][A
+                                                                                [A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  61%|██████    | 11/18 [00:29<00:19,  2.77s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  50%|█████     | 9/18 [00:24<00:25,  2.81s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  67%|██████▋   | 12/18 [00:30<00:12,  2.04s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  56%|█████▌    | 10/18 [00:25<00:16,  2.04s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  72%|███████▏  | 13/18 [00:32<00:11,  2.24s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  61%|██████    | 11/18 [00:27<00:15,  2.23s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  78%|███████▊  | 14/18 [00:35<00:09,  2.43s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  67%|██████▋   | 12/18 [00:30<00:14,  2.40s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  83%|████████▎ | 15/18 [00:38<00:07,  2.55s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  72%|███████▏  | 13/18 [00:33<00:12,  2.56s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  89%|████████▉ | 16/18 [00:41<00:05,  2.62s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  78%|███████▊  | 14/18 [00:36<00:10,  2.63s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9:  94%|█████████▍| 17/18 [00:44<00:02,  2.70s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  83%|████████▎ | 15/18 [00:39<00:08,  2.72s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep9: 100%|██████████| 18/18 [00:46<00:00,  2.59s/it][A
+                                                                                    [A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  89%|████████▉ | 16/18 [00:42<00:05,  2.75s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9:  94%|█████████▍| 17/18 [00:44<00:02,  2.74s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep9: 100%|██████████| 18/18 [00:46<00:00,  2.54s/it][A
+                                                                                     [ASVRG snapshot bs=512 seed=0:   2%|▏         | 9/505 [11:19<10:19:59, 75.00s/it]
+SVRG snapshot bs=512 seed=0 ep10:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep10:   6%|▌         | 1/18 [00:01<00:30,  1.80s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  11%|█         | 2/18 [00:02<00:16,  1.02s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  17%|█▋        | 3/18 [00:04<00:26,  1.75s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  22%|██▏       | 4/18 [00:07<00:30,  2.20s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  28%|██▊       | 5/18 [00:10<00:31,  2.45s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  33%|███▎      | 6/18 [00:13<00:31,  2.60s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  39%|███▉      | 7/18 [00:15<00:27,  2.46s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  44%|████▍     | 8/18 [00:18<00:24,  2.49s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  50%|█████     | 9/18 [00:20<00:21,  2.43s/it][ANFG_SVRG snapshot bs=512 seed=0:   2%|▏         | 9/505 [11:40<10:41:45, 77.63s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep10:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:   6%|▌         | 1/18 [00:01<00:30,  1.79s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  56%|█████▌    | 10/18 [00:23<00:19,  2.46s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  11%|█         | 2/18 [00:04<00:38,  2.41s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  61%|██████    | 11/18 [00:25<00:17,  2.55s/it][AASAI_SVRG snapshot bs=512 seed=0:   2%|▏         | 9/505 [11:45<10:49:13, 78.54s/it]
+ASAI_SVRG snapshot bs=512 seed=0 ep10:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  17%|█▋        | 3/18 [00:07<00:39,  2.63s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:   6%|▌         | 1/18 [00:01<00:33,  1.95s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  67%|██████▋   | 12/18 [00:28<00:15,  2.63s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  22%|██▏       | 4/18 [00:10<00:39,  2.79s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  72%|███████▏  | 13/18 [00:31<00:13,  2.63s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  11%|█         | 2/18 [00:05<00:41,  2.61s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  78%|███████▊  | 14/18 [00:34<00:10,  2.70s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  28%|██▊       | 5/18 [00:13<00:37,  2.87s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  17%|█▋        | 3/18 [00:08<00:42,  2.82s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  33%|███▎      | 6/18 [00:14<00:26,  2.17s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  83%|████████▎ | 15/18 [00:35<00:06,  2.15s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  22%|██▏       | 4/18 [00:08<00:28,  2.01s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  89%|████████▉ | 16/18 [00:37<00:04,  2.35s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  39%|███▉      | 7/18 [00:17<00:26,  2.42s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  28%|██▊       | 5/18 [00:11<00:29,  2.29s/it][A
+SVRG snapshot bs=512 seed=0 ep10:  94%|█████████▍| 17/18 [00:40<00:02,  2.47s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  44%|████▍     | 8/18 [00:19<00:24,  2.49s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  33%|███▎      | 6/18 [00:14<00:29,  2.46s/it][A
+SVRG snapshot bs=512 seed=0 ep10: 100%|██████████| 18/18 [00:42<00:00,  2.35s/it][A
+                                                                                 [A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  50%|█████     | 9/18 [00:22<00:23,  2.60s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  39%|███▉      | 7/18 [00:17<00:28,  2.59s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  56%|█████▌    | 10/18 [00:25<00:20,  2.59s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  44%|████▍     | 8/18 [00:20<00:27,  2.72s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  61%|██████    | 11/18 [00:28<00:18,  2.69s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  50%|█████     | 9/18 [00:23<00:25,  2.85s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  67%|██████▋   | 12/18 [00:31<00:16,  2.73s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  56%|█████▌    | 10/18 [00:26<00:22,  2.87s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  72%|███████▏  | 13/18 [00:33<00:13,  2.71s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  61%|██████    | 11/18 [00:29<00:20,  2.90s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  78%|███████▊  | 14/18 [00:36<00:11,  2.78s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  67%|██████▋   | 12/18 [00:32<00:17,  2.92s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  83%|████████▎ | 15/18 [00:39<00:08,  2.82s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  72%|███████▏  | 13/18 [00:35<00:14,  2.92s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  89%|████████▉ | 16/18 [00:42<00:05,  2.85s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  78%|███████▊  | 14/18 [00:38<00:11,  2.91s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10:  94%|█████████▍| 17/18 [00:43<00:02,  2.18s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  83%|████████▎ | 15/18 [00:38<00:06,  2.23s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep10: 100%|██████████| 18/18 [00:45<00:00,  2.21s/it][A
+                                                                                     [A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  89%|████████▉ | 16/18 [00:41<00:04,  2.34s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10:  94%|█████████▍| 17/18 [00:43<00:02,  2.39s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep10: 100%|██████████| 18/18 [00:46<00:00,  2.35s/it][A
+                                                                                      [ASVRG snapshot bs=512 seed=0:   2%|▏         | 10/505 [12:33<10:15:18, 74.58s/it]
+SVRG snapshot bs=512 seed=0 ep11:   0%|          | 0/18 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep11:   6%|▌         | 1/18 [00:01<00:33,  1.95s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  11%|█         | 2/18 [00:04<00:40,  2.52s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  17%|█▋        | 3/18 [00:07<00:41,  2.74s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  22%|██▏       | 4/18 [00:10<00:39,  2.82s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  28%|██▊       | 5/18 [00:13<00:37,  2.86s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  33%|███▎      | 6/18 [00:16<00:34,  2.89s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  39%|███▉      | 7/18 [00:19<00:31,  2.89s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  50%|█████     | 9/18 [00:22<00:19,  2.12s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  56%|█████▌    | 10/18 [00:24<00:18,  2.28s/it][ANFG_SVRG snapshot bs=512 seed=0:   2%|▏         | 10/505 [12:58<10:41:11, 77.72s/it]
+NFG_SVRG snapshot bs=512 seed=0 ep11:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep11:   6%|▌         | 1/18 [00:01<00:27,  1.59s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  61%|██████    | 11/18 [00:27<00:16,  2.29s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep11:  11%|█         | 2/18 [00:04<00:34,  2.14s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  67%|██████▋   | 12/18 [00:29<00:14,  2.35s/it][AASAI_SVRG snapshot bs=512 seed=0:   2%|▏         | 10/505 [13:04<10:47:59, 78.55s/it]
+ASAI_SVRG snapshot bs=512 seed=0 ep11:   0%|          | 0/18 [00:00<?, ?it/s][A
+NFG_SVRG snapshot bs=512 seed=0 ep11:  17%|█▋        | 3/18 [00:06<00:34,  2.30s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  72%|███████▏  | 13/18 [00:32<00:12,  2.46s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep11:   6%|▌         | 1/18 [00:02<00:35,  2.06s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep11:  22%|██▏       | 4/18 [00:09<00:35,  2.51s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  78%|███████▊  | 14/18 [00:35<00:10,  2.55s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep11:  11%|█         | 2/18 [00:05<00:41,  2.62s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep11:  28%|██▊       | 5/18 [00:12<00:34,  2.63s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  83%|████████▎ | 15/18 [00:38<00:07,  2.62s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep11:  17%|█▋        | 3/18 [00:08<00:41,  2.77s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep11:  33%|███▎      | 6/18 [00:15<00:32,  2.72s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  89%|████████▉ | 16/18 [00:40<00:05,  2.67s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep11:  22%|██▏       | 4/18 [00:10<00:38,  2.79s/it][A
+NFG_SVRG snapshot bs=512 seed=0 ep11:  39%|███▉      | 7/18 [00:17<00:30,  2.74s/it][A
+SVRG snapshot bs=512 seed=0 ep11:  94%|█████████▍| 17/18 [00:43<00:02,  2.60s/it][A
+ASAI_SVRG snapshot bs=512 seed=0 ep11:  28%|██▊       | 5/18 [00:13<00:37,  2.90s/it][A

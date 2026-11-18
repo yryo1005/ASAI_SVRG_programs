@@ -5,13 +5,14 @@ NOLTA投稿論文（Manuscript ID: 2027NPP0002，ASA-SVRG）の条件付き採�
 切り出すことを想定しており，本ディレクトリの外のファイルを import・参照しない（既存の結果との比較に
 用いる `programs/compare_with_existing_logs.py` は，既存の結果のパスをコマンドライン引数で受け取る）．
 
-現在実装している実験は次の2つである．
+現在実装している実験は次の3つである．
 
 - E0（内側ループの開始点の影響確認）．
 - 付録B（バッチサイズ32・512）の再実施．
   - 著者の判断により，以降の実験は内側ループの開始点を論文のAlgorithm通りとする．
     すなわち `inner_start="snapshot"`（$ {\mathbf w}_{s}^{0} \leftarrow {\mathbf z}_{s} $）である（`.reports/report_044.md`）．
   - 付録Bは `snapshot` で再実施する．`last_iterate` とSGDの結果には既存のログを用いる．
+- E1（Mushroomにおける $ \rho $ の異なる学習率での収束挙動とサンプリング方式の影響，`snapshot`，SGDを含む4手法）．
 
 ## 1. ディレクトリ構成
 
@@ -29,27 +30,34 @@ programs_review/
 │   ├── ex003_e0_imagewoof_resnet18_layernorm/ # E0 (iii) ImageWoof（data.py，model.py，train.py）
 │   ├── ex004_appb_cifar10_alexnet_layernorm/  # 付録B.2 CIFAR-10 バッチサイズ32・512（snapshot）
 │   ├── ex005_appb_imagewoof_resnet18_layernorm/ # 付録B.3 ImageWoof バッチサイズ32・512（snapshot）
+│   ├── ex006_e1_mushroom_rho_sampling/  # E1 Mushroom（data.py，model.py，train.py，README.md）
 │   ├── compare_with_existing_logs.py    # 既存の結果との一致の確認
 │   ├── analysis_e0.py                   # E0の図と表の作成
 │   ├── analysis_e0_with_sgd.py          # E0の結果とSGD（既存のログ）の比較
-│   └── analysis_appb.py                 # 付録Bの図と表（既存の last_iterate・SGD と比較）
-├── tests/test_e0_programs.py            # pytest
+│   ├── analysis_appb.py                 # 付録Bの図と表（既存の last_iterate・SGD と比較）
+│   └── analysis_e1.py                   # E1の図と表
+├── tests/test_e0_programs.py            # pytest（E0，付録B）
+├── tests/test_e1_programs.py            # pytest（E1）
 ├── visualize_result.ipynb               # 可視化（analysis_e0.py を呼ぶ）
+├── visualize_result_E1.ipynb            # E1の可視化（analysis_e1.py を呼ぶ）
 ├── datasets/                            # データ（Git管理外）
 ├── outputs/                             # 結果
 │   ├── ex00{1,2,3}_e0_*/{手法}/{条件}/{seed}/{config.json,log.json,best_model.pth}
 │   ├── ex00{4,5}_appb_*/{手法}/{条件}/{seed}/...   # 付録Bの再実施
+│   ├── ex006_e1_mushroom_rho_sampling/{手法}/{条件}/{seed}/...  # E1（figures/，consistency_with_*.md を含む）
 │   ├── ex00{1,2,3}_e0_*/figures/        # 図
 │   ├── ex00{1,2,3}_e0_*/consistency_with_existing.md  # 既存の結果との一致の確認
 │   ├── e0_summary.md                    # 集計表（E0）
 │   ├── e0_with_sgd_summary.md           # 集計表（E0とSGDの比較）
 │   ├── appb_summary.md                  # 集計表（付録B）
+│   ├── e1_summary.md                    # 集計表（E1）
 │   └── _run_logs/                       # 実行時の標準出力
 ├── requirements_pytorch_gpu.txt
 └── document.md
 ```
 
 条件のディレクトリ名は `inner_{inner_start}_...` の形式で，内側ループの開始点を含む．
+E1では `inner_{inner_start}_{sampling}_rho{目標のρ}_eta{η}_lambda{λ}_K{K}_epochs{エポック数}` とし，内側ループの開始点を持たないSGDは `inner_none_...` とする．E1の `config.json` には，`rho`（$ \eta $ から計算し直した実際の縮小率の上界），`target_rho`（目標とした $ \rho $），`sampling`（`random_reshuffle` または `uniform_with_replacement`），`L`，`mu` を追加している．
 
 ## 2. 依存関係
 
@@ -81,6 +89,12 @@ graph TD
     NB[visualize_result.ipynb] --> A
     CMP[compare_with_existing_logs.py] --> OUT
     AS[analysis_e0_with_sgd.py] --> A
+    T6[ex006 train.py] --> O
+    T6 --> U
+    T6 --> D6[ex006 data.py]
+    T6 --> M6[ex006 model.py]
+    E1A[analysis_e1.py] --> OUT
+    NB1[visualize_result_E1.ipynb] --> E1A
 ```
 
 ### 学習ループ（SVRG系手法，1つの外側ループ）
@@ -145,6 +159,9 @@ python ex005_appb_imagewoof_resnet18_layernorm/train.py --batch-sizes 32 --worke
 python ex005_appb_imagewoof_resnet18_layernorm/train.py --batch-sizes 512 --workers 3
 python analysis_appb.py --existing ex004_appb_cifar10_alexnet_layernorm=<既存の outputs>/ex0024_cifar10_alexnet_layernorm_longrun \
     ex005_appb_imagewoof_resnet18_layernorm=<既存の outputs>/ex0051_imagewoof_resnet18_bs128_longrun
+# E1（Mushroom，CPUのみ．7×4×5 + 3×3×5 = 200試行）
+python ex006_e1_mushroom_rho_sampling/train.py --workers 20
+python analysis_e1.py
 # 集計と図
 python analysis_e0.py
 # SGD（既存のログ．パスは引数で渡す）との比較
