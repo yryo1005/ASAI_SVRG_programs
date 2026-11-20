@@ -1,0 +1,572 @@
+タスク数: 4（逐次に実行）
+GPU のメモリ使用量 12562 MiB（閾値 100000 MiB 以下）．計測を開始する．
+SGD seed=0:   0%|          | 0/2 [00:00<?, ?it/s]
+SGD seed=0 ep1:   0%|          | 0/71 [00:00<?, ?it/s][A
+SGD seed=0 ep1:   1%|▏         | 1/71 [00:00<00:26,  2.65it/s][A
+SGD seed=0 ep1:   4%|▍         | 3/71 [00:00<00:12,  5.24it/s][A
+SGD seed=0 ep1:   6%|▌         | 4/71 [00:00<00:12,  5.32it/s][A
+SGD seed=0 ep1:   7%|▋         | 5/71 [00:00<00:12,  5.42it/s][A
+SGD seed=0 ep1:   8%|▊         | 6/71 [00:01<00:11,  5.51it/s][A
+SGD seed=0 ep1:  10%|▉         | 7/71 [00:01<00:11,  5.51it/s][A
+SGD seed=0 ep1:  11%|█▏        | 8/71 [00:01<00:11,  5.57it/s][A
+SGD seed=0 ep1:  13%|█▎        | 9/71 [00:01<00:11,  5.58it/s][A
+SGD seed=0 ep1:  14%|█▍        | 10/71 [00:01<00:10,  5.60it/s][A
+SGD seed=0 ep1:  15%|█▌        | 11/71 [00:02<00:10,  5.53it/s][A
+SGD seed=0 ep1:  17%|█▋        | 12/71 [00:02<00:10,  5.70it/s][A
+SGD seed=0 ep1:  18%|█▊        | 13/71 [00:02<00:10,  5.63it/s][A
+SGD seed=0 ep1:  20%|█▉        | 14/71 [00:02<00:10,  5.65it/s][A
+SGD seed=0 ep1:  21%|██        | 15/71 [00:02<00:09,  5.65it/s][A
+SGD seed=0 ep1:  23%|██▎       | 16/71 [00:02<00:10,  5.49it/s][A
+SGD seed=0 ep1:  24%|██▍       | 17/71 [00:03<00:09,  5.57it/s][A
+SGD seed=0 ep1:  25%|██▌       | 18/71 [00:03<00:09,  5.57it/s][A
+SGD seed=0 ep1:  27%|██▋       | 19/71 [00:03<00:09,  5.48it/s][A
+SGD seed=0 ep1:  28%|██▊       | 20/71 [00:03<00:09,  5.53it/s][A
+SGD seed=0 ep1:  30%|██▉       | 21/71 [00:03<00:09,  5.51it/s][A
+SGD seed=0 ep1:  31%|███       | 22/71 [00:04<00:08,  5.45it/s][A
+SGD seed=0 ep1:  32%|███▏      | 23/71 [00:04<00:08,  5.48it/s][A
+SGD seed=0 ep1:  34%|███▍      | 24/71 [00:04<00:08,  5.41it/s][A
+SGD seed=0 ep1:  35%|███▌      | 25/71 [00:04<00:08,  5.49it/s][A
+SGD seed=0 ep1:  37%|███▋      | 26/71 [00:04<00:08,  5.42it/s][A
+SGD seed=0 ep1:  38%|███▊      | 27/71 [00:04<00:08,  5.49it/s][A
+SGD seed=0 ep1:  39%|███▉      | 28/71 [00:05<00:07,  5.44it/s][A
+SGD seed=0 ep1:  41%|████      | 29/71 [00:05<00:07,  5.51it/s][A
+SGD seed=0 ep1:  42%|████▏     | 30/71 [00:05<00:07,  5.54it/s][A
+SGD seed=0 ep1:  44%|████▎     | 31/71 [00:05<00:07,  5.57it/s][A
+SGD seed=0 ep1:  45%|████▌     | 32/71 [00:05<00:06,  5.68it/s][A
+SGD seed=0 ep1:  46%|████▋     | 33/71 [00:06<00:06,  5.47it/s][A
+SGD seed=0 ep1:  48%|████▊     | 34/71 [00:06<00:06,  5.48it/s][A
+SGD seed=0 ep1:  49%|████▉     | 35/71 [00:06<00:06,  5.51it/s][A
+SGD seed=0 ep1:  51%|█████     | 36/71 [00:06<00:06,  5.52it/s][A
+SGD seed=0 ep1:  52%|█████▏    | 37/71 [00:06<00:06,  5.46it/s][A
+SGD seed=0 ep1:  54%|█████▎    | 38/71 [00:06<00:05,  5.51it/s][A
+SGD seed=0 ep1:  55%|█████▍    | 39/71 [00:07<00:05,  5.42it/s][A
+SGD seed=0 ep1:  56%|█████▋    | 40/71 [00:07<00:05,  5.49it/s][A
+SGD seed=0 ep1:  58%|█████▊    | 41/71 [00:07<00:05,  5.54it/s][A
+SGD seed=0 ep1:  59%|█████▉    | 42/71 [00:07<00:05,  5.51it/s][A
+SGD seed=0 ep1:  61%|██████    | 43/71 [00:07<00:05,  5.52it/s][A
+SGD seed=0 ep1:  62%|██████▏   | 44/71 [00:08<00:04,  5.49it/s][A
+SGD seed=0 ep1:  63%|██████▎   | 45/71 [00:08<00:04,  5.56it/s][A
+SGD seed=0 ep1:  65%|██████▍   | 46/71 [00:08<00:04,  5.49it/s][A
+SGD seed=0 ep1:  66%|██████▌   | 47/71 [00:08<00:04,  5.49it/s][A
+SGD seed=0 ep1:  68%|██████▊   | 48/71 [00:08<00:04,  5.46it/s][A
+SGD seed=0 ep1:  69%|██████▉   | 49/71 [00:08<00:04,  5.47it/s][A
+SGD seed=0 ep1:  70%|███████   | 50/71 [00:09<00:03,  5.33it/s][A
+SGD seed=0 ep1:  72%|███████▏  | 51/71 [00:09<00:03,  5.41it/s][A
+SGD seed=0 ep1:  73%|███████▎  | 52/71 [00:09<00:03,  5.45it/s][A
+SGD seed=0 ep1:  75%|███████▍  | 53/71 [00:09<00:03,  5.48it/s][A
+SGD seed=0 ep1:  76%|███████▌  | 54/71 [00:09<00:03,  5.50it/s][A
+SGD seed=0 ep1:  77%|███████▋  | 55/71 [00:10<00:02,  5.58it/s][A
+SGD seed=0 ep1:  79%|███████▉  | 56/71 [00:10<00:02,  5.56it/s][A
+SGD seed=0 ep1:  80%|████████  | 57/71 [00:10<00:02,  5.54it/s][A
+SGD seed=0 ep1:  82%|████████▏ | 58/71 [00:10<00:02,  5.56it/s][A
+SGD seed=0 ep1:  83%|████████▎ | 59/71 [00:10<00:02,  5.48it/s][A
+SGD seed=0 ep1:  85%|████████▍ | 60/71 [00:10<00:01,  5.56it/s][A
+SGD seed=0 ep1:  86%|████████▌ | 61/71 [00:11<00:01,  5.63it/s][A
+SGD seed=0 ep1:  87%|████████▋ | 62/71 [00:11<00:01,  5.67it/s][A
+SGD seed=0 ep1:  89%|████████▊ | 63/71 [00:11<00:01,  5.67it/s][A
+SGD seed=0 ep1:  90%|█████████ | 64/71 [00:11<00:01,  5.64it/s][A
+SGD seed=0 ep1:  92%|█████████▏| 65/71 [00:11<00:01,  5.50it/s][A
+SGD seed=0 ep1:  93%|█████████▎| 66/71 [00:12<00:00,  5.47it/s][A
+SGD seed=0 ep1:  94%|█████████▍| 67/71 [00:12<00:00,  5.48it/s][A
+SGD seed=0 ep1:  96%|█████████▌| 68/71 [00:12<00:00,  5.53it/s][A
+SGD seed=0 ep1:  97%|█████████▋| 69/71 [00:12<00:00,  5.55it/s][A
+SGD seed=0 ep1:  99%|█████████▊| 70/71 [00:12<00:00,  5.51it/s][A
+SGD seed=0 ep1: 100%|██████████| 71/71 [00:12<00:00,  4.99it/s][A
+                                                               [ASGD seed=0:  50%|█████     | 1/2 [00:21<00:21, 21.21s/it]
+SGD seed=0 ep2:   0%|          | 0/71 [00:00<?, ?it/s][A
+SGD seed=0 ep2:   3%|▎         | 2/71 [00:00<00:08,  8.02it/s][A
+SGD seed=0 ep2:   4%|▍         | 3/71 [00:00<00:09,  7.03it/s][A
+SGD seed=0 ep2:   6%|▌         | 4/71 [00:00<00:11,  6.00it/s][A
+SGD seed=0 ep2:   7%|▋         | 5/71 [00:00<00:10,  6.06it/s][A
+SGD seed=0 ep2:   8%|▊         | 6/71 [00:00<00:10,  5.94it/s][A
+SGD seed=0 ep2:  10%|▉         | 7/71 [00:01<00:10,  6.03it/s][A
+SGD seed=0 ep2:  11%|█▏        | 8/71 [00:01<00:10,  5.96it/s][A
+SGD seed=0 ep2:  13%|█▎        | 9/71 [00:01<00:10,  5.90it/s][A
+SGD seed=0 ep2:  14%|█▍        | 10/71 [00:01<00:10,  5.86it/s][A
+SGD seed=0 ep2:  15%|█▌        | 11/71 [00:01<00:10,  5.76it/s][A
+SGD seed=0 ep2:  17%|█▋        | 12/71 [00:01<00:10,  5.73it/s][A
+SGD seed=0 ep2:  18%|█▊        | 13/71 [00:02<00:10,  5.70it/s][A
+SGD seed=0 ep2:  20%|█▉        | 14/71 [00:02<00:10,  5.63it/s][A
+SGD seed=0 ep2:  21%|██        | 15/71 [00:02<00:09,  5.69it/s][A
+SGD seed=0 ep2:  23%|██▎       | 16/71 [00:02<00:09,  5.73it/s][A
+SGD seed=0 ep2:  24%|██▍       | 17/71 [00:02<00:10,  5.38it/s][A
+SGD seed=0 ep2:  25%|██▌       | 18/71 [00:03<00:09,  5.51it/s][A
+SGD seed=0 ep2:  27%|██▋       | 19/71 [00:03<00:09,  5.58it/s][A
+SGD seed=0 ep2:  28%|██▊       | 20/71 [00:03<00:09,  5.52it/s][A
+SGD seed=0 ep2:  30%|██▉       | 21/71 [00:03<00:08,  5.63it/s][A
+SGD seed=0 ep2:  31%|███       | 22/71 [00:03<00:08,  5.63it/s][A
+SGD seed=0 ep2:  32%|███▏      | 23/71 [00:03<00:08,  5.63it/s][A
+SGD seed=0 ep2:  34%|███▍      | 24/71 [00:04<00:08,  5.72it/s][A
+SGD seed=0 ep2:  35%|███▌      | 25/71 [00:04<00:08,  5.67it/s][A
+SGD seed=0 ep2:  37%|███▋      | 26/71 [00:04<00:07,  5.81it/s][A
+SGD seed=0 ep2:  38%|███▊      | 27/71 [00:04<00:07,  5.73it/s][A
+SGD seed=0 ep2:  39%|███▉      | 28/71 [00:04<00:07,  5.72it/s][A
+SGD seed=0 ep2:  41%|████      | 29/71 [00:05<00:07,  5.72it/s][A
+SGD seed=0 ep2:  42%|████▏     | 30/71 [00:05<00:07,  5.73it/s][A
+SGD seed=0 ep2:  44%|████▎     | 31/71 [00:05<00:11,  3.42it/s][A
+SGD seed=0 ep2:  45%|████▌     | 32/71 [00:05<00:10,  3.86it/s][A
+SGD seed=0 ep2:  46%|████▋     | 33/71 [00:06<00:08,  4.33it/s][A
+SGD seed=0 ep2:  48%|████▊     | 34/71 [00:06<00:08,  4.56it/s][A
+SGD seed=0 ep2:  49%|████▉     | 35/71 [00:06<00:07,  4.79it/s][A
+SGD seed=0 ep2:  51%|█████     | 36/71 [00:06<00:06,  5.05it/s][A
+SGD seed=0 ep2:  52%|█████▏    | 37/71 [00:06<00:06,  5.15it/s][A
+SGD seed=0 ep2:  54%|█████▎    | 38/71 [00:06<00:06,  5.44it/s][A
+SGD seed=0 ep2:  55%|█████▍    | 39/71 [00:07<00:05,  5.54it/s][A
+SGD seed=0 ep2:  56%|█████▋    | 40/71 [00:07<00:06,  4.68it/s][A
+SGD seed=0 ep2:  58%|█████▊    | 41/71 [00:07<00:06,  4.89it/s][A
+SGD seed=0 ep2:  59%|█████▉    | 42/71 [00:07<00:05,  5.14it/s][A
+SGD seed=0 ep2:  61%|██████    | 43/71 [00:07<00:05,  5.36it/s][A
+SGD seed=0 ep2:  62%|██████▏   | 44/71 [00:08<00:04,  5.46it/s][A
+SGD seed=0 ep2:  63%|██████▎   | 45/71 [00:08<00:04,  5.50it/s][A
+SGD seed=0 ep2:  65%|██████▍   | 46/71 [00:08<00:04,  5.50it/s][A
+SGD seed=0 ep2:  66%|██████▌   | 47/71 [00:08<00:04,  5.59it/s][A
+SGD seed=0 ep2:  68%|██████▊   | 48/71 [00:08<00:04,  5.60it/s][A
+SGD seed=0 ep2:  69%|██████▉   | 49/71 [00:09<00:03,  5.65it/s][A
+SGD seed=0 ep2:  70%|███████   | 50/71 [00:09<00:03,  5.74it/s][A
+SGD seed=0 ep2:  72%|███████▏  | 51/71 [00:09<00:03,  5.73it/s][A
+SGD seed=0 ep2:  73%|███████▎  | 52/71 [00:09<00:03,  5.77it/s][A
+SGD seed=0 ep2:  75%|███████▍  | 53/71 [00:09<00:03,  5.73it/s][A
+SGD seed=0 ep2:  76%|███████▌  | 54/71 [00:09<00:03,  5.16it/s][A
+SGD seed=0 ep2:  77%|███████▋  | 55/71 [00:10<00:02,  5.44it/s][A
+SGD seed=0 ep2:  79%|███████▉  | 56/71 [00:10<00:02,  5.46it/s][A
+SGD seed=0 ep2:  80%|████████  | 57/71 [00:10<00:02,  5.59it/s][A
+SGD seed=0 ep2:  82%|████████▏ | 58/71 [00:10<00:02,  5.65it/s][A
+SGD seed=0 ep2:  83%|████████▎ | 59/71 [00:10<00:02,  5.59it/s][A
+SGD seed=0 ep2:  85%|████████▍ | 60/71 [00:10<00:01,  5.71it/s][A
+SGD seed=0 ep2:  86%|████████▌ | 61/71 [00:11<00:01,  5.67it/s][A
+SGD seed=0 ep2:  87%|████████▋ | 62/71 [00:11<00:01,  5.70it/s][A
+SGD seed=0 ep2:  89%|████████▊ | 63/71 [00:11<00:01,  5.70it/s][A
+SGD seed=0 ep2:  90%|█████████ | 64/71 [00:11<00:01,  5.74it/s][A
+SGD seed=0 ep2:  92%|█████████▏| 65/71 [00:11<00:01,  5.73it/s][A
+SGD seed=0 ep2:  93%|█████████▎| 66/71 [00:12<00:00,  5.73it/s][A
+SGD seed=0 ep2:  94%|█████████▍| 67/71 [00:12<00:00,  5.61it/s][A
+SGD seed=0 ep2:  96%|█████████▌| 68/71 [00:12<00:00,  5.66it/s][A
+SGD seed=0 ep2:  97%|█████████▋| 69/71 [00:12<00:00,  5.58it/s][A
+SGD seed=0 ep2:  99%|█████████▊| 70/71 [00:12<00:00,  5.64it/s][A
+SGD seed=0 ep2: 100%|██████████| 71/71 [00:12<00:00,  5.81it/s][A
+                                                               [ASGD seed=0: 100%|██████████| 2/2 [00:45<00:00, 23.12s/it]                                                         [done] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/_verify/ex009/SGD/inner_none_lr0.001_bs128_lambda0.0005_epochs2/0
+GPU のメモリ使用量 12558 MiB（閾値 100000 MiB 以下）．計測を開始する．
+SVRG last_iterate seed=0:   0%|          | 0/2 [00:00<?, ?it/s]
+SVRG last_iterate seed=0 ep1:   0%|          | 0/71 [00:00<?, ?it/s][A
+SVRG last_iterate seed=0 ep1:   1%|▏         | 1/71 [00:00<00:18,  3.84it/s][A
+SVRG last_iterate seed=0 ep1:   3%|▎         | 2/71 [00:00<00:21,  3.19it/s][A
+SVRG last_iterate seed=0 ep1:   4%|▍         | 3/71 [00:01<00:24,  2.78it/s][A
+SVRG last_iterate seed=0 ep1:   6%|▌         | 4/71 [00:01<00:23,  2.83it/s][A
+SVRG last_iterate seed=0 ep1:   7%|▋         | 5/71 [00:01<00:23,  2.83it/s][A
+SVRG last_iterate seed=0 ep1:   8%|▊         | 6/71 [00:02<00:22,  2.83it/s][A
+SVRG last_iterate seed=0 ep1:  10%|▉         | 7/71 [00:02<00:22,  2.79it/s][A
+SVRG last_iterate seed=0 ep1:  11%|█▏        | 8/71 [00:02<00:23,  2.64it/s][A
+SVRG last_iterate seed=0 ep1:  13%|█▎        | 9/71 [00:03<00:23,  2.62it/s][A
+SVRG last_iterate seed=0 ep1:  14%|█▍        | 10/71 [00:03<00:23,  2.56it/s][A
+SVRG last_iterate seed=0 ep1:  15%|█▌        | 11/71 [00:04<00:23,  2.59it/s][A
+SVRG last_iterate seed=0 ep1:  17%|█▋        | 12/71 [00:04<00:22,  2.58it/s][A
+SVRG last_iterate seed=0 ep1:  18%|█▊        | 13/71 [00:04<00:21,  2.65it/s][A
+SVRG last_iterate seed=0 ep1:  20%|█▉        | 14/71 [00:05<00:21,  2.69it/s][A
+SVRG last_iterate seed=0 ep1:  21%|██        | 15/71 [00:05<00:20,  2.73it/s][A
+SVRG last_iterate seed=0 ep1:  23%|██▎       | 16/71 [00:05<00:19,  2.76it/s][A
+SVRG last_iterate seed=0 ep1:  24%|██▍       | 17/71 [00:06<00:19,  2.77it/s][A
+SVRG last_iterate seed=0 ep1:  25%|██▌       | 18/71 [00:06<00:19,  2.73it/s][A
+SVRG last_iterate seed=0 ep1:  27%|██▋       | 19/71 [00:06<00:19,  2.69it/s][A
+SVRG last_iterate seed=0 ep1:  28%|██▊       | 20/71 [00:07<00:18,  2.79it/s][A
+SVRG last_iterate seed=0 ep1:  30%|██▉       | 21/71 [00:07<00:18,  2.77it/s][A
+SVRG last_iterate seed=0 ep1:  31%|███       | 22/71 [00:07<00:17,  2.87it/s][A
+SVRG last_iterate seed=0 ep1:  32%|███▏      | 23/71 [00:08<00:16,  2.86it/s][A
+SVRG last_iterate seed=0 ep1:  34%|███▍      | 24/71 [00:08<00:16,  2.80it/s][A
+SVRG last_iterate seed=0 ep1:  35%|███▌      | 25/71 [00:09<00:16,  2.76it/s][A
+SVRG last_iterate seed=0 ep1:  37%|███▋      | 26/71 [00:09<00:16,  2.80it/s][A
+SVRG last_iterate seed=0 ep1:  38%|███▊      | 27/71 [00:09<00:16,  2.75it/s][A
+SVRG last_iterate seed=0 ep1:  39%|███▉      | 28/71 [00:10<00:15,  2.83it/s][A
+SVRG last_iterate seed=0 ep1:  41%|████      | 29/71 [00:10<00:14,  2.82it/s][A
+SVRG last_iterate seed=0 ep1:  42%|████▏     | 30/71 [00:10<00:14,  2.79it/s][A
+SVRG last_iterate seed=0 ep1:  44%|████▎     | 31/71 [00:11<00:14,  2.72it/s][A
+SVRG last_iterate seed=0 ep1:  45%|████▌     | 32/71 [00:11<00:15,  2.48it/s][A
+SVRG last_iterate seed=0 ep1:  46%|████▋     | 33/71 [00:12<00:14,  2.55it/s][A
+SVRG last_iterate seed=0 ep1:  48%|████▊     | 34/71 [00:12<00:14,  2.57it/s][A
+SVRG last_iterate seed=0 ep1:  49%|████▉     | 35/71 [00:12<00:14,  2.55it/s][A
+SVRG last_iterate seed=0 ep1:  51%|█████     | 36/71 [00:13<00:13,  2.51it/s][A
+SVRG last_iterate seed=0 ep1:  52%|█████▏    | 37/71 [00:13<00:13,  2.50it/s][A
+SVRG last_iterate seed=0 ep1:  54%|█████▎    | 38/71 [00:14<00:12,  2.56it/s][A
+SVRG last_iterate seed=0 ep1:  55%|█████▍    | 39/71 [00:14<00:12,  2.58it/s][A
+SVRG last_iterate seed=0 ep1:  56%|█████▋    | 40/71 [00:14<00:12,  2.57it/s][A
+SVRG last_iterate seed=0 ep1:  58%|█████▊    | 41/71 [00:15<00:11,  2.68it/s][A
+SVRG last_iterate seed=0 ep1:  59%|█████▉    | 42/71 [00:15<00:10,  2.68it/s][A
+SVRG last_iterate seed=0 ep1:  61%|██████    | 43/71 [00:15<00:10,  2.73it/s][A
+SVRG last_iterate seed=0 ep1:  62%|██████▏   | 44/71 [00:16<00:09,  2.80it/s][A
+SVRG last_iterate seed=0 ep1:  63%|██████▎   | 45/71 [00:16<00:09,  2.87it/s][A
+SVRG last_iterate seed=0 ep1:  65%|██████▍   | 46/71 [00:16<00:08,  2.87it/s][A
+SVRG last_iterate seed=0 ep1:  66%|██████▌   | 47/71 [00:17<00:08,  2.92it/s][A
+SVRG last_iterate seed=0 ep1:  68%|██████▊   | 48/71 [00:17<00:07,  2.95it/s][A
+SVRG last_iterate seed=0 ep1:  69%|██████▉   | 49/71 [00:17<00:07,  2.84it/s][A
+SVRG last_iterate seed=0 ep1:  70%|███████   | 50/71 [00:18<00:07,  2.86it/s][A
+SVRG last_iterate seed=0 ep1:  72%|███████▏  | 51/71 [00:18<00:06,  2.89it/s][A
+SVRG last_iterate seed=0 ep1:  79%|███████▉  | 56/71 [00:19<00:02,  6.24it/s][A
+SVRG last_iterate seed=0 ep1:  80%|████████  | 57/71 [00:19<00:02,  5.23it/s][A
+SVRG last_iterate seed=0 ep1:  82%|████████▏ | 58/71 [00:19<00:02,  4.54it/s][A
+SVRG last_iterate seed=0 ep1:  83%|████████▎ | 59/71 [00:20<00:03,  3.97it/s][A
+SVRG last_iterate seed=0 ep1:  85%|████████▍ | 60/71 [00:20<00:03,  3.62it/s][A
+SVRG last_iterate seed=0 ep1:  86%|████████▌ | 61/71 [00:20<00:02,  3.36it/s][A
+SVRG last_iterate seed=0 ep1:  87%|████████▋ | 62/71 [00:21<00:02,  3.23it/s][A
+SVRG last_iterate seed=0 ep1:  89%|████████▊ | 63/71 [00:21<00:02,  2.90it/s][A
+SVRG last_iterate seed=0 ep1:  90%|█████████ | 64/71 [00:21<00:02,  2.93it/s][A
+SVRG last_iterate seed=0 ep1:  92%|█████████▏| 65/71 [00:22<00:02,  2.98it/s][A
+SVRG last_iterate seed=0 ep1:  93%|█████████▎| 66/71 [00:22<00:01,  2.95it/s][A
+SVRG last_iterate seed=0 ep1:  94%|█████████▍| 67/71 [00:22<00:01,  2.93it/s][A
+SVRG last_iterate seed=0 ep1:  96%|█████████▌| 68/71 [00:23<00:01,  2.87it/s][A
+SVRG last_iterate seed=0 ep1:  97%|█████████▋| 69/71 [00:23<00:00,  2.88it/s][A
+SVRG last_iterate seed=0 ep1:  99%|█████████▊| 70/71 [00:24<00:00,  2.61it/s][A
+SVRG last_iterate seed=0 ep1: 100%|██████████| 71/71 [00:24<00:00,  2.83it/s][A
+                                                                             [ASVRG last_iterate seed=0:  50%|█████     | 1/2 [00:44<00:44, 44.58s/it]
+SVRG last_iterate seed=0 ep2:   0%|          | 0/71 [00:00<?, ?it/s][A
+SVRG last_iterate seed=0 ep2:   1%|▏         | 1/71 [00:00<00:17,  4.01it/s][A
+SVRG last_iterate seed=0 ep2:   3%|▎         | 2/71 [00:00<00:21,  3.23it/s][A
+SVRG last_iterate seed=0 ep2:   4%|▍         | 3/71 [00:00<00:23,  2.93it/s][A
+SVRG last_iterate seed=0 ep2:   6%|▌         | 4/71 [00:01<00:23,  2.87it/s][A
+SVRG last_iterate seed=0 ep2:   7%|▋         | 5/71 [00:01<00:23,  2.83it/s][A
+SVRG last_iterate seed=0 ep2:   8%|▊         | 6/71 [00:02<00:22,  2.86it/s][A
+SVRG last_iterate seed=0 ep2:  10%|▉         | 7/71 [00:02<00:22,  2.82it/s][A
+SVRG last_iterate seed=0 ep2:  11%|█▏        | 8/71 [00:02<00:22,  2.82it/s][A
+SVRG last_iterate seed=0 ep2:  13%|█▎        | 9/71 [00:03<00:22,  2.81it/s][A
+SVRG last_iterate seed=0 ep2:  14%|█▍        | 10/71 [00:03<00:21,  2.79it/s][A
+SVRG last_iterate seed=0 ep2:  15%|█▌        | 11/71 [00:03<00:21,  2.81it/s][A
+SVRG last_iterate seed=0 ep2:  17%|█▋        | 12/71 [00:04<00:21,  2.80it/s][A
+SVRG last_iterate seed=0 ep2:  18%|█▊        | 13/71 [00:04<00:20,  2.80it/s][A
+SVRG last_iterate seed=0 ep2:  20%|█▉        | 14/71 [00:04<00:20,  2.78it/s][A
+SVRG last_iterate seed=0 ep2:  21%|██        | 15/71 [00:05<00:20,  2.79it/s][A
+SVRG last_iterate seed=0 ep2:  28%|██▊       | 20/71 [00:05<00:07,  6.84it/s][A
+SVRG last_iterate seed=0 ep2:  30%|██▉       | 21/71 [00:05<00:08,  5.56it/s][A
+SVRG last_iterate seed=0 ep2:  31%|███       | 22/71 [00:06<00:10,  4.57it/s][A
+SVRG last_iterate seed=0 ep2:  32%|███▏      | 23/71 [00:06<00:11,  4.02it/s][A
+SVRG last_iterate seed=0 ep2:  34%|███▍      | 24/71 [00:06<00:12,  3.64it/s][A
+SVRG last_iterate seed=0 ep2:  35%|███▌      | 25/71 [00:07<00:13,  3.37it/s][A
+SVRG last_iterate seed=0 ep2:  37%|███▋      | 26/71 [00:07<00:13,  3.22it/s][A
+SVRG last_iterate seed=0 ep2:  38%|███▊      | 27/71 [00:08<00:13,  3.16it/s][A
+SVRG last_iterate seed=0 ep2:  39%|███▉      | 28/71 [00:08<00:14,  3.02it/s][A
+SVRG last_iterate seed=0 ep2:  41%|████      | 29/71 [00:08<00:14,  2.90it/s][A
+SVRG last_iterate seed=0 ep2:  42%|████▏     | 30/71 [00:09<00:14,  2.79it/s][A
+SVRG last_iterate seed=0 ep2:  44%|████▎     | 31/71 [00:09<00:14,  2.74it/s][A
+SVRG last_iterate seed=0 ep2:  45%|████▌     | 32/71 [00:09<00:14,  2.71it/s][A
+SVRG last_iterate seed=0 ep2:  46%|████▋     | 33/71 [00:10<00:14,  2.68it/s][A
+SVRG last_iterate seed=0 ep2:  48%|████▊     | 34/71 [00:10<00:13,  2.69it/s][A
+SVRG last_iterate seed=0 ep2:  49%|████▉     | 35/71 [00:11<00:13,  2.70it/s][A
+SVRG last_iterate seed=0 ep2:  51%|█████     | 36/71 [00:11<00:12,  2.75it/s][A
+SVRG last_iterate seed=0 ep2:  52%|█████▏    | 37/71 [00:11<00:12,  2.66it/s][A
+SVRG last_iterate seed=0 ep2:  54%|█████▎    | 38/71 [00:12<00:12,  2.64it/s][A
+SVRG last_iterate seed=0 ep2:  55%|█████▍    | 39/71 [00:12<00:11,  2.69it/s][A
+SVRG last_iterate seed=0 ep2:  56%|█████▋    | 40/71 [00:12<00:11,  2.71it/s][A
+SVRG last_iterate seed=0 ep2:  58%|█████▊    | 41/71 [00:13<00:11,  2.68it/s][A
+SVRG last_iterate seed=0 ep2:  59%|█████▉    | 42/71 [00:13<00:10,  2.70it/s][A
+SVRG last_iterate seed=0 ep2:  61%|██████    | 43/71 [00:13<00:10,  2.72it/s][A
+SVRG last_iterate seed=0 ep2:  62%|██████▏   | 44/71 [00:14<00:09,  2.71it/s][A
+SVRG last_iterate seed=0 ep2:  63%|██████▎   | 45/71 [00:14<00:09,  2.67it/s][A
+SVRG last_iterate seed=0 ep2:  65%|██████▍   | 46/71 [00:15<00:09,  2.63it/s][A
+SVRG last_iterate seed=0 ep2:  66%|██████▌   | 47/71 [00:15<00:08,  2.73it/s][A
+SVRG last_iterate seed=0 ep2:  68%|██████▊   | 48/71 [00:15<00:08,  2.76it/s][A
+SVRG last_iterate seed=0 ep2:  69%|██████▉   | 49/71 [00:16<00:07,  2.76it/s][A
+SVRG last_iterate seed=0 ep2:  70%|███████   | 50/71 [00:16<00:07,  2.74it/s][A
+SVRG last_iterate seed=0 ep2:  72%|███████▏  | 51/71 [00:16<00:07,  2.76it/s][A
+SVRG last_iterate seed=0 ep2:  73%|███████▎  | 52/71 [00:17<00:06,  2.89it/s][A
+SVRG last_iterate seed=0 ep2:  75%|███████▍  | 53/71 [00:17<00:06,  2.92it/s][A
+SVRG last_iterate seed=0 ep2:  76%|███████▌  | 54/71 [00:17<00:05,  2.93it/s][A
+SVRG last_iterate seed=0 ep2:  77%|███████▋  | 55/71 [00:18<00:05,  2.91it/s][A
+SVRG last_iterate seed=0 ep2:  79%|███████▉  | 56/71 [00:18<00:05,  2.92it/s][A
+SVRG last_iterate seed=0 ep2:  80%|████████  | 57/71 [00:18<00:04,  2.84it/s][A
+SVRG last_iterate seed=0 ep2:  82%|████████▏ | 58/71 [00:19<00:04,  2.88it/s][A
+SVRG last_iterate seed=0 ep2:  83%|████████▎ | 59/71 [00:19<00:04,  2.85it/s][A
+SVRG last_iterate seed=0 ep2:  85%|████████▍ | 60/71 [00:19<00:03,  2.90it/s][A
+SVRG last_iterate seed=0 ep2:  86%|████████▌ | 61/71 [00:20<00:03,  2.92it/s][A
+SVRG last_iterate seed=0 ep2:  87%|████████▋ | 62/71 [00:20<00:03,  2.96it/s][A
+SVRG last_iterate seed=0 ep2:  89%|████████▊ | 63/71 [00:21<00:02,  2.94it/s][A
+SVRG last_iterate seed=0 ep2:  90%|█████████ | 64/71 [00:21<00:02,  2.93it/s][A
+SVRG last_iterate seed=0 ep2:  92%|█████████▏| 65/71 [00:21<00:02,  2.93it/s][A
+SVRG last_iterate seed=0 ep2:  93%|█████████▎| 66/71 [00:22<00:01,  2.91it/s][A
+SVRG last_iterate seed=0 ep2:  94%|█████████▍| 67/71 [00:22<00:01,  2.93it/s][A
+SVRG last_iterate seed=0 ep2:  96%|█████████▌| 68/71 [00:22<00:01,  2.93it/s][A
+SVRG last_iterate seed=0 ep2:  97%|█████████▋| 69/71 [00:23<00:00,  2.97it/s][A
+SVRG last_iterate seed=0 ep2:  99%|█████████▊| 70/71 [00:23<00:00,  2.92it/s][A
+SVRG last_iterate seed=0 ep2: 100%|██████████| 71/71 [00:23<00:00,  3.15it/s][A
+                                                                             [ASVRG last_iterate seed=0: 100%|██████████| 2/2 [01:27<00:00, 43.44s/it]                                                                       [done] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/_verify/ex009/SVRG/inner_last_iterate_lr0.001_bs128_lambda0.0005_epochs2/0
+GPU のメモリ使用量 12558 MiB（閾値 100000 MiB 以下）．計測を開始する．
+NFG_SVRG last_iterate seed=0:   0%|          | 0/2 [00:00<?, ?it/s]
+NFG_SVRG last_iterate seed=0 ep1:   0%|          | 0/71 [00:00<?, ?it/s][A
+NFG_SVRG last_iterate seed=0 ep1:   1%|▏         | 1/71 [00:00<00:18,  3.83it/s][A
+NFG_SVRG last_iterate seed=0 ep1:   3%|▎         | 2/71 [00:00<00:22,  3.05it/s][A
+NFG_SVRG last_iterate seed=0 ep1:   4%|▍         | 3/71 [00:00<00:23,  2.91it/s][A
+NFG_SVRG last_iterate seed=0 ep1:   6%|▌         | 4/71 [00:01<00:23,  2.90it/s][A
+NFG_SVRG last_iterate seed=0 ep1:   7%|▋         | 5/71 [00:01<00:24,  2.69it/s][A
+NFG_SVRG last_iterate seed=0 ep1:   8%|▊         | 6/71 [00:02<00:24,  2.70it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  10%|▉         | 7/71 [00:02<00:23,  2.69it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  11%|█▏        | 8/71 [00:02<00:23,  2.73it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  13%|█▎        | 9/71 [00:03<00:22,  2.70it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  14%|█▍        | 10/71 [00:03<00:22,  2.68it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  15%|█▌        | 11/71 [00:03<00:21,  2.75it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  17%|█▋        | 12/71 [00:04<00:21,  2.74it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  18%|█▊        | 13/71 [00:04<00:21,  2.70it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  20%|█▉        | 14/71 [00:05<00:21,  2.68it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  21%|██        | 15/71 [00:05<00:20,  2.70it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  23%|██▎       | 16/71 [00:05<00:19,  2.76it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  24%|██▍       | 17/71 [00:06<00:19,  2.81it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  25%|██▌       | 18/71 [00:06<00:18,  2.80it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  27%|██▋       | 19/71 [00:06<00:18,  2.87it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  28%|██▊       | 20/71 [00:07<00:17,  2.89it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  30%|██▉       | 21/71 [00:07<00:17,  2.90it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  31%|███       | 22/71 [00:07<00:17,  2.88it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  32%|███▏      | 23/71 [00:08<00:16,  2.94it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  34%|███▍      | 24/71 [00:08<00:15,  2.97it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  35%|███▌      | 25/71 [00:08<00:15,  2.98it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  37%|███▋      | 26/71 [00:09<00:15,  2.99it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  38%|███▊      | 27/71 [00:09<00:14,  2.99it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  39%|███▉      | 28/71 [00:09<00:14,  2.94it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  41%|████      | 29/71 [00:10<00:14,  2.87it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  42%|████▏     | 30/71 [00:10<00:14,  2.82it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  44%|████▎     | 31/71 [00:10<00:14,  2.80it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  45%|████▌     | 32/71 [00:11<00:13,  2.79it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  46%|████▋     | 33/71 [00:11<00:13,  2.81it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  48%|████▊     | 34/71 [00:12<00:13,  2.76it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  49%|████▉     | 35/71 [00:12<00:12,  2.81it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  51%|█████     | 36/71 [00:12<00:12,  2.83it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  52%|█████▏    | 37/71 [00:13<00:11,  2.84it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  54%|█████▎    | 38/71 [00:13<00:11,  2.85it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  55%|█████▍    | 39/71 [00:13<00:11,  2.84it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  56%|█████▋    | 40/71 [00:14<00:10,  2.86it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  58%|█████▊    | 41/71 [00:14<00:10,  2.73it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  59%|█████▉    | 42/71 [00:14<00:10,  2.77it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  61%|██████    | 43/71 [00:15<00:09,  2.83it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  62%|██████▏   | 44/71 [00:15<00:09,  2.80it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  63%|██████▎   | 45/71 [00:15<00:09,  2.77it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  65%|██████▍   | 46/71 [00:16<00:09,  2.78it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  66%|██████▌   | 47/71 [00:16<00:08,  2.78it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  68%|██████▊   | 48/71 [00:17<00:08,  2.78it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  69%|██████▉   | 49/71 [00:17<00:07,  2.79it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  70%|███████   | 50/71 [00:17<00:07,  2.75it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  72%|███████▏  | 51/71 [00:18<00:07,  2.78it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  73%|███████▎  | 52/71 [00:18<00:06,  2.73it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  75%|███████▍  | 53/71 [00:18<00:06,  2.78it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  76%|███████▌  | 54/71 [00:19<00:06,  2.67it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  77%|███████▋  | 55/71 [00:19<00:05,  2.72it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  79%|███████▉  | 56/71 [00:19<00:05,  2.71it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  80%|████████  | 57/71 [00:20<00:05,  2.74it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  82%|████████▏ | 58/71 [00:20<00:04,  2.76it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  83%|████████▎ | 59/71 [00:21<00:04,  2.75it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  85%|████████▍ | 60/71 [00:21<00:04,  2.74it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  86%|████████▌ | 61/71 [00:21<00:03,  2.71it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  87%|████████▋ | 62/71 [00:22<00:03,  2.72it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  89%|████████▊ | 63/71 [00:22<00:02,  2.74it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  90%|█████████ | 64/71 [00:22<00:02,  2.53it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  92%|█████████▏| 65/71 [00:23<00:02,  2.58it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  96%|█████████▌| 68/71 [00:23<00:00,  5.21it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  97%|█████████▋| 69/71 [00:23<00:00,  4.38it/s][A
+NFG_SVRG last_iterate seed=0 ep1:  99%|█████████▊| 70/71 [00:24<00:00,  3.85it/s][A
+NFG_SVRG last_iterate seed=0 ep1: 100%|██████████| 71/71 [00:24<00:00,  3.57it/s][A
+                                                                                 [ANFG_SVRG last_iterate seed=0:  50%|█████     | 1/2 [00:43<00:43, 43.23s/it]
+NFG_SVRG last_iterate seed=0 ep2:   0%|          | 0/71 [00:00<?, ?it/s][A
+NFG_SVRG last_iterate seed=0 ep2:   1%|▏         | 1/71 [00:00<00:16,  4.12it/s][A
+NFG_SVRG last_iterate seed=0 ep2:   3%|▎         | 2/71 [00:00<00:20,  3.31it/s][A
+NFG_SVRG last_iterate seed=0 ep2:   4%|▍         | 3/71 [00:00<00:22,  3.06it/s][A
+NFG_SVRG last_iterate seed=0 ep2:   6%|▌         | 4/71 [00:01<00:22,  2.98it/s][A
+NFG_SVRG last_iterate seed=0 ep2:   7%|▋         | 5/71 [00:01<00:22,  2.95it/s][A
+NFG_SVRG last_iterate seed=0 ep2:   8%|▊         | 6/71 [00:01<00:22,  2.93it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  10%|▉         | 7/71 [00:02<00:22,  2.91it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  11%|█▏        | 8/71 [00:02<00:23,  2.73it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  13%|█▎        | 9/71 [00:03<00:22,  2.72it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  14%|█▍        | 10/71 [00:03<00:22,  2.75it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  15%|█▌        | 11/71 [00:03<00:22,  2.72it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  17%|█▋        | 12/71 [00:04<00:21,  2.70it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  18%|█▊        | 13/71 [00:04<00:21,  2.71it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  20%|█▉        | 14/71 [00:04<00:21,  2.68it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  21%|██        | 15/71 [00:05<00:20,  2.72it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  23%|██▎       | 16/71 [00:05<00:20,  2.67it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  24%|██▍       | 17/71 [00:06<00:20,  2.58it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  25%|██▌       | 18/71 [00:06<00:20,  2.63it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  27%|██▋       | 19/71 [00:06<00:19,  2.66it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  28%|██▊       | 20/71 [00:07<00:19,  2.58it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  30%|██▉       | 21/71 [00:07<00:19,  2.61it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  31%|███       | 22/71 [00:08<00:18,  2.62it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  32%|███▏      | 23/71 [00:08<00:18,  2.64it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  34%|███▍      | 24/71 [00:08<00:17,  2.63it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  35%|███▌      | 25/71 [00:09<00:17,  2.69it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  37%|███▋      | 26/71 [00:09<00:17,  2.64it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  38%|███▊      | 27/71 [00:09<00:16,  2.64it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  39%|███▉      | 28/71 [00:10<00:16,  2.69it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  41%|████      | 29/71 [00:10<00:15,  2.72it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  42%|████▏     | 30/71 [00:10<00:15,  2.71it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  44%|████▎     | 31/71 [00:11<00:16,  2.50it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  49%|████▉     | 35/71 [00:11<00:06,  5.43it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  51%|█████     | 36/71 [00:12<00:07,  4.53it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  52%|█████▏    | 37/71 [00:12<00:08,  4.01it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  54%|█████▎    | 38/71 [00:12<00:09,  3.60it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  55%|█████▍    | 39/71 [00:13<00:09,  3.38it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  56%|█████▋    | 40/71 [00:13<00:09,  3.19it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  58%|█████▊    | 41/71 [00:13<00:09,  3.02it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  59%|█████▉    | 42/71 [00:14<00:09,  2.94it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  61%|██████    | 43/71 [00:14<00:09,  2.88it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  62%|██████▏   | 44/71 [00:15<00:09,  2.80it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  63%|██████▎   | 45/71 [00:15<00:09,  2.83it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  65%|██████▍   | 46/71 [00:15<00:09,  2.77it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  66%|██████▌   | 47/71 [00:16<00:08,  2.76it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  68%|██████▊   | 48/71 [00:16<00:08,  2.75it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  69%|██████▉   | 49/71 [00:16<00:07,  2.76it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  70%|███████   | 50/71 [00:17<00:07,  2.77it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  72%|███████▏  | 51/71 [00:17<00:07,  2.70it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  73%|███████▎  | 52/71 [00:18<00:08,  2.20it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  75%|███████▍  | 53/71 [00:18<00:08,  2.25it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  76%|███████▌  | 54/71 [00:19<00:07,  2.36it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  77%|███████▋  | 55/71 [00:19<00:07,  2.14it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  79%|███████▉  | 56/71 [00:19<00:06,  2.28it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  80%|████████  | 57/71 [00:20<00:05,  2.43it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  82%|████████▏ | 58/71 [00:20<00:05,  2.46it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  83%|████████▎ | 59/71 [00:21<00:04,  2.56it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  85%|████████▍ | 60/71 [00:21<00:04,  2.59it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  86%|████████▌ | 61/71 [00:21<00:03,  2.63it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  87%|████████▋ | 62/71 [00:22<00:03,  2.62it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  89%|████████▊ | 63/71 [00:22<00:03,  2.61it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  90%|█████████ | 64/71 [00:22<00:02,  2.65it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  92%|█████████▏| 65/71 [00:23<00:02,  2.67it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  93%|█████████▎| 66/71 [00:23<00:01,  2.64it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  94%|█████████▍| 67/71 [00:24<00:01,  2.60it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  96%|█████████▌| 68/71 [00:24<00:01,  2.63it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  97%|█████████▋| 69/71 [00:24<00:00,  2.66it/s][A
+NFG_SVRG last_iterate seed=0 ep2:  99%|█████████▊| 70/71 [00:25<00:00,  2.64it/s][A
+NFG_SVRG last_iterate seed=0 ep2: 100%|██████████| 71/71 [00:25<00:00,  2.83it/s][A
+                                                                                 [ANFG_SVRG last_iterate seed=0: 100%|██████████| 2/2 [01:25<00:00, 42.64s/it]                                                                           [done] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/_verify/ex009/NFG_SVRG/inner_last_iterate_lr0.001_bs128_lambda0.0005_epochs2/0
+GPU のメモリ使用量 12556 MiB（閾値 100000 MiB 以下）．計測を開始する．
+ASAI_SVRG last_iterate seed=0:   0%|          | 0/2 [00:00<?, ?it/s]
+ASAI_SVRG last_iterate seed=0 ep1:   0%|          | 0/71 [00:00<?, ?it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:   1%|▏         | 1/71 [00:00<00:18,  3.76it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:   3%|▎         | 2/71 [00:00<00:22,  3.06it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:   4%|▍         | 3/71 [00:01<00:24,  2.79it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:   6%|▌         | 4/71 [00:01<00:24,  2.74it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  13%|█▎        | 9/71 [00:01<00:07,  7.80it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  14%|█▍        | 10/71 [00:01<00:10,  6.03it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  15%|█▌        | 11/71 [00:02<00:12,  4.85it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  17%|█▋        | 12/71 [00:02<00:14,  4.15it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  18%|█▊        | 13/71 [00:03<00:16,  3.62it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  20%|█▉        | 14/71 [00:03<00:17,  3.33it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  21%|██        | 15/71 [00:04<00:20,  2.74it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  23%|██▎       | 16/71 [00:04<00:20,  2.74it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  24%|██▍       | 17/71 [00:04<00:20,  2.65it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  25%|██▌       | 18/71 [00:05<00:25,  2.07it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  27%|██▋       | 19/71 [00:06<00:25,  2.01it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  28%|██▊       | 20/71 [00:06<00:23,  2.16it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  30%|██▉       | 21/71 [00:07<00:26,  1.86it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  31%|███       | 22/71 [00:07<00:26,  1.85it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  32%|███▏      | 23/71 [00:08<00:23,  2.03it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  34%|███▍      | 24/71 [00:08<00:21,  2.22it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  35%|███▌      | 25/71 [00:08<00:19,  2.32it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  37%|███▋      | 26/71 [00:09<00:18,  2.44it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  38%|███▊      | 27/71 [00:09<00:17,  2.50it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  39%|███▉      | 28/71 [00:09<00:16,  2.58it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  41%|████      | 29/71 [00:10<00:16,  2.55it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  42%|████▏     | 30/71 [00:10<00:16,  2.48it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  44%|████▎     | 31/71 [00:11<00:16,  2.49it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  45%|████▌     | 32/71 [00:11<00:16,  2.44it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  46%|████▋     | 33/71 [00:11<00:15,  2.44it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  48%|████▊     | 34/71 [00:12<00:15,  2.42it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  49%|████▉     | 35/71 [00:12<00:14,  2.44it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  51%|█████     | 36/71 [00:13<00:14,  2.48it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  52%|█████▏    | 37/71 [00:13<00:13,  2.46it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  54%|█████▎    | 38/71 [00:13<00:13,  2.52it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  55%|█████▍    | 39/71 [00:14<00:12,  2.51it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  56%|█████▋    | 40/71 [00:14<00:12,  2.53it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  58%|█████▊    | 41/71 [00:15<00:13,  2.30it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  59%|█████▉    | 42/71 [00:16<00:15,  1.84it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  61%|██████    | 43/71 [00:16<00:13,  2.05it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  62%|██████▏   | 44/71 [00:16<00:12,  2.18it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  63%|██████▎   | 45/71 [00:17<00:11,  2.31it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  65%|██████▍   | 46/71 [00:17<00:10,  2.39it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  66%|██████▌   | 47/71 [00:17<00:09,  2.45it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  68%|██████▊   | 48/71 [00:18<00:08,  2.56it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  69%|██████▉   | 49/71 [00:18<00:08,  2.60it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  70%|███████   | 50/71 [00:19<00:08,  2.62it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  72%|███████▏  | 51/71 [00:19<00:07,  2.58it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  73%|███████▎  | 52/71 [00:19<00:07,  2.59it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  75%|███████▍  | 53/71 [00:20<00:06,  2.58it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  76%|███████▌  | 54/71 [00:20<00:06,  2.60it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  77%|███████▋  | 55/71 [00:21<00:06,  2.57it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  79%|███████▉  | 56/71 [00:21<00:05,  2.59it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  80%|████████  | 57/71 [00:21<00:05,  2.55it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  82%|████████▏ | 58/71 [00:22<00:05,  2.56it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  83%|████████▎ | 59/71 [00:22<00:04,  2.56it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  85%|████████▍ | 60/71 [00:23<00:04,  2.51it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  86%|████████▌ | 61/71 [00:23<00:03,  2.56it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  87%|████████▋ | 62/71 [00:23<00:03,  2.59it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  89%|████████▊ | 63/71 [00:24<00:03,  2.61it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  90%|█████████ | 64/71 [00:24<00:02,  2.60it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  92%|█████████▏| 65/71 [00:24<00:02,  2.62it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  93%|█████████▎| 66/71 [00:25<00:01,  2.60it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  94%|█████████▍| 67/71 [00:25<00:01,  2.65it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  96%|█████████▌| 68/71 [00:26<00:01,  2.63it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  97%|█████████▋| 69/71 [00:26<00:00,  2.64it/s][A
+ASAI_SVRG last_iterate seed=0 ep1:  99%|█████████▊| 70/71 [00:26<00:00,  2.62it/s][A
+ASAI_SVRG last_iterate seed=0 ep1: 100%|██████████| 71/71 [00:27<00:00,  2.81it/s][A
+                                                                                  [AASAI_SVRG last_iterate seed=0:  50%|█████     | 1/2 [00:43<00:43, 43.53s/it]
+ASAI_SVRG last_iterate seed=0 ep2:   0%|          | 0/71 [00:00<?, ?it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:   1%|▏         | 1/71 [00:00<00:17,  3.89it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:   3%|▎         | 2/71 [00:00<00:23,  2.98it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:   4%|▍         | 3/71 [00:01<00:24,  2.73it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:   6%|▌         | 4/71 [00:01<00:24,  2.69it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:   7%|▋         | 5/71 [00:01<00:24,  2.68it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:   8%|▊         | 6/71 [00:02<00:25,  2.60it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  10%|▉         | 7/71 [00:02<00:24,  2.61it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  11%|█▏        | 8/71 [00:02<00:23,  2.64it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  13%|█▎        | 9/71 [00:03<00:23,  2.60it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  14%|█▍        | 10/71 [00:03<00:23,  2.62it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  15%|█▌        | 11/71 [00:04<00:22,  2.61it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  17%|█▋        | 12/71 [00:04<00:22,  2.61it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  18%|█▊        | 13/71 [00:04<00:22,  2.59it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  20%|█▉        | 14/71 [00:05<00:21,  2.59it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  21%|██        | 15/71 [00:05<00:21,  2.60it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  23%|██▎       | 16/71 [00:06<00:21,  2.52it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  24%|██▍       | 17/71 [00:06<00:21,  2.56it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  25%|██▌       | 18/71 [00:06<00:20,  2.60it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  27%|██▋       | 19/71 [00:07<00:19,  2.63it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  28%|██▊       | 20/71 [00:07<00:18,  2.71it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  30%|██▉       | 21/71 [00:07<00:18,  2.71it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  31%|███       | 22/71 [00:08<00:18,  2.72it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  32%|███▏      | 23/71 [00:08<00:17,  2.73it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  34%|███▍      | 24/71 [00:09<00:17,  2.73it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  35%|███▌      | 25/71 [00:09<00:17,  2.70it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  37%|███▋      | 26/71 [00:09<00:16,  2.69it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  38%|███▊      | 27/71 [00:10<00:16,  2.69it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  39%|███▉      | 28/71 [00:10<00:20,  2.07it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  41%|████      | 29/71 [00:11<00:18,  2.23it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  42%|████▏     | 30/71 [00:11<00:17,  2.28it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  44%|████▎     | 31/71 [00:12<00:16,  2.38it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  45%|████▌     | 32/71 [00:12<00:16,  2.42it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  46%|████▋     | 33/71 [00:12<00:15,  2.49it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  48%|████▊     | 34/71 [00:13<00:14,  2.47it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  49%|████▉     | 35/71 [00:13<00:14,  2.55it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  51%|█████     | 36/71 [00:13<00:13,  2.57it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  52%|█████▏    | 37/71 [00:14<00:13,  2.59it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  54%|█████▎    | 38/71 [00:14<00:14,  2.30it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  55%|█████▍    | 39/71 [00:15<00:13,  2.36it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  56%|█████▋    | 40/71 [00:15<00:13,  2.34it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  58%|█████▊    | 41/71 [00:16<00:12,  2.32it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  59%|█████▉    | 42/71 [00:16<00:11,  2.43it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  61%|██████    | 43/71 [00:16<00:11,  2.45it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  62%|██████▏   | 44/71 [00:17<00:10,  2.48it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  63%|██████▎   | 45/71 [00:17<00:10,  2.56it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  65%|██████▍   | 46/71 [00:18<00:09,  2.57it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  66%|██████▌   | 47/71 [00:18<00:09,  2.61it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  68%|██████▊   | 48/71 [00:18<00:09,  2.55it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  69%|██████▉   | 49/71 [00:19<00:08,  2.51it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  70%|███████   | 50/71 [00:19<00:08,  2.54it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  76%|███████▌  | 54/71 [00:19<00:02,  5.74it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  77%|███████▋  | 55/71 [00:20<00:03,  4.34it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  79%|███████▉  | 56/71 [00:20<00:03,  3.84it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  80%|████████  | 57/71 [00:21<00:04,  3.47it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  82%|████████▏ | 58/71 [00:21<00:04,  3.23it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  83%|████████▎ | 59/71 [00:21<00:03,  3.02it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  85%|████████▍ | 60/71 [00:22<00:03,  2.91it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  86%|████████▌ | 61/71 [00:22<00:03,  2.79it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  87%|████████▋ | 62/71 [00:23<00:03,  2.70it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  89%|████████▊ | 63/71 [00:23<00:03,  2.63it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  90%|█████████ | 64/71 [00:23<00:03,  2.31it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  92%|█████████▏| 65/71 [00:24<00:02,  2.41it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  93%|█████████▎| 66/71 [00:24<00:02,  2.48it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  94%|█████████▍| 67/71 [00:25<00:01,  2.46it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  96%|█████████▌| 68/71 [00:25<00:01,  2.43it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  97%|█████████▋| 69/71 [00:25<00:00,  2.48it/s][A
+ASAI_SVRG last_iterate seed=0 ep2:  99%|█████████▊| 70/71 [00:26<00:00,  2.47it/s][A
+ASAI_SVRG last_iterate seed=0 ep2: 100%|██████████| 71/71 [00:26<00:00,  2.67it/s][A
+                                                                                  [AASAI_SVRG last_iterate seed=0: 100%|██████████| 2/2 [01:30<00:00, 45.26s/it]                                                                            [done] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/_verify/ex009/ASAI_SVRG/inner_last_iterate_lr0.001_bs128_lambda0.0005_epochs2/0
+全ての学習が終了しました．

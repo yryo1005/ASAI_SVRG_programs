@@ -14,6 +14,7 @@ optimizers.py`）にまとめられていた実装を，可読性のために手
 | `asai_svrg.py` | `ASAISVRG` | ASAI SVRG論文 Algorithm 3（提案手法） |
 | `svrg_final_point.py` | `SVRGFinalPoint` | NFG SVRG原論文が比較対象とする古典的SVRG（最終点採用） |
 | `nfg_svrg_final_point.py` | `NFGSVRGFinalPoint` | NFG SVRG原論文 Algorithm 1（最終点採用） |
+| `svrg_average.py` | `SVRGAverage` | スナップショットを平均点，スナップショット勾配を全勾配とするSVRG（査読対応のE2で追加） |
 
 いずれのクラスも `torch.optim.Optimizer` のサブクラスであり，`torch.optim.SGD` 等のPyTorch公式
 実装は使用せず更新則を陽に実装している．勾配は各パラメータの `.grad` 属性から読み取る．
@@ -29,6 +30,7 @@ from .nfg_svrg import NFGSVRG
 from .nfg_svrg_final_point import NFGSVRGFinalPoint
 from .sgd import SGD
 from .svrg import SVRG
+from .svrg_average import SVRGAverage
 from .svrg_final_point import SVRGFinalPoint
 
-__all__ = ["SGD", "SVRG", "SVRGFinalPoint", "NFGSVRG", "NFGSVRGFinalPoint", "ASAISVRG"]
+__all__ = ["SGD", "SVRG", "SVRGFinalPoint", "NFGSVRG", "NFGSVRGFinalPoint", "ASAISVRG", "SVRGAverage"]

@@ -1,0 +1,27 @@
+{
+    "experiment": "ex007_e2_cifar10_snapshot_gradient_factorial",
+    "method": "SVRG",
+    "inner_start": "snapshot",
+    "seed": 1,
+    "learning_rate": 0.001,
+    "batch_size": 128,
+    "epochs": 48,
+    "reg_lambda": 0.0005,
+    "evaluation_point": "snapshot z_s",
+    "sampling": "random_reshuffle",
+    "snapshot_gradient": "full_gradient",
+    "record_omega": true,
+    "terminated": false,
+    "recorded_epochs": 48,
+    "environment": {
+        "torch": "2.11.0+cu128",
+        "torchvision": "0.26.0+cu128",
+        "cuda": "12.8",
+        "cudnn": 91900,
+        "gpu": "NVIDIA GeForce RTX 3090",
+        "pillow": "13.0.0"
+    },
+    "dataset": "CIFAR-10",
+    "model": "AlexNetCIFARNorm",
+    "norm_type": "layernorm"
+}

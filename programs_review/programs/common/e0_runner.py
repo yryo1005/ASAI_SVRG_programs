@@ -109,12 +109,14 @@ def parse_args(spec: dict, description: str) -> argparse.Namespace:
     """
     概要: コマンドライン引数を解釈する．既定値は `spec` から取る．
     引数:
-        spec (dict)．実験の定義（`methods`，`seeds`，`output_root`，`workers`，任意で `inner_starts`）．
+        spec (dict)．実験の定義（`methods`，`seeds`，`output_root`，`workers`，任意で `inner_starts`，
+            `method_choices`（`--methods` で選べる手法．既定は `methods`））．
         description (str)．ヘルプに表示する説明．
     戻り値: args (argparse.Namespace)．
     """
     parser = argparse.ArgumentParser(description=description, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--methods", nargs="+", default=spec["methods"], choices=spec["methods"])
+    parser.add_argument("--methods", nargs="+", default=spec["methods"],
+                        choices=spec.get("method_choices", spec["methods"]))
     parser.add_argument("--inner-starts", nargs="+", default=list(spec.get("inner_starts", INNER_STARTS)),
                         choices=INNER_STARTS)
     parser.add_argument("--seeds", nargs="+", type=int, default=spec["seeds"])

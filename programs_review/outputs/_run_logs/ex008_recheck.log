@@ -1,0 +1,44 @@
+[mse] L = 2.1568199747494745, lambda = 0.0, eta = 0.15300303403316318
+[bce] L = 3.8625, lambda = 0.11249999999999999, eta = 0.08543689320388351
+タスク数: 40，並列プロセス数: 20
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/0
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/1
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/2
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/3
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/4
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/NFG_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/3
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/NFG_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/0
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/NFG_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/1
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/ASAI_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/0
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/NFG_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/2
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/ASAI_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/3
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/ASAI_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/4
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/NFG_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/4
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/ASAI_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/1
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/ASAI_SVRG/inner_snapshot_eta1.530030e-01_K29304_epochs100/2
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/0
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/1
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/NFG_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/1
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/NFG_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/2
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/NFG_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/0
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/NFG_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/3
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/2
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/4
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/3
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/ASAI_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/1
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/ASAI_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/0
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/ASAI_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/3
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SGD/inner_none_eta1.530030e-01_K29304_epochs100/1
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/NFG_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/4
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/ASAI_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/4
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SGD/inner_none_eta1.530030e-01_K29304_epochs100/2
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SGD/inner_none_eta1.530030e-01_K29304_epochs100/0
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SGD/inner_none_eta1.530030e-01_K29304_epochs100/3
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SGD/inner_none_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/0
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SGD/inner_none_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/2
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/mse/SGD/inner_none_eta1.530030e-01_K29304_epochs100/4
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SGD/inner_none_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/1
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SGD/inner_none_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/3
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/ASAI_SVRG/inner_snapshot_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/2
+[skip] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/ex008_e4_a9a/bce/SGD/inner_none_eta8.543689e-02_lambda1.125000e-01_K29304_epochs100/4
+全ての学習が終了しました．

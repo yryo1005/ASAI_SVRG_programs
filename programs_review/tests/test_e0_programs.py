@@ -136,10 +136,10 @@ def _run(method, inner_start, tmp_path, monkeypatch):
     start_points, snapshots = [], []
     original_train_epoch = vr.train_epoch
 
-    def recording_train_epoch(model, dataloader, loss_func, reg_lambda, optimizer, snapshot_model, desc):
+    def recording_train_epoch(model, dataloader, loss_func, reg_lambda, optimizer, snapshot_model, desc, omega=None):
         start_points.append([p.detach().clone() for p in model.parameters()])
         snapshots.append([p.detach().clone() for p in snapshot_model.parameters()])
-        original_train_epoch(model, dataloader, loss_func, reg_lambda, optimizer, snapshot_model, desc)
+        original_train_epoch(model, dataloader, loss_func, reg_lambda, optimizer, snapshot_model, desc, omega)
 
     monkeypatch.setattr(vr, "train_epoch", recording_train_epoch)
     logger = ResultLogger()

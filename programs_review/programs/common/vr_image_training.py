@@ -10,8 +10,12 @@
    - `"snapshot"`：論文のAlgorithmと同じ．外側ループの終了時に `model` のパラメータを
      スナップショット $ {\\mathbf z}_{s} $ で上書きしてから，次の内側ループを開始する．
 2. ログの項目の追加（実験計画1.3節）：`test_correct`，`full_grad_norm_sq`，`approx_cos`，
-   `terminated`．既存の項目（`epoch`，`oracle_calls`，`elapsed_time`，`train_loss`，
+   `terminated`，`omega_snapshot`，`omega_average`．既存の項目（`epoch`，`oracle_calls`，`elapsed_time`，`train_loss`，
    `test_accuracy`，`approx_error`）は名前も計算方法も変えない．
+
+3. E2（実験計画4章）のための手法の追加：`SVRG_average`（`SVRGAverage`），`SVRG_final`
+   （`SVRGFinalPoint`），`NFG_SVRG_final`（`NFGSVRGFinalPoint`）．全勾配を用いる手法は
+   `FULL_GRADIENT_METHODS` で判定する．$ \omega $ の記録は読み出しのみであり，学習の計算を変えない．
 
 `"last_iterate"` を指定した場合，既存の実装と同じ値が得られることを
 `programs/compare_with_existing_logs.py` で確認する．
@@ -26,7 +30,7 @@ import torch
 from tqdm import tqdm
 
 from machine_learning_utils import ResultLogger, set_seed
-from optimizers import ASAISVRG, NFGSVRG, SVRG
+from optimizers import ASAISVRG, NFGSVRG, NFGSVRGFinalPoint, SVRG, SVRGAverage, SVRGFinalPoint
 
 INNER_STARTS = ("last_iterate", "snapshot")
 
@@ -34,7 +38,14 @@ VARIANCE_REDUCED_OPTIMIZER_CLASSES = {
     "SVRG": SVRG,
     "NFG_SVRG": NFGSVRG,
     "ASAI_SVRG": ASAISVRG,
+    "SVRG_average": SVRGAverage,
+    "SVRG_final": SVRGFinalPoint,
+    "NFG_SVRG_final": NFGSVRGFinalPoint,
 }
+
+# スナップショット勾配として全勾配を用いる手法．外側ループごとに全勾配を計算して設定し，
+# 勾配評価回数に初期の N と1エポックあたり 3N を数える．
+FULL_GRADIENT_METHODS = ("SVRG", "SVRG_average", "SVRG_final")
 
 METRIC_NAMES = (
     "epoch",
@@ -47,7 +58,66 @@ METRIC_NAMES = (
     "full_grad_norm_sq",
     "approx_cos",
     "terminated",
+    "omega_snapshot",
+    "omega_average",
 )
+
+
+class OmegaAccumulator:
+    """
+    概要: 内側ループの軌跡とスナップショットの距離
+        $ \omega({\mathbf z}) = \sum_{k=0}^{K-1}\|{\mathbf w}^{k} - {\mathbf z}\|^{2} $（実験計画1.3節）を，
+        全パラメータを保持せずに計算する．数値誤差を抑えるため，最初の点 $ {\mathbf w}^{0} $ を
+        基準とした差 $ {\mathbf d}_{k} = {\mathbf w}^{k} - {\mathbf w}^{0} $ について
+        $ {\mathbf S}_{1} = \sum_{k}{\mathbf d}_{k} $，$ S_{2} = \sum_{k}\|{\mathbf d}_{k}\|^{2} $ を
+        float64で加算し，$ \omega({\mathbf z}) = S_{2} - 2\langle {\mathbf z} - {\mathbf w}^{0}, {\mathbf S}_{1}\rangle
+        + K\|{\mathbf z} - {\mathbf w}^{0}\|^{2} $ とする．パラメータは読み出すだけで変更しない．
+    """
+
+    def __init__(self):
+        """
+        概要: 空の状態で初期化する．
+        引数: なし
+        戻り値: なし
+        """
+        self.reference = None
+        self.sum_diff = None
+        self.sum_sq = None
+        self.count = 0
+
+    @torch.no_grad()
+    def add(self, params) -> None:
+        """
+        概要: 更新前のパラメータ $ {\mathbf w}^{k} $ を1点加える．
+        引数: params (iterable of torch.Tensor)．`model.parameters()`．
+        戻り値: なし
+        """
+        flat = torch.cat([p.detach().reshape(-1).double() for p in params])
+        if self.reference is None:
+            self.reference = flat
+            self.sum_diff = torch.zeros_like(flat)
+            self.sum_sq = torch.zeros((), dtype=torch.float64, device=flat.device)
+        diff = flat - self.reference
+        self.sum_diff += diff
+        self.sum_sq += torch.dot(diff, diff)
+        self.count += 1
+
+    @torch.no_grad()
+    def omega(self, z_params) -> tuple:
+        """
+        概要: 指定したスナップショットに対する $ \omega $ と，その最小値（平均点に対する値）を返す．
+        引数: z_params (list of torch.Tensor)．スナップショット $ {\mathbf z} $ のパラメータ．
+        戻り値:
+            omega_snapshot (float)．$ \omega({\mathbf z}) $．
+            omega_average (float)．$ \omega(\bar{\mathbf w}) = S_{2} - \|{\mathbf S}_{1}\|^{2}/K $．
+        """
+        if self.count == 0:
+            return float("nan"), float("nan")
+        z = torch.cat([p.detach().reshape(-1).double() for p in z_params]) - self.reference
+        K = float(self.count)
+        omega_snapshot = self.sum_sq - 2.0 * torch.dot(z, self.sum_diff) + K * torch.dot(z, z)
+        omega_average = self.sum_sq - torch.dot(self.sum_diff, self.sum_diff) / K
+        return float(omega_snapshot), float(omega_average)
 
 
 def set_model_params(model: torch.nn.Module, param_values) -> None:
@@ -64,7 +134,7 @@ def set_model_params(model: torch.nn.Module, param_values) -> None:
             p.copy_(v)
 
 
-def iteration(model, inputs, teacher_signals, loss_func, reg_lambda, optimizer, snapshot_model) -> None:
+def iteration(model, inputs, teacher_signals, loss_func, reg_lambda, optimizer, snapshot_model, omega=None) -> None:
     """
     概要: 1つのミニバッチで内側ループの1ステップを実行する．同一ミニバッチについて `model`
         （現在のパラメータ $ {\\mathbf w}_{s}^{k} $）と `snapshot_model`（スナップショット
@@ -78,6 +148,7 @@ def iteration(model, inputs, teacher_signals, loss_func, reg_lambda, optimizer, 
         reg_lambda (float)．L2正則化係数 $ \\lambda $．
         optimizer (torch.optim.Optimizer)．SVRG系手法のOptimizer．
         snapshot_model (torch.nn.Module)．スナップショットを保持するモデル．
+        omega (OmegaAccumulator) = None．指定した場合，更新前のパラメータを加える．
     戻り値: なし
     """
     optimizer.zero_grad()
@@ -90,20 +161,23 @@ def iteration(model, inputs, teacher_signals, loss_func, reg_lambda, optimizer, 
     snapshot_loss = loss_func(snapshot_outputs, teacher_signals, snapshot_model, reg_lambda)
     snapshot_loss.backward()
     grad_at_snapshot = [p.grad.detach().clone() for p in snapshot_model.parameters()]
+    if omega is not None:
+        omega.add(model.parameters())
     optimizer.step(grad_at_snapshot)
 
 
-def train_epoch(model, dataloader, loss_func, reg_lambda, optimizer, snapshot_model, desc) -> None:
+def train_epoch(model, dataloader, loss_func, reg_lambda, optimizer, snapshot_model, desc, omega=None) -> None:
     """
     概要: 1エポック分の内側ループを実行する．
     引数:
         model, loss_func, reg_lambda, optimizer, snapshot_model：`iteration` を参照．
         dataloader (CachedTensorLoader)．学習データのローダー（ミニバッチは転送済み）．
         desc (str)．進捗バーの説明文．
+        omega (OmegaAccumulator) = None．`iteration` を参照．
     戻り値: なし
     """
     for inputs, teacher_signals in tqdm(dataloader, desc=desc, leave=False):
-        iteration(model, inputs, teacher_signals, loss_func, reg_lambda, optimizer, snapshot_model)
+        iteration(model, inputs, teacher_signals, loss_func, reg_lambda, optimizer, snapshot_model, omega)
 
 
 def evaluate_epoch(model, dataloader, loss_func, metrics_func, reg_lambda) -> dict:
@@ -254,7 +328,7 @@ def _initial_snapshot_gradient(method, optimizer, snapshot_model, train_loader, 
     true_full_grad, train_metrics = compute_full_gradient_and_metrics(
         snapshot_model, train_loader, problem["loss_func"], problem["metrics_func"], problem["reg_lambda"]
     )
-    if method == "SVRG":
+    if method in FULL_GRADIENT_METHODS:
         return true_full_grad, true_full_grad, train_metrics
     return optimizer.get_snapshot_gradient(), true_full_grad, train_metrics
 
@@ -276,7 +350,7 @@ def _end_outer_loop(method, optimizer, snapshot_model, train_loader, problem):
     true_full_grad, train_metrics = compute_full_gradient_and_metrics(
         snapshot_model, train_loader, problem["loss_func"], problem["metrics_func"], problem["reg_lambda"]
     )
-    if method == "SVRG":
+    if method in FULL_GRADIENT_METHODS:
         optimizer.set_snapshot_gradient(true_full_grad)
         full_norm_sq, approx_cos = compute_gradient_statistics(true_full_grad, true_full_grad)
         return train_metrics, 0.0, full_norm_sq, approx_cos
@@ -293,12 +367,13 @@ def run_variance_reduced(method, inner_start, target_dir, problem, run_config, d
         `logger` に記録する．評価はスナップショット $ {\\mathbf z}_{s} $（`snapshot_model`）で行う．
         学習損失が非有限となった外側ループで打ち切り，それまでの記録を残す．
     引数:
-        method (str)．"SVRG"，"NFG_SVRG"，"ASAI_SVRG" のいずれか．
+        method (str)．`VARIANCE_REDUCED_OPTIMIZER_CLASSES` のキー（"SVRG"，"NFG_SVRG"，"ASAI_SVRG"，
+            "SVRG_average"，"SVRG_final"，"NFG_SVRG_final"）．
         inner_start (str)．"last_iterate" または "snapshot"．
         target_dir (str)．結果の保存先ディレクトリ．
         problem (dict)．問題の定義．`load_dataloader(seed, batch_size, device)`，
             `build_model(seed)`，`loss_func`，`metrics_func`，`reg_lambda` を含む．
-        run_config (dict)．`learning_rate`，`batch_size`，`epochs` を含む．
+        run_config (dict)．`learning_rate`，`batch_size`，`epochs` を含む．任意で `record_omega`（既定 True）．
         device (torch.device)．
         seed (int)．乱数シード．
         logger (ResultLogger)．`METRIC_NAMES` を登録したロガー．
@@ -329,10 +404,10 @@ def run_variance_reduced(method, inner_start, target_dir, problem, run_config, d
 
     test_metrics = evaluate_epoch(snapshot_model, test_loader, loss_func, metrics_func, reg_lambda)
     logger(0, oracle_calls, 0.0, train_metrics_0["loss"], test_metrics["accuracy"], approx_error_0,
-           test_metrics["correct"], full_norm_sq_0, approx_cos_0, False)
+           test_metrics["correct"], full_norm_sq_0, approx_cos_0, False, float("nan"), float("nan"))
     best_accuracy = _save_if_best(snapshot_model, test_metrics["accuracy"], -1.0, target_dir)
 
-    if method == "SVRG":
+    if method in FULL_GRADIENT_METHODS:
         optimizer.set_snapshot_gradient(snapshot_grad)
         oracle_calls += N_train
 
@@ -341,12 +416,16 @@ def run_variance_reduced(method, inner_start, target_dir, problem, run_config, d
     for epoch_index in tqdm(range(1, epochs + 1), desc=desc_prefix, leave=False):
         start_time = time.time()
         optimizer.begin_epoch(rng)
+        # 実時間の計測（E3）では run_config["record_omega"]=False として加算の時間を含めない．
+        omega = OmegaAccumulator() if run_config.get("record_omega", True) else None
         train_epoch(model, train_loader, loss_func, reg_lambda, optimizer, snapshot_model,
-                    desc=f"{desc_prefix} ep{epoch_index}")
+                    desc=f"{desc_prefix} ep{epoch_index}", omega=omega)
         oracle_calls += 2 * N_train
 
         optimizer.end_epoch()
         set_model_params(snapshot_model, optimizer.get_snapshot_params())
+        omega_snapshot, omega_average = (omega.omega(optimizer.get_snapshot_params()) if omega is not None
+                                         else (float("nan"), float("nan")))
         if inner_start == "snapshot":
             # 論文のAlgorithm：次の内側ループを w_s^0 <- z_s から開始する．
             set_model_params(model, optimizer.get_snapshot_params())
@@ -356,7 +435,7 @@ def run_variance_reduced(method, inner_start, target_dir, problem, run_config, d
         train_metrics, approx_error, full_norm_sq, approx_cos = _end_outer_loop(
             method, optimizer, snapshot_model, train_loader, problem
         )
-        if method == "SVRG":
+        if method in FULL_GRADIENT_METHODS:
             oracle_calls += N_train
             elapsed_time += time.time() - start_time
 
@@ -366,7 +445,8 @@ def run_variance_reduced(method, inner_start, target_dir, problem, run_config, d
 
         terminated = not np.isfinite(train_metrics["loss"])
         logger(epoch_index, oracle_calls, elapsed_time, train_metrics["loss"], test_metrics["accuracy"],
-               approx_error, test_metrics["correct"], full_norm_sq, approx_cos, terminated)
+               approx_error, test_metrics["correct"], full_norm_sq, approx_cos, terminated,
+               omega_snapshot, omega_average)
         best_accuracy = _save_if_best(snapshot_model, test_metrics["accuracy"], best_accuracy, target_dir)
         if terminated:
             break
