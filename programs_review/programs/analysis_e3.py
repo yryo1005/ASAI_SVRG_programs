@@ -12,6 +12,12 @@ E3（実験計画5章）：ImageWoof における実時間の比較の集計．
 - `outputs/ex009_e3_imagewoof_walltime/figures/e3_walltime_{train_loss,test_accuracy}.png`：横軸は実時間 $ t $［s］．
 - `outputs/ex009_e3_imagewoof_walltime/figures/e3_grad_{train_loss,test_accuracy}.png`：横軸は $ \\#\\mathrm{grad}/N $（参考）．
 
+- 各手法に用いる条件（`PAPER_CONDITIONS`）：実験計画5.6節により，NFG-SVRG は restart（`inner_snapshot_...`），
+  SVRG・ASA-SVRG は `inner_last_iterate_...`，SGD は `inner_none_...` を用いる．当初の NFG-SVRG（continue，
+  `inner_last_iterate_...`）は確認用の節と図（`e3_check_*.png`）にのみ用いる．
+- 確認用の節：restart と continue の NFG-SVRG の時間の比（計算機の速度の変動の確認）と対応のある差，
+  restart の NFG-SVRG と E0（`ex003_e0_imagewoof_resnet18_layernorm`，`snapshot`）のログの一致．
+
 実時間は $ t = \\mathrm{time\\_optimizer} + \\mathrm{time\\_svrg\\_full\\_grad} $ である（`elapsed_time` に記録）．
 曲線は，同じ評価点（エポック）における $ t $ と指標の値をシードの間で平均して描く．
 
@@ -41,36 +47,53 @@ SUMMARY_PATH = os.path.join(OUTPUTS_DIR, "e3_summary.md")
 N_TRAIN = 9025
 ACCURACY_THRESHOLD = 0.40
 METHODS = ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"]
-LABELS = {"SGD": "SGD", "SVRG": "SVRG", "NFG_SVRG": "NFG-SVRG", "ASAI_SVRG": "ASA-SVRG"}
-COLORS = {"SGD": "#7f7f7f", "SVRG": "#1f77b4", "NFG_SVRG": "#2ca02c", "ASAI_SVRG": "#d62728"}
+LABELS = {"SGD": "SGD", "SVRG": "SVRG", "NFG_SVRG": "NFG-SVRG", "ASAI_SVRG": "ASA-SVRG",
+          "NFG_SVRG_continue": "NFG-SVRG (continue)"}
+COLORS = {"SGD": "#7f7f7f", "SVRG": "#1f77b4", "NFG_SVRG": "#2ca02c", "ASAI_SVRG": "#d62728",
+          "NFG_SVRG_continue": "#98df8a"}
+_HP = "lr0.001_bs128_lambda0.0005"
+# 系列名 → (手法のディレクトリ，条件名)．論文用の図と表に用いる条件（実験計画5.6節）．
+PAPER_CONDITIONS = {
+    "SGD": ("SGD", f"inner_none_{_HP}_epochs200"),
+    "SVRG": ("SVRG", f"inner_last_iterate_{_HP}_epochs67"),
+    "NFG_SVRG": ("NFG_SVRG", f"inner_snapshot_{_HP}_epochs100"),
+    "ASAI_SVRG": ("ASAI_SVRG", f"inner_last_iterate_{_HP}_epochs100"),
+}
+# 確認用の系列：当初の計測の NFG-SVRG（continue）．
+CONTINUE_CONDITION = {"NFG_SVRG_continue": ("NFG_SVRG", f"inner_last_iterate_{_HP}_epochs100")}
+# 当初の NFG-SVRG（continue）の time_optimizer／エポック（report_051，5シード）．実験計画5.6節の確認2の基準．
+CONTINUE_TIME_OPTIMIZER_REFERENCE = 10.708
+SPEED_TOLERANCE = 0.03
+E0_DIR = os.path.join(OUTPUTS_DIR, "ex003_e0_imagewoof_resnet18_layernorm")
+E0_RESTART_CONDITION = ("NFG_SVRG", f"inner_snapshot_{_HP}_epochs128")
+E0_COMPARED_KEYS = ("epoch", "oracle_calls", "train_loss", "test_accuracy", "test_correct", "approx_error")
 TIME_KEYS = ("time_optimizer", "time_svrg_full_grad", "time_diagnostic", "time_evaluation")
 
 
-def load_runs(experiment_dir: str = E3_DIR) -> dict:
+def load_runs(experiment_dir: str = E3_DIR, conditions: dict = None) -> dict:
     """
-    概要: 完了した試行を手法ごとに読み込む．
-    引数: experiment_dir (str)．
-    戻り値: runs (dict)．手法名 → list of dict（`seed`，`log`，`config`，`x`（$ \\#\\mathrm{grad}/N $））．シード順．
+    概要: 完了した試行を系列ごとに読み込む．系列ごとに1つの条件（手法のディレクトリと条件名）だけを読む．
+    引数: experiment_dir (str)．conditions (dict) = None．系列名 → (手法のディレクトリ，条件名)．
+        None の場合は `PAPER_CONDITIONS`．
+    戻り値: runs (dict)．系列名 → list of dict（`seed`，`log`，`config`，`x`（$ \\#\\mathrm{grad}/N $））．シード順．
     """
     runs = {}
-    for method in METHODS:
-        method_dir = os.path.join(experiment_dir, method)
-        if not os.path.isdir(method_dir):
+    for series, (method, condition) in (conditions or PAPER_CONDITIONS).items():
+        condition_dir = os.path.join(experiment_dir, method, condition)
+        if not os.path.isdir(condition_dir):
             continue
-        for condition in sorted(os.listdir(method_dir)):
-            condition_dir = os.path.join(method_dir, condition)
-            for seed in sorted(os.listdir(condition_dir), key=int):
-                run_dir = os.path.join(condition_dir, seed)
-                log_path, config_path = os.path.join(run_dir, "log.json"), os.path.join(run_dir, "config.json")
-                if not (os.path.exists(log_path) and os.path.exists(config_path)):
-                    continue
-                with open(log_path) as f:
-                    log = json.load(f)
-                with open(config_path) as f:
-                    config = json.load(f)
-                runs.setdefault(method, []).append({
-                    "seed": int(seed), "log": log, "config": config,
-                    "x": np.asarray(log["oracle_calls"], dtype=np.float64) / N_TRAIN})
+        for seed in sorted(os.listdir(condition_dir), key=int):
+            run_dir = os.path.join(condition_dir, seed)
+            log_path, config_path = os.path.join(run_dir, "log.json"), os.path.join(run_dir, "config.json")
+            if not (os.path.exists(log_path) and os.path.exists(config_path)):
+                continue
+            with open(log_path) as f:
+                log = json.load(f)
+            with open(config_path) as f:
+                config = json.load(f)
+            runs.setdefault(series, []).append({
+                "seed": int(seed), "log": log, "config": config,
+                "x": np.asarray(log["oracle_calls"], dtype=np.float64) / N_TRAIN})
     return {m: sorted(r, key=lambda run: run["seed"]) for m, r in runs.items()}
 
 
@@ -266,21 +289,24 @@ def _mean_curve(method_runs: list, key: str, x_key: str):
     return x, mean, se
 
 
-def plot_curves(runs: dict) -> list:
+def plot_curves(runs: dict, name_prefix: str = "e3") -> list:
     """
     概要: 学習損失とテスト精度を，横軸を実時間と $ \\#\\mathrm{grad}/N $ の2通りで描く．
-    引数: runs (dict)．
+        系列 `NFG_SVRG_continue` は破線で描く．
+    引数: runs (dict)．name_prefix (str) = "e3"．ファイル名の接頭辞（確認用の図は "e3_check"）．
     戻り値: paths (list of str)．
     """
     os.makedirs(FIGURE_DIR, exist_ok=True)
     paths = []
-    for x_key, prefix, xlabel in (("elapsed_time", "e3_walltime", "Wall-clock time $t$ [s]"),
-                                  ("grad", "e3_grad", r"$\#\mathrm{grad}/N$")):
+    for x_key, kind, xlabel in (("elapsed_time", "walltime", "Wall-clock time $t$ [s]"),
+                                ("grad", "grad", r"$\#\mathrm{grad}/N$")):
+        prefix = f"{name_prefix}_{kind}"
         for key, ylabel in (("train_loss", "Training loss"), ("test_accuracy", "Test accuracy")):
             fig, ax = plt.subplots(figsize=(5, 5))
             for method, method_runs in runs.items():
                 x, mean, se = _mean_curve(method_runs, key, x_key)
-                ax.plot(x, mean, color=COLORS[method], label=LABELS[method], lw=1.5)
+                style = "--" if method == "NFG_SVRG_continue" else "-"
+                ax.plot(x, mean, style, color=COLORS[method], label=LABELS[method], lw=1.5)
                 ax.fill_between(x, mean - se, mean + se, color=COLORS[method], alpha=0.2)
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
@@ -294,6 +320,117 @@ def plot_curves(runs: dict) -> list:
     return paths
 
 
+def restart_speed_check_lines(runs: dict, continue_runs: dict) -> str:
+    """
+    概要: 実験計画5.6節の確認2：restart の NFG-SVRG の time_optimizer／エポックを，当初の continue の計測と比べる．
+        restart と continue は1エポックの計算量が同じであるため，差は計算機の速度の変動を表す．
+        全勾配の計算（time_diagnostic）で割った比も示す．
+    引数: runs (dict)．論文用の系列．continue_runs (dict)．`NFG_SVRG_continue` の系列．
+    戻り値: text (str)．箇条書き．
+    """
+    if "NFG_SVRG" not in runs or "NFG_SVRG_continue" not in continue_runs:
+        return "（restart または continue の試行なし）"
+    restart = [per_epoch_time(r, "time_optimizer") for r in runs["NFG_SVRG"]]
+    cont = [per_epoch_time(r, "time_optimizer") for r in continue_runs["NFG_SVRG_continue"]]
+    restart_norm = [per_epoch_time(r, "time_optimizer") / full_pass_time(r) for r in runs["NFG_SVRG"]]
+    cont_norm = [per_epoch_time(r, "time_optimizer") / full_pass_time(r) for r in continue_runs["NFG_SVRG_continue"]]
+    ratio = float(np.mean(restart)) / float(np.mean(cont))
+    within = abs(ratio - 1.0) <= SPEED_TOLERANCE
+    return "\n".join([
+        f"- time_optimizer／エポック：restart {_fmt(restart, 3)} s，continue {_fmt(cont, 3)} s"
+        f"（当初の報告値 {CONTINUE_TIME_OPTIMIZER_REFERENCE:.3f} s）．",
+        f"- restart／continue：{ratio:.4f}（差 {100 * (ratio - 1.0):+.2f}%）．"
+        f"判定（差が{100 * SPEED_TOLERANCE:.0f}%以内）：{'以内．SGD・SVRG・ASA-SVRG の計測をそのまま用いる' if within else '超過'}．",
+        f"- time_optimizer／全勾配の計算：restart {_fmt(restart_norm, 4)}，continue {_fmt(cont_norm, 4)}"
+        f"（比 {float(np.mean(restart_norm)) / float(np.mean(cont_norm)):.4f}）．",
+    ])
+
+
+def _reach_text(t: float) -> str:
+    """
+    概要: 精度の到達時間を表示用の文字列にする．到達しない場合（NaN）は「到達せず」とする．
+    引数: t (float)．
+    戻り値: text (str)．
+    """
+    return "到達せず" if np.isnan(t) else f"{t:.1f}"
+
+
+def continue_vs_restart_table(runs: dict, continue_runs: dict) -> str:
+    """
+    概要: NFG-SVRG の restart と continue の，同じシードの最終の学習損失とテスト精度，その差を表にする．
+    引数: runs (dict)．continue_runs (dict)．
+    戻り値: text (str)．Markdown の表．
+    """
+    if "NFG_SVRG" not in runs or "NFG_SVRG_continue" not in continue_runs:
+        return "（restart または continue の試行なし）"
+    cont_by_seed = {r["seed"]: r for r in continue_runs["NFG_SVRG_continue"]}
+    lines = ["| シード | 学習損失 restart | 学習損失 continue | 差（restart − continue） | テスト精度 restart | "
+             "テスト精度 continue | 差（restart − continue） | 精度40%到達の t［s］ restart | continue |",
+             "|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    d_loss, d_acc = [], []
+    for run in runs["NFG_SVRG"]:
+        other = cont_by_seed.get(run["seed"])
+        if other is None:
+            continue
+        lr, lc = _array(run, "train_loss")[-1], _array(other, "train_loss")[-1]
+        ar, ac = _array(run, "test_accuracy")[-1], _array(other, "test_accuracy")[-1]
+        d_loss.append(lr - lc)
+        d_acc.append(ar - ac)
+        lines.append(f"| {run['seed']} | {lr:.4f} | {lc:.4f} | {lr - lc:+.4f} | {ar:.4f} | {ac:.4f} | {ar - ac:+.4f} | "
+                     f"{_reach_text(time_to_accuracy(run))} | {_reach_text(time_to_accuracy(other))} |")
+    lines.append(f"| 平均 ± 標準誤差 | | | {_fmt(d_loss)} | | | {_fmt(d_acc)} | | |")
+    return "\n".join(lines)
+
+
+def e0_consistency_table(runs: dict, e0_dir: str = E0_DIR) -> str:
+    """
+    概要: restart の NFG-SVRG の全評価点（0〜100エポック）を，E0 の ImageWoof の NFG-SVRG（`snapshot`，128エポック）
+        の先頭の同じ数の評価点と比べる（実験計画5.6節の確認1）．
+    引数: runs (dict)．e0_dir (str) = E0_DIR．
+    戻り値: text (str)．Markdown の表．
+    """
+    if "NFG_SVRG" not in runs:
+        return "（restart の試行なし）"
+    method, condition = E0_RESTART_CONDITION
+    lines = ["| シード | 比較した点数 | " + " | ".join(E0_COMPARED_KEYS) + " |",
+             "|---:|---:|" + "---|" * len(E0_COMPARED_KEYS)]
+    for run in runs["NFG_SVRG"]:
+        path = os.path.join(e0_dir, method, condition, str(run["seed"]), "log.json")
+        if not os.path.exists(path):
+            lines.append(f"| {run['seed']} | — | " + " | ".join("E0 のログなし" for _ in E0_COMPARED_KEYS) + " |")
+            continue
+        with open(path) as f:
+            e0_log = json.load(f)
+        n = len(run["log"]["epoch"])
+        cells = []
+        for key in E0_COMPARED_KEYS:
+            same = run["log"][key] == e0_log[key][:n]
+            cells.append("完全一致" if same else "不一致")
+        lines.append(f"| {run['seed']} | {n} | " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def environment_match_lines(runs: dict, continue_runs: dict) -> str:
+    """
+    概要: restart の NFG-SVRG の計測環境（`config.json` の `environment`）が，他の手法の当初の計測と同じかを確認する
+        （実験計画5.6節の確認3）．
+    引数: runs (dict)．continue_runs (dict)．
+    戻り値: text (str)．箇条書き．
+    """
+    if "NFG_SVRG" not in runs:
+        return "（restart の試行なし）"
+    new = {json.dumps(r["config"]["environment"], sort_keys=True) for r in runs["NFG_SVRG"]}
+    old = {json.dumps(r["config"]["environment"], sort_keys=True)
+           for series, rs in list(runs.items()) + list(continue_runs.items()) if series != "NFG_SVRG" for r in rs}
+    if new == old:
+        return "- restart の NFG-SVRG と当初の計測の計測環境（機器，ソフトウェアのバージョン等）は同一である．"
+    diff = []
+    for env_text in new | old:
+        env = json.loads(env_text)
+        diff.append(f"  - {'restart' if env_text in new else '当初'}：{env}")
+    return "- 計測環境が異なる：\n" + "\n".join(diff)
+
+
 def write_summary() -> str:
     """
     概要: 表と図を作り，`outputs/e3_summary.md` に保存する．
@@ -301,7 +438,10 @@ def write_summary() -> str:
     戻り値: text (str)．
     """
     runs = load_runs()
+    continue_runs = load_runs(conditions=CONTINUE_CONDITION)
     figures = plot_curves(runs) if runs else []
+    if "NFG_SVRG_continue" in continue_runs:
+        figures += plot_curves({**runs, **continue_runs}, "e3_check")
     text = "\n\n".join([
         "# E3：ImageWoof における実時間の比較（集計結果）",
         "値はシードの平均 ± 標準誤差である．実時間 $ t $ は time_optimizer + time_svrg_full_grad であり，"
@@ -313,6 +453,13 @@ def write_summary() -> str:
         "そのため，各試行の time_optimizer を同じ試行の全勾配の計算の時間で割った比でも比較する．",
         normalized_comparison_lines(runs) if runs else "（試行なし）",
         "### 試行ごとの1エポックあたりの時間", per_seed_table(runs) if runs else "（試行なし）",
+        "## NFG-SVRG の restart での再計測の確認（実験計画5.6節）",
+        "NFG-SVRG は restart（`inner_start=\"snapshot\"`）の結果を上の表と図に用いた．当初の continue "
+        "（`last_iterate`）の計測は，この節と確認用の図（`e3_check_*.png`）にのみ用いる．",
+        "### 計算機の速度の変動（確認2）", restart_speed_check_lines(runs, continue_runs),
+        "### E0 のログとの一致（確認1）", e0_consistency_table(runs),
+        "### 計測環境（確認3）", environment_match_lines(runs, continue_runs),
+        "### restart と continue の対応のある差（参考）", continue_vs_restart_table(runs, continue_runs),
         "## 計測環境", environment_table(runs),
         "## 図", "\n".join(f"- `{os.path.relpath(p, OUTPUTS_DIR)}`" for p in figures),
     ]) + "\n"

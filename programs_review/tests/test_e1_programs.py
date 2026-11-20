@@ -7,8 +7,15 @@ E1（Mushroomにおける $ \\rho $ の異なる学習率での収束挙動と�
 3. `uniform_with_replacement` の添字が重複を含み得て，値域が $ [0, N_{\\mathrm{train}}) $ であること．
 4. `inner_start="snapshot"` で，ASA-SVRGの各内側ループが $ {\\mathbf z}_s $ から始まること．
 5. SGDの1エポックの `oracle_calls` の増分が $ N_{\\mathrm{train}} $ であること．
+
+実験計画 3.4節（ランダム点の SVRG・NFG-SVRG）に対応する確認．
+6. ランダム点の手法と最終点の手法で，各エポックの添字の列が一致すること．
+7. 既存の `SVRG`・`NFG_SVRG`・`ASAI_SVRG` の結果が変更前（既存のログ）と完全に一致すること
+   （シード0，$ \\rho = 298.4 $，2エポック）．
+8. ランダム点の手法の `oracle_calls` と `config.json` の追加項目．
 """
 
+import json
 import os
 import sys
 
@@ -232,3 +239,175 @@ def test_build_tasks_sgd_uses_inner_none_in_directory_name():
     tasks = e1_train.build_tasks(["SGD"], ["random_reshuffle"], [0.5], ["snapshot"], [0], 1, "/out")
     assert len(tasks) == 1
     assert "/inner_none_random_reshuffle_" in tasks[0]["target_dir"]
+
+
+def _record_inner_loop_indices(method: str, sampling: str, epochs: int = 3) -> list:
+    """
+    概要: `run_variance_reduced` を小さなデータで実行し，各内側ループに渡された添字の列を記録する．
+    引数:
+        method (str)．手法名．
+        sampling (str)．サンプリング方式．
+        epochs (int)．外側ループ数．
+    戻り値: recorded (list of numpy.ndarray)．各要素の形状は (N_train,)．
+    """
+    data = _make_small_data(n=16)
+    recorded = []
+    original_run_inner_loop = e1_train.run_inner_loop
+
+    def recording_run_inner_loop(model, snapshot_model, optimizer, X, y, reg_lambda, indices):
+        recorded.append(np.array(indices, copy=True))
+        original_run_inner_loop(model, snapshot_model, optimizer, X, y, reg_lambda, indices)
+
+    e1_train.run_inner_loop = recording_run_inner_loop
+    try:
+        logger = ResultLogger()
+        logger.set_names(*e1_train.METRIC_NAMES)
+        e1_train.run_variance_reduced(method, "snapshot", sampling, 0, data, eta=1e-2, reg_lambda=1e-3,
+                                      f_star=0.0, epochs=epochs, logger=logger)
+    finally:
+        e1_train.run_inner_loop = original_run_inner_loop
+    return recorded
+
+
+@pytest.mark.parametrize("sampling", list(e1_train.ALL_SAMPLINGS))
+@pytest.mark.parametrize("random_method,reference_method", [("SVRG_random", "SVRG"),
+                                                            ("NFG_SVRG_random", "NFG_SVRG"),
+                                                            ("SVRG_random", "ASAI_SVRG")])
+def test_random_point_methods_keep_index_sequence(sampling, random_method, reference_method):
+    """
+    概要: ランダム点の手法の各エポックの添字の列が，最終点の手法・ASA-SVRG と一致することを確認する
+        （スナップショットの選択用の乱数生成器を分けた効果）．
+    引数:
+        sampling (str)．サンプリング方式．
+        random_method (str)．ランダム点の手法名．
+        reference_method (str)．比較する手法名．
+    戻り値: なし
+    """
+    random_indices = _record_inner_loop_indices(random_method, sampling)
+    reference_indices = _record_inner_loop_indices(reference_method, sampling)
+    assert len(random_indices) == len(reference_indices) == 3
+    assert all(np.array_equal(a, b) for a, b in zip(random_indices, reference_indices))
+
+
+def test_random_point_snapshot_rng_is_separate_and_seeded():
+    """
+    概要: スナップショットの選択用の乱数生成器のシードが `[seed, 1]` であり，その最初の選択が
+        `default_rng([seed, 1]).integers(0, K)` と一致することを確認する．
+    引数: なし
+    戻り値: なし
+    """
+    assert e1_train.snapshot_rng_seed(3) == [3, 1]
+    data = _make_small_data(n=16)
+    X_train = data[0]
+    N_train, input_dim = X_train.shape
+    model = load_model(seed=0, input_dim=input_dim)
+    optimizer = e1_train._VARIANCE_REDUCED_OPTIMIZER_CLASSES["SVRG_random"](model.parameters(), lr=1e-2, K=N_train)
+    optimizer.begin_epoch(np.random.default_rng(e1_train.snapshot_rng_seed(0)))
+    expected = int(np.random.default_rng([0, 1]).integers(0, N_train))
+    assert optimizer._target_k == expected
+
+
+def test_random_point_oracle_calls():
+    """
+    概要: `SVRG_random` は初期の全勾配 $ N $ と1エポックあたり $ 3N $，`NFG_SVRG_random` は1エポック
+        あたり $ 2N $ の `oracle_calls` を記録することを確認する．
+    引数: なし
+    戻り値: なし
+    """
+    data = _make_small_data(n=16)
+    N_train = data[0].shape[0]
+    for method, initial, per_epoch in (("SVRG_random", N_train, 3 * N_train), ("NFG_SVRG_random", 0, 2 * N_train)):
+        logger = ResultLogger()
+        logger.set_names(*e1_train.METRIC_NAMES)
+        e1_train.run_variance_reduced(method, "snapshot", "random_reshuffle", 0, data, eta=1e-2, reg_lambda=1e-3,
+                                      f_star=0.0, epochs=2, logger=logger)
+        oracle_calls = logger["oracle_calls"]
+        assert oracle_calls[1] == initial + per_epoch
+        assert oracle_calls[2] - oracle_calls[1] == per_epoch
+
+
+_EXISTING_E1_ROOT = os.path.join(_REVIEW_ROOT, "outputs", "ex006_e1_mushroom_rho_sampling")
+_COMPARED_METRICS = [name for name in e1_train.METRIC_NAMES if name != "elapsed_time"]
+
+
+def _existing_log_path(method: str, task: dict) -> str:
+    """
+    概要: 2エポックのタスクに対応する，既存の100エポックの試行のログのパスを返す．
+    引数:
+        method (str)．手法名．
+        task (dict)．`build_tasks` が返すタスク（2エポック）．
+    戻り値: path (str)．
+    """
+    name = os.path.basename(os.path.dirname(task["target_dir"])).replace("_epochs2", "_epochs100")
+    return os.path.join(_EXISTING_E1_ROOT, method, name, str(task["seed"]), "log.json")
+
+
+_HEAD_REFERENCE_ROOT = os.path.join(_REVIEW_ROOT, "outputs", "_verify", "ex006_head_check")
+_INTEGER_METRICS = ("epoch", "oracle_calls", "test_correct", "terminated")
+
+
+def _assert_logs_match(new_log: ResultLogger, reference_log: ResultLogger, rel_tol: float) -> None:
+    """
+    概要: 2つのログの先頭の点（新しいログの長さ分）を項目ごとに比べる．整数の項目と精度は完全一致，
+        実数の項目は相対誤差 `rel_tol` 以下または絶対誤差 $ 10^{-15} $ 以下（$ f^{*} \\approx 0.55 $ の数 ulp．
+        `rel_tol = 0` は完全一致）を要求する．
+    引数:
+        new_log (ResultLogger)．新しく実行したログ．
+        reference_log (ResultLogger)．比較対象のログ．
+        rel_tol (float)．実数の項目の相対誤差の許容値．
+    戻り値: なし
+    """
+    for name in _COMPARED_METRICS:
+        new_values = list(new_log[name])
+        reference_values = list(reference_log[name])[:len(new_values)]
+        if rel_tol == 0.0 or name in _INTEGER_METRICS or name == "accuracy":
+            assert np.array_equal(new_values, reference_values, equal_nan=True), name
+        else:
+            np.testing.assert_allclose(new_values, reference_values, rtol=rel_tol, atol=1e-15, err_msg=name)
+
+
+@pytest.mark.parametrize("method", ["SVRG", "NFG_SVRG", "ASAI_SVRG"])
+def test_existing_methods_unchanged_against_existing_logs(method, tmp_path):
+    """
+    概要: 変更後の `train.py` で既存の手法（シード0，$ \\rho = 298.4 $，random reshuffling，
+        `inner_start="snapshot"`，2エポック）を実行し，既存の結果と比べる．
+        1. 既存のログ（別のPCで実行）とは，整数の項目と精度が完全一致，実数の項目が相対 $ 10^{-12} $ 以下（または絶対 $ 10^{-15} $ 以下）で
+           一致すること．別のPCとの差は $ f^{*} $ の1 ulp（$ 1.1\\times10^{-16} $）等の丸め誤差である
+           （report_071 2.2節）．
+        2. 変更前のコードを本PCで実行した結果（`outputs/_verify/ex006_head_check`）がある場合は，
+           それと `elapsed_time` 以外の全項目が完全に一致すること．
+    引数:
+        method (str)．手法名．
+        tmp_path (pathlib.Path)．pytest の一時ディレクトリ．
+    戻り値: なし
+    """
+    task = e1_train.build_tasks([method], ["random_reshuffle"], [298.4], ["snapshot"], [0], 2, str(tmp_path))[0]
+    existing_path = _existing_log_path(method, task)
+    if not os.path.exists(existing_path):
+        pytest.skip(f"既存のログが無い: {existing_path}")
+    e1_train.run_single_experiment(task)
+    new_log = ResultLogger(os.path.join(task["target_dir"], "log.json"))
+    _assert_logs_match(new_log, ResultLogger(existing_path), rel_tol=1e-12)
+    head_path = os.path.join(_HEAD_REFERENCE_ROOT, method, os.path.basename(os.path.dirname(task["target_dir"])),
+                             "0", "log.json")
+    if os.path.exists(head_path):
+        _assert_logs_match(new_log, ResultLogger(head_path), rel_tol=0.0)
+    with open(os.path.join(task["target_dir"], "config.json")) as f:
+        assert "snapshot_rule" not in json.load(f)
+
+
+def test_random_point_config_records_snapshot_rule(tmp_path):
+    """
+    概要: ランダム点の手法の `config.json` に `snapshot_rule` と `snapshot_rng_seed` が記録され，
+        保存先が手法名のディレクトリになることを確認する（シード0，$ \\rho = 298.4 $，1エポック）．
+    引数: tmp_path (pathlib.Path)．pytest の一時ディレクトリ．
+    戻り値: なし
+    """
+    task = e1_train.build_tasks(["NFG_SVRG_random"], ["random_reshuffle"], [298.4], ["snapshot"], [0], 1,
+                                str(tmp_path))[0]
+    assert os.sep + "NFG_SVRG_random" + os.sep in task["target_dir"]
+    e1_train.run_single_experiment(task)
+    with open(os.path.join(task["target_dir"], "config.json")) as f:
+        config = json.load(f)
+    assert config["snapshot_rule"] == "uniform_random"
+    assert config["snapshot_rng_seed"] == [0, 1]

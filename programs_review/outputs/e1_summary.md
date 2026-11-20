@@ -10,42 +10,137 @@
 | random reshuffling | 0.5 | SVRG | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | 4.441e-17 ± 2.7e-17 | 0.0009 ± 0.0003 | 0.8866 ± 0.0036 | 4.441e-17 ± 2.7e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | random reshuffling | 0.5 | NFG-SVRG | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.1154 ± 0.0010 | 0.8866 ± 0.0036 | 6.661e-17 ± 2.7e-17 | 9.955e-31 ± 1.5e-31 | 0 |
 | random reshuffling | 0.5 | ASA-SVRG | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0135 ± 0.0002 | 0.8866 ± 0.0036 | 7.772e-17 ± 2.2e-17 | 4.326e-30 ± 2.9e-31 | 0 |
+| random reshuffling | 0.5 | SVRG (random) | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | -6.661e-17 ± 4.4e-17 | 0.0022 ± 0.0006 | 0.8866 ± 0.0036 | -6.661e-17 ± 4.4e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| random reshuffling | 0.5 | NFG-SVRG (random) | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | 2.220e-17 ± 4.2e-17 | 0.1423 ± 0.0187 | 0.8866 ± 0.0036 | 2.220e-17 ± 4.2e-17 | 9.934e-31 ± 1.3e-31 | 0 |
 | random reshuffling | 0.64 | SGD | 0.001591 ± 0.000000 | 0.6399 ± 0.0000 | 1.166e-03 ± 1.8e-04 | （適用外） | 0.8856 ± 0.0030 | 9.265e-04 ± 4.9e-05 | （適用外） | 0 |
 | random reshuffling | 0.64 | SVRG | 0.001591 ± 0.000000 | 0.6399 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0018 ± 0.0006 | 0.8866 ± 0.0036 | 6.661e-17 ± 2.7e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | random reshuffling | 0.64 | NFG-SVRG | 0.001591 ± 0.000000 | 0.6399 ± 0.0000 | 1.110e-16 ± 3.5e-17 | 0.0772 ± 0.0008 | 0.8866 ± 0.0036 | 1.110e-16 ± 3.5e-17 | 9.948e-31 ± 2.0e-31 | 0 |
 | random reshuffling | 0.64 | ASA-SVRG | 0.001591 ± 0.000000 | 0.6399 ± 0.0000 | 8.882e-17 ± 4.2e-17 | 0.0065 ± 0.0002 | 0.8866 ± 0.0036 | 6.661e-17 ± 2.7e-17 | 4.759e-30 ± 5.6e-31 | 0 |
+| random reshuffling | 0.64 | SVRG (random) | 0.001591 ± 0.000000 | 0.6399 ± 0.0000 | -2.220e-17 ± 4.2e-17 | 0.0017 ± 0.0007 | 0.8866 ± 0.0036 | -2.220e-17 ± 4.2e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| random reshuffling | 0.64 | NFG-SVRG (random) | 0.001591 ± 0.000000 | 0.6399 ± 0.0000 | 0.000e+00 ± 3.5e-17 | 0.1024 ± 0.0164 | 0.8866 ± 0.0036 | 0.000e+00 ± 3.5e-17 | 9.509e-31 ± 1.7e-31 | 0 |
 | random reshuffling | 0.8 | SGD | 0.002027 ± 0.000000 | 0.8000 ± 0.0000 | 1.535e-03 ± 1.9e-04 | （適用外） | 0.8849 ± 0.0024 | 1.238e-03 ± 6.3e-05 | （適用外） | 0 |
 | random reshuffling | 0.8 | SVRG | 0.002027 ± 0.000000 | 0.8000 ± 0.0000 | 2.220e-17 ± 2.2e-17 | 0.0024 ± 0.0011 | 0.8866 ± 0.0036 | 2.220e-17 ± 2.2e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | random reshuffling | 0.8 | NFG-SVRG | 0.002027 ± 0.000000 | 0.8000 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0617 ± 0.0005 | 0.8866 ± 0.0036 | 4.441e-17 ± 2.7e-17 | 9.954e-31 ± 1.7e-31 | 0 |
 | random reshuffling | 0.8 | ASA-SVRG | 0.002027 ± 0.000000 | 0.8000 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0041 ± 0.0001 | 0.8866 ± 0.0036 | 8.882e-17 ± 2.2e-17 | 5.044e-30 ± 9.3e-31 | 0 |
+| random reshuffling | 0.8 | SVRG (random) | 0.002027 ± 0.000000 | 0.8000 ± 0.0000 | 0.000e+00 ± 3.5e-17 | 0.0021 ± 0.0010 | 0.8866 ± 0.0036 | 0.000e+00 ± 3.5e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| random reshuffling | 0.8 | NFG-SVRG (random) | 0.002027 ± 0.000000 | 0.8000 ± 0.0000 | 0.000e+00 ± 3.5e-17 | 0.0841 ± 0.0116 | 0.8866 ± 0.0036 | 0.000e+00 ± 3.5e-17 | 9.646e-31 ± 1.6e-31 | 0 |
 | random reshuffling | 1 | SGD | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 1.915e-03 ± 1.9e-04 | （適用外） | 0.8851 ± 0.0018 | 1.578e-03 ± 9.1e-05 | （適用外） | 0 |
 | random reshuffling | 1 | SVRG | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 8.882e-17 ± 2.2e-17 | 0.0033 ± 0.0017 | 0.8866 ± 0.0036 | 8.882e-17 ± 2.2e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | random reshuffling | 1 | NFG-SVRG | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 8.882e-17 ± 2.2e-17 | 0.0546 ± 0.0022 | 0.8866 ± 0.0036 | 8.882e-17 ± 2.2e-17 | 9.548e-31 ± 2.1e-31 | 0 |
 | random reshuffling | 1 | ASA-SVRG | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0030 ± 0.0001 | 0.8866 ± 0.0036 | 8.882e-17 ± 2.2e-17 | 5.096e-30 ± 9.3e-31 | 0 |
+| random reshuffling | 1 | SVRG (random) | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 0.000e+00 ± 3.5e-17 | 0.0026 ± 0.0011 | 0.8866 ± 0.0036 | 0.000e+00 ± 3.5e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| random reshuffling | 1 | NFG-SVRG (random) | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | -4.441e-17 ± 2.7e-17 | 0.0648 ± 0.0078 | 0.8866 ± 0.0036 | -4.441e-17 ± 2.7e-17 | 1.036e-30 ± 2.4e-31 | 0 |
 | random reshuffling | 2 | SGD | 0.004165 ± 0.000000 | 2.0000 ± 0.0000 | 3.115e-03 ± 2.1e-04 | （適用外） | 0.8829 ± 0.0009 | 2.875e-03 ± 1.5e-04 | （適用外） | 0 |
 | random reshuffling | 2 | SVRG | 0.004165 ± 0.000000 | 2.0000 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0043 ± 0.0020 | 0.8866 ± 0.0036 | 6.661e-17 ± 2.7e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | random reshuffling | 2 | NFG-SVRG | 0.004165 ± 0.000000 | 2.0000 ± 0.0000 | 8.882e-17 ± 2.2e-17 | 0.0555 ± 0.0048 | 0.8866 ± 0.0036 | 8.882e-17 ± 2.2e-17 | 1.000e-30 ± 1.9e-31 | 0 |
 | random reshuffling | 2 | ASA-SVRG | 0.004165 ± 0.000000 | 2.0000 ± 0.0000 | 2.220e-17 ± 2.2e-17 | 0.0018 ± 0.0000 | 0.8866 ± 0.0036 | 4.441e-17 ± 2.7e-17 | 4.732e-30 ± 4.0e-31 | 0 |
+| random reshuffling | 2 | SVRG (random) | 0.004165 ± 0.000000 | 2.0000 ± 0.0000 | 2.220e-17 ± 4.2e-17 | 0.0036 ± 0.0008 | 0.8866 ± 0.0036 | 2.220e-17 ± 4.2e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| random reshuffling | 2 | NFG-SVRG (random) | 0.004165 ± 0.000000 | 2.0000 ± 0.0000 | -2.220e-17 ± 2.2e-17 | 0.0581 ± 0.0037 | 0.8866 ± 0.0036 | -2.220e-17 ± 2.2e-17 | 1.014e-30 ± 1.9e-31 | 0 |
 | random reshuffling | 10 | SGD | 0.008142 ± 0.000000 | 10.0000 ± 0.0000 | 5.308e-03 ± 4.7e-04 | （適用外） | 0.8800 ± 0.0015 | 5.902e-03 ± 2.4e-04 | （適用外） | 0 |
 | random reshuffling | 10 | SVRG | 0.008142 ± 0.000000 | 10.0000 ± 0.0000 | 4.441e-17 ± 2.7e-17 | 0.0082 ± 0.0035 | 0.8866 ± 0.0036 | 4.441e-17 ± 2.7e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | random reshuffling | 10 | NFG-SVRG | 0.008142 ± 0.000000 | 10.0000 ± 0.0000 | 8.882e-17 ± 4.2e-17 | 0.0761 ± 0.0072 | 0.8866 ± 0.0036 | 8.882e-17 ± 4.2e-17 | 1.027e-30 ± 2.1e-31 | 0 |
 | random reshuffling | 10 | ASA-SVRG | 0.008142 ± 0.000000 | 10.0000 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0016 ± 0.0002 | 0.8866 ± 0.0036 | 4.441e-17 ± 2.7e-17 | 4.746e-30 ± 5.4e-31 | 0 |
+| random reshuffling | 10 | SVRG (random) | 0.008142 ± 0.000000 | 10.0000 ± 0.0000 | -2.220e-17 ± 4.2e-17 | 0.0089 ± 0.0016 | 0.8866 ± 0.0036 | -2.220e-17 ± 4.2e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| random reshuffling | 10 | NFG-SVRG (random) | 0.008142 ± 0.000000 | 10.0000 ± 0.0000 | -4.441e-17 ± 4.4e-17 | 0.0761 ± 0.0057 | 0.8866 ± 0.0036 | -4.441e-17 ± 4.4e-17 | 1.057e-30 ± 2.3e-31 | 0 |
 | random reshuffling | 298.4 | SGD | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 6.533e-03 ± 5.7e-04 | （適用外） | 0.8795 ± 0.0030 | 7.607e-03 ± 2.9e-04 | （適用外） | 0 |
 | random reshuffling | 298.4 | SVRG | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 8.882e-17 ± 2.2e-17 | 0.0091 ± 0.0025 | 0.8866 ± 0.0036 | 8.882e-17 ± 2.2e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | random reshuffling | 298.4 | NFG-SVRG | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 1.110e-16 ± 0.0e+00 | 0.0860 ± 0.0079 | 0.8866 ± 0.0036 | 1.110e-16 ± 0.0e+00 | 9.979e-31 ± 2.5e-31 | 0 |
 | random reshuffling | 298.4 | ASA-SVRG | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0016 ± 0.0003 | 0.8866 ± 0.0036 | 6.661e-17 ± 2.7e-17 | 4.383e-30 ± 5.0e-31 | 0 |
+| random reshuffling | 298.4 | SVRG (random) | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 0.000e+00 ± 3.5e-17 | 0.0118 ± 0.0020 | 0.8866 ± 0.0036 | 0.000e+00 ± 3.5e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| random reshuffling | 298.4 | NFG-SVRG (random) | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | -4.441e-17 ± 2.7e-17 | 0.1023 ± 0.0059 | 0.8866 ± 0.0036 | -2.220e-17 ± 2.2e-17 | 1.064e-30 ± 2.3e-31 | 0 |
 | uniform w/ replacement | 0.5 | SGD | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | 9.675e-04 ± 8.5e-05 | （適用外） | 0.8881 ± 0.0043 | 7.831e-04 ± 2.4e-05 | （適用外） | 0 |
 | uniform w/ replacement | 0.5 | SVRG | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0008 ± 0.0002 | 0.8866 ± 0.0036 | 6.661e-17 ± 2.7e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | uniform w/ replacement | 0.5 | NFG-SVRG | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | 1.595e-04 ± 3.1e-05 | 0.9262 ± 0.0020 | 0.8888 ± 0.0035 | 1.726e-04 ± 3.8e-06 | 4.154e-04 ± 1.0e-05 | 0 |
 | uniform w/ replacement | 0.5 | ASA-SVRG | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | 1.290e-04 ± 2.9e-05 | 0.9240 ± 0.0022 | 0.8883 ± 0.0034 | 1.377e-04 ± 2.4e-06 | 4.040e-04 ± 9.4e-06 | 0 |
+| uniform w/ replacement | 0.5 | SVRG (random) | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | -2.220e-17 ± 2.2e-17 | 0.0025 ± 0.0013 | 0.8866 ± 0.0036 | -2.220e-17 ± 2.2e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| uniform w/ replacement | 0.5 | NFG-SVRG (random) | 0.001105 ± 0.000000 | 0.5000 ± 0.0000 | 2.376e-04 ± 1.1e-04 | 0.9275 ± 0.0037 | 0.8888 ± 0.0040 | 1.474e-04 ± 6.5e-06 | 4.094e-04 ± 7.9e-06 | 0 |
 | uniform w/ replacement | 1 | SGD | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 1.898e-03 ± 2.1e-04 | （適用外） | 0.8868 ± 0.0040 | 1.870e-03 ± 9.4e-05 | （適用外） | 0 |
 | uniform w/ replacement | 1 | SVRG | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 6.661e-17 ± 2.7e-17 | 0.0019 ± 0.0004 | 0.8866 ± 0.0036 | 6.661e-17 ± 2.7e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | uniform w/ replacement | 1 | NFG-SVRG | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 1.666e-04 ± 3.5e-05 | 0.9266 ± 0.0021 | 0.8888 ± 0.0035 | 1.724e-04 ± 3.0e-06 | 4.121e-04 ± 9.1e-06 | 0 |
 | uniform w/ replacement | 1 | ASA-SVRG | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 1.490e-04 ± 3.3e-05 | 0.9254 ± 0.0022 | 0.8881 ± 0.0034 | 1.540e-04 ± 3.1e-06 | 4.043e-04 ± 9.3e-06 | 0 |
+| uniform w/ replacement | 1 | SVRG (random) | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 2.220e-17 ± 5.4e-17 | 0.0024 ± 0.0015 | 0.8866 ± 0.0036 | 2.220e-17 ± 5.4e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| uniform w/ replacement | 1 | NFG-SVRG (random) | 0.002492 ± 0.000000 | 1.0000 ± 0.0000 | 2.184e-04 ± 8.1e-05 | 0.9276 ± 0.0033 | 0.8883 ± 0.0035 | 1.576e-04 ± 5.0e-06 | 4.033e-04 ± 1.0e-05 | 0 |
 | uniform w/ replacement | 298.4 | SGD | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 7.105e-03 ± 9.7e-04 | （適用外） | 0.8817 ± 0.0039 | 8.239e-03 ± 3.6e-04 | （適用外） | 0 |
 | uniform w/ replacement | 298.4 | SVRG | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 8.882e-17 ± 2.2e-17 | 0.0141 ± 0.0029 | 0.8866 ± 0.0036 | 8.882e-17 ± 2.2e-17 | 0.000e+00 ± 0.0e+00 | 0 |
 | uniform w/ replacement | 298.4 | NFG-SVRG | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 1.818e-04 ± 3.9e-05 | 0.9274 ± 0.0021 | 0.8883 ± 0.0034 | 1.746e-04 ± 6.1e-06 | 4.163e-04 ± 1.3e-05 | 0 |
 | uniform w/ replacement | 298.4 | ASA-SVRG | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 1.625e-04 ± 3.7e-05 | 0.9262 ± 0.0022 | 0.8881 ± 0.0034 | 1.637e-04 ± 3.1e-06 | 4.044e-04 ± 9.0e-06 | 0 |
+| uniform w/ replacement | 298.4 | SVRG (random) | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 4.441e-17 ± 4.4e-17 | 0.0094 ± 0.0014 | 0.8866 ± 0.0036 | 4.441e-17 ± 4.4e-17 | 0.000e+00 ± 0.0e+00 | 0 |
+| uniform w/ replacement | 298.4 | NFG-SVRG (random) | 0.010498 ± 0.000000 | 298.4231 ± 0.0000 | 1.751e-04 ± 3.7e-05 | 0.9269 ± 0.0022 | 0.8881 ± 0.0034 | 1.692e-04 ± 4.0e-06 | 4.061e-04 ± 1.1e-05 | 0 |
+
+
+## ランダム点の SVRG・NFG-SVRG（実験計画 3.4節）
+
+ランダム点の手法はスナップショットを $ \{\mathbf w_s^k\}_{k=0}^{K-1} $ から一様ランダムに選ぶ．添字の列は最終点の手法・ASA-SVRG と同一であり（選択用の乱数生成器を分けた），差はスナップショットの選び方のみによる．目的関数誤差は選ばれた点 $ \mathbf z_s $ で評価する．
+
+### random reshuffling の実測の縮小率 r̂
+
+| ρ（目標） | SVRG（ランダム点） | SVRG（最終点） | NFG-SVRG（ランダム点） | NFG-SVRG（最終点） | ASA-SVRG | s_end（ランダム点 SVRG／NFG） | r̂ < ρ のシード数（ランダム点 SVRG／NFG） |
+|---:|---|---|---|---|---|---|---|
+| 0.5 | 0.0022 ± 0.0006 | 0.0009 ± 0.0003 | 0.1423 ± 0.0187 | 0.1154 ± 0.0010 | 0.0135 ± 0.0002 | 3.2 ± 0.2 ／ 13.2 ± 1.0 | 5/5 ／ 5/5 |
+| 0.64 | 0.0017 ± 0.0007 | 0.0018 ± 0.0006 | 0.1024 ± 0.0164 | 0.0772 ± 0.0008 | 0.0065 ± 0.0002 | 3.2 ± 0.2 ／ 11.4 ± 0.6 | 5/5 ／ 5/5 |
+| 0.8 | 0.0021 ± 0.0010 | 0.0024 ± 0.0011 | 0.0841 ± 0.0116 | 0.0617 ± 0.0005 | 0.0041 ± 0.0001 | 3.2 ± 0.2 ／ 11.0 ± 0.7 | 5/5 ／ 5/5 |
+| 1 | 0.0026 ± 0.0011 | 0.0033 ± 0.0017 | 0.0648 ± 0.0078 | 0.0546 ± 0.0022 | 0.0030 ± 0.0001 | 3.8 ± 0.2 ／ 10.2 ± 0.6 | 5/5 ／ 5/5 |
+| 2 | 0.0036 ± 0.0008 | 0.0043 ± 0.0020 | 0.0581 ± 0.0037 | 0.0555 ± 0.0048 | 0.0018 ± 0.0000 | 4.0 ± 0.0 ／ 9.4 ± 0.4 | 5/5 ／ 5/5 |
+| 10 | 0.0089 ± 0.0016 | 0.0082 ± 0.0035 | 0.0761 ± 0.0057 | 0.0761 ± 0.0072 | 0.0016 ± 0.0002 | 4.6 ± 0.2 ／ 10.6 ± 0.2 | 5/5 ／ 5/5 |
+| 298.4 | 0.0118 ± 0.0020 | 0.0091 ± 0.0025 | 0.1023 ± 0.0059 | 0.0860 ± 0.0079 | 0.0016 ± 0.0003 | 5.4 ± 0.2 ／ 11.6 ± 0.4 | 5/5 ／ 5/5 |
+
+
+### 独立一様サンプリングの誤差床（最後の20外側ループの中央値）
+
+SVRG は全勾配を用いるため近似誤差は0である．
+
+| ρ（目標） | 指標 | SVRG（ランダム点） | SVRG（最終点） | NFG-SVRG（ランダム点） | NFG-SVRG（最終点） | ASA-SVRG |
+|---:|---|---|---|---|---|---|
+| 0.5 | 目的関数誤差 | -2.220e-17 ± 2.2e-17 | 6.661e-17 ± 2.7e-17 | 1.474e-04 ± 6.5e-06 | 1.726e-04 ± 3.8e-06 | 1.377e-04 ± 2.4e-06 |
+| 0.5 | 近似誤差 | （0） | （0） | 4.094e-04 ± 7.9e-06 | 4.154e-04 ± 1.0e-05 | 4.040e-04 ± 9.4e-06 |
+| 1 | 目的関数誤差 | 2.220e-17 ± 5.4e-17 | 6.661e-17 ± 2.7e-17 | 1.576e-04 ± 5.0e-06 | 1.724e-04 ± 3.0e-06 | 1.540e-04 ± 3.1e-06 |
+| 1 | 近似誤差 | （0） | （0） | 4.033e-04 ± 1.0e-05 | 4.121e-04 ± 9.1e-06 | 4.043e-04 ± 9.3e-06 |
+| 298.4 | 目的関数誤差 | 4.441e-17 ± 4.4e-17 | 8.882e-17 ± 2.2e-17 | 1.692e-04 ± 4.0e-06 | 1.746e-04 ± 6.1e-06 | 1.637e-04 ± 3.1e-06 |
+| 298.4 | 近似誤差 | （0） | （0） | 4.061e-04 ± 1.1e-05 | 4.163e-04 ± 1.3e-05 | 4.044e-04 ± 9.0e-06 |
+
+
+### ランダム点と最終点の対応のある差（同じシード，同じ添字の列）
+
+r̂ の差は random reshuffling，誤差床の比は独立一様サンプリングで示す．比は log10(ランダム点／最終点) であり，負はランダム点の方が小さいことを表す．目的関数誤差は $ 10^{-16} $ で切り上げてから比をとる．
+
+| 手法 | sampling | ρ（目標） | r̂（ランダム点 − 最終点） | log10 誤差床の比（目的関数誤差） | log10 誤差床の比（近似誤差） | log10 最終の目的関数誤差の比 | n |
+|---|---|---:|---|---|---|---|---:|
+| SVRG | random reshuffling | 0.5 | 0.0012 ± 0.0006 | — | （0） | -0.018 ± 0.011 | 5 |
+| SVRG | random reshuffling | 0.64 | -0.0001 ± 0.0011 | — | （0） | -0.018 ± 0.011 | 5 |
+| SVRG | random reshuffling | 0.8 | -0.0003 ± 0.0016 | — | （0） | 0.000 ± 0.014 | 5 |
+| SVRG | random reshuffling | 1 | -0.0007 ± 0.0022 | — | （0） | -0.027 ± 0.011 | 5 |
+| SVRG | random reshuffling | 2 | -0.0006 ± 0.0023 | — | （0） | -0.009 ± 0.017 | 5 |
+| SVRG | random reshuffling | 10 | 0.0007 ± 0.0032 | — | （0） | -0.009 ± 0.017 | 5 |
+| SVRG | random reshuffling | 298.4 | 0.0027 ± 0.0026 | — | （0） | -0.027 ± 0.018 | 5 |
+| SVRG | uniform w/ replacement | 0.5 | — | -0.027 ± 0.011 | （0） | -0.027 ± 0.011 | 5 |
+| SVRG | uniform w/ replacement | 1 | — | 0.042 ± 0.066 | （0） | 0.042 ± 0.066 | 5 |
+| SVRG | uniform w/ replacement | 298.4 | — | -0.009 ± 0.017 | （0） | -0.009 ± 0.017 | 5 |
+| NFG-SVRG | random reshuffling | 0.5 | 0.0269 ± 0.0190 | — | — | -0.009 ± 0.017 | 5 |
+| NFG-SVRG | random reshuffling | 0.64 | 0.0252 ± 0.0162 | — | — | -0.087 ± 0.054 | 5 |
+| NFG-SVRG | random reshuffling | 0.8 | 0.0225 ± 0.0118 | — | — | -0.018 ± 0.011 | 5 |
+| NFG-SVRG | random reshuffling | 1 | 0.0102 ± 0.0091 | — | — | -0.036 ± 0.009 | 5 |
+| NFG-SVRG | random reshuffling | 2 | 0.0026 ± 0.0055 | — | — | -0.036 ± 0.009 | 5 |
+| NFG-SVRG | random reshuffling | 10 | 0.0000 ± 0.0109 | — | — | -0.078 ± 0.069 | 5 |
+| NFG-SVRG | random reshuffling | 298.4 | 0.0164 ± 0.0105 | — | — | -0.045 ± 0.000 | 5 |
+| NFG-SVRG | uniform w/ replacement | 0.5 | — | -0.070 ± 0.019 | -0.006 ± 0.008 | 0.060 ± 0.096 | 5 |
+| NFG-SVRG | uniform w/ replacement | 1 | — | -0.040 ± 0.016 | -0.009 ± 0.009 | 0.047 ± 0.069 | 5 |
+| NFG-SVRG | uniform w/ replacement | 298.4 | — | -0.013 ± 0.012 | -0.011 ± 0.012 | -0.024 ± 0.032 | 5 |
+
+
+### ASA-SVRG とランダム点の NFG-SVRG の近似誤差（同じシード）
+
+| sampling | ρ（目標） | log10(ASA/NFG(random)) の中央値（#grad/N ≤ 31） | ASA が小さい外側ループの割合 | log10 誤差床の比（ASA/NFG(random)） | n |
+|---|---:|---|---|---|---:|
+| random reshuffling | 0.5 | -8.306 ± 0.420 | 0.960 ± 0.016 | 0.648 ± 0.061 | 5 |
+| random reshuffling | 0.64 | -9.357 ± 0.263 | 0.960 ± 0.016 | 0.720 ± 0.116 | 5 |
+| random reshuffling | 0.8 | -9.964 ± 0.379 | 0.960 ± 0.016 | 0.720 ± 0.112 | 5 |
+| random reshuffling | 1 | -10.357 ± 0.428 | 0.960 ± 0.016 | 0.707 ± 0.115 | 5 |
+| random reshuffling | 2 | -10.648 ± 0.422 | 0.960 ± 0.016 | 0.689 ± 0.081 | 5 |
+| random reshuffling | 10 | -11.878 ± 0.414 | 0.960 ± 0.016 | 0.677 ± 0.095 | 5 |
+| random reshuffling | 298.4 | -12.472 ± 0.450 | 0.960 ± 0.016 | 0.642 ± 0.104 | 5 |
+| uniform w/ replacement | 0.5 | -0.027 ± 0.012 | 0.733 ± 0.089 | -0.006 ± 0.009 | 5 |
+| uniform w/ replacement | 1 | -0.005 ± 0.005 | 0.600 ± 0.089 | 0.001 ± 0.007 | 5 |
+| uniform w/ replacement | 298.4 | -0.012 ± 0.004 | 0.693 ± 0.045 | -0.002 ± 0.008 | 5 |
 
 
 ## 図
@@ -62,6 +157,12 @@
 - `ex006_e1_mushroom_rho_sampling/figures/e1_loss_random_reshuffle_ASAI_SVRG_full.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_random_reshuffle_ASAI_SVRG_budget31.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_random_reshuffle_ASAI_SVRG_full.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_loss_random_reshuffle_SVRG_random_budget31.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_loss_random_reshuffle_SVRG_random_full.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_loss_random_reshuffle_NFG_SVRG_random_budget31.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_loss_random_reshuffle_NFG_SVRG_random_full.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_random_reshuffle_NFG_SVRG_random_budget31.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_random_reshuffle_NFG_SVRG_random_full.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_loss_uniform_with_replacement_SGD_budget31.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_loss_uniform_with_replacement_SGD_full.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_loss_uniform_with_replacement_SVRG_budget31.png`
@@ -74,9 +175,30 @@
 - `ex006_e1_mushroom_rho_sampling/figures/e1_loss_uniform_with_replacement_ASAI_SVRG_full.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_uniform_with_replacement_ASAI_SVRG_budget31.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_uniform_with_replacement_ASAI_SVRG_full.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_loss_uniform_with_replacement_SVRG_random_budget31.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_loss_uniform_with_replacement_SVRG_random_full.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_loss_uniform_with_replacement_NFG_SVRG_random_budget31.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_loss_uniform_with_replacement_NFG_SVRG_random_full.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_uniform_with_replacement_NFG_SVRG_random_budget31.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_uniform_with_replacement_NFG_SVRG_random_full.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_sampling_overlay_SGD_loss.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_sampling_overlay_SVRG_loss.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_sampling_overlay_NFG_SVRG_loss.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_sampling_overlay_NFG_SVRG_approx_error.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_sampling_overlay_ASAI_SVRG_loss.png`
 - `ex006_e1_mushroom_rho_sampling/figures/e1_sampling_overlay_ASAI_SVRG_approx_error.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_sampling_overlay_SVRG_random_loss.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_sampling_overlay_NFG_SVRG_random_loss.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_sampling_overlay_NFG_SVRG_random_approx_error.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_seeds_loss_random_reshuffle_SVRG_random.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_seeds_loss_random_reshuffle_NFG_SVRG_random.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_seeds_approx_error_random_reshuffle_NFG_SVRG_random.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_seeds_loss_uniform_with_replacement_SVRG_random.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_seeds_loss_uniform_with_replacement_NFG_SVRG_random.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_seeds_approx_error_uniform_with_replacement_NFG_SVRG_random.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_compare_random_reshuffle_rho0.5.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_compare_random_reshuffle_rho1.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_compare_random_reshuffle_rho298.4.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_compare_uniform_with_replacement_rho0.5.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_compare_uniform_with_replacement_rho1.png`
+- `ex006_e1_mushroom_rho_sampling/figures/e1_approx_error_compare_uniform_with_replacement_rho298.4.png`

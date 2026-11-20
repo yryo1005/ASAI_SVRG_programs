@@ -11,7 +11,8 @@ E1（Mushroomにおける $ \\rho $ の異なる学習率での収束挙動と�
 | 定数 | $ L = \\frac{1}{4}\\max_{n}\\|\\tilde{\\mathbf x}_{n}\\|^{2} + \\lambda $，$ \\lambda = \\mu = 0.03 L_{0} $，$ K = N_{\\mathrm{train}} $，ミニバッチサイズ1 |
 | 学習率 | $ \\rho \\in \\{0.5, 0.64, 0.8, 1.0, 2.0, 10, 298.4\\} $ に対応する $ \\eta $（大きい側の解） |
 | エポック数 | 100 |
-| 手法 | SGD，SVRG（最終点，`SVRGFinalPoint`），NFG-SVRG（最終点，`NFGSVRGFinalPoint`），ASA-SVRG（`ASAISVRG`） |
+| 手法 | SGD，SVRG（最終点，`SVRGFinalPoint`），NFG-SVRG（最終点，`NFGSVRGFinalPoint`），ASA-SVRG（`ASAISVRG`），
+  SVRG（ランダム点，`SVRG`，手法名 `SVRG_random`），NFG-SVRG（ランダム点，`NFGSVRG`，手法名 `NFG_SVRG_random`） |
 | サンプリング | `random_reshuffle`（全7 $ \\rho $），`uniform_with_replacement`（$ \\rho \\in \\{0.5, 1.0, 298.4\\} $ のみ） |
 | `inner_start` | 既定は `"snapshot"`（論文のAlgorithm通り）．`"last_iterate"` は既存実装との一致確認にのみ使用する |
 | シード | 0〜4 |
@@ -28,9 +29,16 @@ $ \\rho = 298.4 $ は $ \\eta = 0.99/(3L) $（論文の図1）に対応するた
 `programs/ex001_mushroom_logistic/train.py` の `run_sgd` を移植し，同じ2つのサンプリング方式と
 打切り条件（目的関数誤差が非有限になった外側ループで打切り）を追加した．
 
+ランダム点の手法（`SVRG_random`，`NFG_SVRG_random`，実験計画 3.4節）は，`begin_epoch` で
+スナップショットの添字を `rng.integers(0, K)` により1回選ぶ．添字の列を最終点・ASA-SVRG の試行と
+同一に保つため，`begin_epoch` には添字の列の生成器 `rng = default_rng(seed)` とは別の生成器
+`snapshot_rng = default_rng([seed, 1])` を渡す．最終点と ASA-SVRG は `begin_epoch` で乱数を
+消費しないため，既存の試行の結果は変わらない．
+
 実行例:
     python train.py
     python train.py --rhos 0.5 1.0 298.4 --samplings random_reshuffle --methods SGD --seeds 0
+    python train.py --methods SVRG_random NFG_SVRG_random --workers 20
     python train.py --inner-starts last_iterate --rhos 298.4 --samplings random_reshuffle \\
         --methods SVRG NFG_SVRG ASAI_SVRG --seeds 0 --output-root ../../outputs/_verify/ex006
 """
@@ -59,7 +67,7 @@ sys.path.insert(0, os.path.join(_PROGRAMS_DIR, "common"))
 sys.path.insert(0, _THIS_DIR)
 
 from machine_learning_utils import ResultLogger, set_seed  # noqa: E402
-from optimizers import ASAISVRG, NFGSVRGFinalPoint, SGD, SVRGFinalPoint  # noqa: E402
+from optimizers import ASAISVRG, NFGSVRG, NFGSVRGFinalPoint, SGD, SVRG, SVRGFinalPoint  # noqa: E402
 
 from data import load_dataloader  # noqa: E402
 from model import compute_accuracy, compute_gradient, compute_loss, load_model, set_model_params  # noqa: E402
@@ -70,7 +78,11 @@ OUTPUT_ROOT = os.path.join(_REVIEW_ROOT, "outputs", EXPERIMENT_NAME)
 INNER_STARTS = ("last_iterate", "snapshot")
 DEFAULT_INNER_STARTS = ["snapshot"]
 SEEDS = [0, 1, 2, 3, 4]
-ALL_METHODS = ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG"]
+ALL_METHODS = ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG", "SVRG_random", "NFG_SVRG_random"]
+# スナップショットの勾配を全勾配で計算する手法．
+FULL_GRADIENT_METHODS = ("SVRG", "SVRG_random")
+# スナップショットを内側ループの点から一様ランダムに選ぶ手法（実験計画 3.4節）．
+RANDOM_SNAPSHOT_METHODS = ("SVRG_random", "NFG_SVRG_random")
 ALL_SAMPLINGS = ("random_reshuffle", "uniform_with_replacement")
 RHO_CONDITIONS = [0.5, 0.64, 0.8, 1.0, 2.0, 10.0, 298.4]
 UNIFORM_WITH_REPLACEMENT_RHOS = [0.5, 1.0, 298.4]
@@ -99,7 +111,19 @@ _VARIANCE_REDUCED_OPTIMIZER_CLASSES = {
     "SVRG": SVRGFinalPoint,
     "NFG_SVRG": NFGSVRGFinalPoint,
     "ASAI_SVRG": ASAISVRG,
+    "SVRG_random": SVRG,
+    "NFG_SVRG_random": NFGSVRG,
 }
+
+
+def snapshot_rng_seed(seed: int) -> list:
+    """
+    概要: スナップショットの選択用の乱数生成器のシード `[seed, 1]` を返す．添字の列の生成器
+        （`default_rng(seed)`）とは独立の系列になる．
+    引数: seed (int)．試行のシード．
+    戻り値: seed_sequence (list of int)．長さ2．
+    """
+    return [seed, 1]
 
 
 def compute_smoothness_constant(X: np.ndarray, reg_lambda: float) -> float:
@@ -289,9 +313,10 @@ def run_variance_reduced(method, inner_start, sampling, seed, data, eta, reg_lam
     """
     概要: SVRG系手法（SVRG，NFG-SVRG，ASA-SVRG）で学習し，各外側ループの終了時の評価指標を
         `logger` に記録する．E0と同じ順序で乱数を消費する（各エポックで `get_epoch_indices` の後に
-        `begin_epoch(rng)`）．目的関数誤差が非有限になった外側ループで打ち切る．
+        `begin_epoch(snapshot_rng)`）．`snapshot_rng` は添字の列の `rng` とは別の生成器であり，
+        ランダム点の手法だけが乱数を消費する．目的関数誤差が非有限になった外側ループで打ち切る．
     引数:
-        method (str)．"SVRG"，"NFG_SVRG"，"ASAI_SVRG" のいずれか．
+        method (str)．"SVRG"，"NFG_SVRG"，"ASAI_SVRG"，"SVRG_random"，"NFG_SVRG_random" のいずれか．
         inner_start (str)．"last_iterate" または "snapshot"．
         sampling (str)．"random_reshuffle" または "uniform_with_replacement"．
         seed (int)．乱数シード．
@@ -309,10 +334,12 @@ def run_variance_reduced(method, inner_start, sampling, seed, data, eta, reg_lam
     snapshot_model = load_model(seed=seed, input_dim=input_dim)
     optimizer = _VARIANCE_REDUCED_OPTIMIZER_CLASSES[method](model.parameters(), lr=eta, K=N_train)
     rng = np.random.default_rng(seed)
+    snapshot_rng = np.random.default_rng(snapshot_rng_seed(seed))
+    uses_full_gradient = method in FULL_GRADIENT_METHODS
 
     true_full_grad, grad_norm_sq, objective_gap, accuracy, test_correct = evaluate_point(
         snapshot_model, X_train, y_train, X_test, y_test, reg_lambda, f_star)
-    if method == "SVRG":
+    if uses_full_gradient:
         start_time = time.perf_counter()
         snapshot_grad = compute_gradient(snapshot_model, X_train, y_train, reg_lambda)
         elapsed_time = time.perf_counter() - start_time
@@ -323,25 +350,25 @@ def run_variance_reduced(method, inner_start, sampling, seed, data, eta, reg_lam
     approx_error, approx_cos = compute_approx_statistics(snapshot_grad, true_full_grad)
     logger(0, 0, 0.0, 0.0, objective_gap, grad_norm_sq, accuracy, approx_error, test_correct, grad_norm_sq,
            approx_cos, False)
-    oracle_calls = N_train if method == "SVRG" else 0
+    oracle_calls = N_train if uses_full_gradient else 0
 
     for epoch in tqdm(range(1, epochs + 1), desc=f"{method} {inner_start} {sampling} seed={seed}", leave=False):
         indices = get_epoch_indices(rng, N_train, sampling)
         start_time = time.perf_counter()
-        optimizer.begin_epoch(rng)
+        optimizer.begin_epoch(snapshot_rng)
         run_inner_loop(model, snapshot_model, optimizer, X_train, y_train, reg_lambda, indices)
         optimizer.end_epoch()
         set_model_params(snapshot_model, optimizer.get_snapshot_params(), source_model=model)
         if inner_start == "snapshot":
             # 論文のAlgorithm：次の内側ループを w_s^0 <- z_s から開始する．
             set_model_params(model, optimizer.get_snapshot_params(), source_model=model)
-        if method == "SVRG":
+        if uses_full_gradient:
             snapshot_grad = compute_gradient(snapshot_model, X_train, y_train, reg_lambda)
             optimizer.set_snapshot_gradient(snapshot_grad)
         else:
             snapshot_grad = optimizer.get_snapshot_gradient()
         elapsed_time += time.perf_counter() - start_time
-        oracle_calls += 3 * N_train if method == "SVRG" else 2 * N_train
+        oracle_calls += 3 * N_train if uses_full_gradient else 2 * N_train
 
         true_full_grad, grad_norm_sq, objective_gap, accuracy, test_correct = evaluate_point(
             snapshot_model, X_train, y_train, X_test, y_test, reg_lambda, f_star)
@@ -479,6 +506,9 @@ def run_single_experiment(task: dict) -> None:
         "terminated": bool(logger["terminated"][-1]),
         "torch": torch.__version__,
     }
+    if method in RANDOM_SNAPSHOT_METHODS:
+        config["snapshot_rule"] = "uniform_random"
+        config["snapshot_rng_seed"] = snapshot_rng_seed(seed)
     with open(os.path.join(target_dir, "config.json"), "w") as f:
         json.dump(config, f, indent=4, ensure_ascii=False)
     print(f"[done] {target_dir}", flush=True)

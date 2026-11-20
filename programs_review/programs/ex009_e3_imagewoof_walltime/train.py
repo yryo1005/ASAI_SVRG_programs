@@ -5,7 +5,8 @@ E3（実験計画5章）：ImageWoof・ResNet18（LayerNorm）における実時
 |---|---|
 | データ・モデル・目的関数 | E0 の ImageWoof（`ex003_e0_imagewoof_resnet18_layernorm` の `data.py`，`model.py`），$ \\lambda = 5\\times10^{-4} $ |
 | 学習率・ミニバッチサイズ | $ \\eta = 10^{-3} $，128（$ K = 71 $） |
-| 手法 | SGD，SVRG（ランダム点），NFG-SVRG（ランダム点），ASA-SVRG（平均点）．SVRG系は `inner_start="last_iterate"` |
+| 手法 | SGD，SVRG（ランダム点），NFG-SVRG（ランダム点），ASA-SVRG（平均点）．SVRG系は既定で `inner_start="last_iterate"`．
+  NFG-SVRG は実験計画5.6節により `--inner-start snapshot`（restart）でも計測する |
 | 計算予算 | $ \\#\\mathrm{grad}/N \\approx 200 $（SGD 200，NFG-SVRG・ASA-SVRG 100，SVRG 67エポック） |
 | シード | 0〜4（既定）．当初は0〜2で実施し，他の実験と揃えるため3・4を追加した |
 
@@ -19,6 +20,7 @@ E3（実験計画5章）：ImageWoof・ResNet18（LayerNorm）における実時
     python train.py                                    # 5シード × 4手法 = 20試行（完了済みの試行は飛ばす）
     python train.py --methods SVRG NFG_SVRG ASAI_SVRG --seeds 0 --epochs-override 2 \\
         --output-root ../../outputs/_verify/ex009      # E0 のログとの一致の確認
+    python train.py --methods NFG_SVRG --inner-start snapshot   # NFG-SVRG の restart での再計測（5.6節）
 """
 
 import argparse
@@ -47,7 +49,7 @@ SPEC = {
     "learning_rate": 0.001,
     "batch_size": 128,
     "reg_lambda": 5e-4,
-    "inner_start": "last_iterate",
+    "inner_start": "last_iterate",  # 既定値．`--inner-start` で変える
     "output_root": os.path.join(_REVIEW_ROOT, "outputs", EXPERIMENT_NAME),
 }
 
@@ -82,21 +84,25 @@ def build_problem() -> dict:
     }
 
 
-def condition_name(method: str, epochs: int) -> str:
+INNER_STARTS = ("last_iterate", "snapshot")
+
+
+def condition_name(method: str, epochs: int, inner_start: str = SPEC["inner_start"]) -> str:
     """
     概要: 条件のディレクトリ名を返す．
-    引数: method (str)，epochs (int)．
+    引数: method (str)，epochs (int)，inner_start (str) = "last_iterate"．SVRG系の内側ループの開始点．
     戻り値: name (str)．例：`inner_last_iterate_lr0.001_bs128_lambda0.0005_epochs100`．SGD は `inner_none_...`．
     """
-    inner = "none" if method == "SGD" else SPEC["inner_start"]
+    inner = "none" if method == "SGD" else inner_start
     return f"inner_{inner}_lr{SPEC['learning_rate']}_bs{SPEC['batch_size']}_lambda{SPEC['reg_lambda']}_epochs{epochs}"
 
 
-def build_tasks(methods, seeds, output_root, epochs_override=None) -> list:
+def build_tasks(methods, seeds, output_root, epochs_override=None, inner_start=SPEC["inner_start"]) -> list:
     """
     概要: 実行するタスクを，シードごとに手法を並べた順序で作る．
     引数: methods (list of str)，seeds (list of int)，output_root (str)，epochs_override (int) = None．
-        指定した場合は全手法のエポック数をこの値にする（確認用）．
+        指定した場合は全手法のエポック数をこの値にする（確認用）．inner_start (str) = "last_iterate"．
+        SVRG系の内側ループの開始点（SGD には適用しない）．
     戻り値: tasks (list of dict)．
     """
     tasks = []
@@ -105,11 +111,11 @@ def build_tasks(methods, seeds, output_root, epochs_override=None) -> list:
         tasks.append({
             "experiment": EXPERIMENT_NAME,
             "method": method,
-            "inner_start": None if method == "SGD" else SPEC["inner_start"],
+            "inner_start": None if method == "SGD" else inner_start,
             "seed": seed,
             "run_config": {"learning_rate": SPEC["learning_rate"], "batch_size": SPEC["batch_size"],
                            "epochs": epochs, "record_omega": False},
-            "target_dir": os.path.join(output_root, method, condition_name(method, epochs), str(seed)),
+            "target_dir": os.path.join(output_root, method, condition_name(method, epochs, inner_start), str(seed)),
         })
     return tasks
 
@@ -176,6 +182,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seeds", nargs="+", type=int, default=SPEC["seeds"])
     parser.add_argument("--epochs-override", type=int, default=None, help="確認用：全手法のエポック数")
     parser.add_argument("--output-root", default=SPEC["output_root"])
+    parser.add_argument("--inner-start", default=SPEC["inner_start"], choices=INNER_STARTS,
+                        help="SVRG系の内側ループの開始点（既定は last_iterate．snapshot は restart）")
     parser.add_argument("--idle-mib", type=int, default=2000, help="計測を開始してよい GPU のメモリ使用量の上限")
     return parser.parse_args()
 
@@ -192,7 +200,8 @@ def main() -> None:
 
     args = parse_args()
     prepare_cache()
-    tasks = build_tasks(args.methods, args.seeds, os.path.abspath(args.output_root), args.epochs_override)
+    tasks = build_tasks(args.methods, args.seeds, os.path.abspath(args.output_root), args.epochs_override,
+                        args.inner_start)
     print(f"タスク数: {len(tasks)}（逐次に実行）", flush=True)
     context = multiprocessing.get_context("spawn")
     remaining = tasks

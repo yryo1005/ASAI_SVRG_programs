@@ -1,7 +1,8 @@
 # ex006_e1_mushroom_rho_sampling：E1（Mushroomにおける $ \rho $ の異なる学習率での収束挙動とサンプリング方式の影響）
 
 対応する実験計画：`実験計画.md` 3章（E1）．対応する実行指示：`実験指示E1.md`．
-対応する指示・報告：`.orders/order_050.md`，`.reports/report_050.md`．
+対応する指示・報告：`.orders/order_050.md`，`.reports/report_050.md`．ランダム点の SVRG・NFG-SVRG（実験計画 3.4節）は
+`.orders/order_071.md`，`.reports/report_071.md`．
 
 本ディレクトリは `ex001_e0_mushroom_logistic/`（E0のMushroom実験）を拡張したものであり，
 以下の点のみが異なる．
@@ -16,13 +17,27 @@
    後者は $ \rho \in \{0.5, 1.0, 298.4\} $ のみ実施する．両方式とも，1エポック分の添字は外側ループの最初
    （`optimizer.begin_epoch(rng)` の直前）で `get_epoch_indices` により生成し，乱数の消費位置を揃える．
 4. **`inner_start` は既定で `"snapshot"` のみ**．`"last_iterate"` は3節で述べる既存実装との一致確認にのみ用いる．
+5. **ランダム点の SVRG・NFG-SVRG を追加**（実験計画 3.4節）．手法名 `SVRG_random`（`common/optimizers/svrg.py` の
+   `SVRG`）と `NFG_SVRG_random`（`common/optimizers/nfg_svrg.py` の `NFGSVRG`）．スナップショット
+   $ {\mathbf z}_{s+1} $ を $ \{{\mathbf w}_{s}^{k}\}_{k=0}^{K-1} $ から一様ランダムに選ぶ（論文の Algorithm 1・2）．
+   既存の `SVRG`，`NFG_SVRG` は最終点（`SVRGFinalPoint`，`NFGSVRGFinalPoint`）のままであり，名前と挙動は変えない．
+   選択の添字は `begin_epoch` で `rng.integers(0, K)` により1回選ぶ．添字の列を既存の試行と同一に保つため，
+   `begin_epoch` には添字の列の生成器 `default_rng(seed)` とは別の生成器 `default_rng([seed, 1])` を渡す．
+   最終点と ASA-SVRG は `begin_epoch` で乱数を消費しないため，既存の試行の結果は変わらない．
+   `config.json` には `snapshot_rule: "uniform_random"` と `snapshot_rng_seed: [seed, 1]` を加える．
 
 ## 1. 実行方法
 
 ```bash
 cd programs
-# 本実行（既定の7×4×5 + 3×3×5 = 200試行）
-python ex006_e1_mushroom_rho_sampling/train.py --workers 16
+# 本実行（最終点・ASA-SVRG・SGD の4手法．(7 + 3) × 4 × 5 = 200試行）
+python ex006_e1_mushroom_rho_sampling/train.py --methods SGD SVRG NFG_SVRG ASAI_SVRG --workers 16
+# ランダム点の SVRG・NFG-SVRG（(7 + 3) × 2 × 5 = 100試行，実験計画 3.4節）
+python ex006_e1_mushroom_rho_sampling/train.py --methods SVRG_random NFG_SVRG_random --workers 32 \
+    > ../outputs/_run_logs/ex006_random.log 2>&1
+# 本PCでの最終点の再実行（PC 間の差の確認．report_071 2.2節）
+python ex006_e1_mushroom_rho_sampling/train.py --methods SVRG NFG_SVRG --workers 16 \
+    --output-root ../outputs/_verify/ex006_final_this_pc
 # 既存実装との一致の確認（last_iterate と snapshot，rho=298.4，SVRG系）
 python ex006_e1_mushroom_rho_sampling/train.py --rhos 298.4 --samplings random_reshuffle \
     --methods SVRG NFG_SVRG ASAI_SVRG --inner-starts last_iterate snapshot --seeds 0 \
@@ -36,13 +51,13 @@ python compare_with_existing_logs.py --new-root ../outputs/_verify/ex006 \
 python compare_with_existing_logs.py --new-root ../outputs/_verify/ex006 \
     --existing-root ../../outputs/ex001_mushroom_logistic \
     --hp-map inner_none_random_reshuffle_rho298.4_eta1.049767e-02_lambda9.155984e-01_K7311_epochs100=eta1.049767e-02_lambda9.155984e-01_K7311_epochs100
-# 集計と図
-python analysis_e1.py
+# 集計と図（--this-pc-root は PC 間の差の集計．省略可）
+python analysis_e1.py --this-pc-root ../outputs/_verify/ex006_final_this_pc
 # テスト
 cd .. && python -m pytest -q tests/test_e1_programs.py
 ```
 
-既定の `--rhos`，`--samplings`，`--methods` は `実験指示E1.md` 2.3節・2.4節の条件
+`--methods` の既定は6手法すべてである（完了済みの試行はスキップされる）．既定の `--rhos`，`--samplings` は `実験指示E1.md` 2.3節・2.4節の条件
 （`random_reshuffle` が全7 $ \rho $，`uniform_with_replacement` が $ \rho \in \{0.5, 1.0, 298.4\} $）に対応する．
 完了済みの試行（`log.json` と `config.json` があり，全エポックの記録があるか打ち切りで終了したもの）は
 自動的にスキップされる．
@@ -64,6 +79,11 @@ SGDは `inner_start` を持たないため，`inner_none_...` とする．`confi
 consistency_with_e0.md`，`consistency_with_existing_sgd.md` に保存する．差は倍精度の丸め誤差の範囲内
 （相対 $ 10^{-13} $ 程度以下）である．
 
+ランダム点の手法を追加した後のコードは，変更前のコードと本PCで完全に一致する（`tests/test_e1_programs.py` の
+`test_existing_methods_unchanged_against_existing_logs`．変更前のコードの出力 `outputs/_verify/ex006_head_check` が
+ある場合に比較する）．既存のログ（E1 は別のPCで実行した）とは，$ f^{*} $ の1 ulp（$ 1.1\times10^{-16} $）等の
+丸め誤差の差がある．最終点の試行を本PCで再実行した結果との差は `consistency_final_this_pc.md` にまとめる．
+
 ## 4. 集計（`analysis_e1.py`）
 
 - `outputs/e1_summary.md`：各 (sampling, $ \rho $, 手法) について，$ \eta $，$ \rho $，最終の目的関数誤差，
@@ -74,6 +94,11 @@ consistency_with_e0.md`，`consistency_with_existing_sgd.md` に保存する．�
   - `e1_approx_error_{sampling}_{method}_{budget31,full}.png`：近似誤差（NFG-SVRG・ASA-SVRGのみ）．
   - `e1_sampling_overlay_{method}_{loss,approx_error}.png`：2つのサンプリング方式を重ねた図
     （$ \rho \in \{0.5, 1.0, 298.4\} $）．
+  - `e1_seeds_{loss,approx_error}_{sampling}_{SVRG_random,NFG_SVRG_random}.png`：ランダム点の手法の各シードの曲線を
+    薄く重ねた確認用の図．
+  - `e1_approx_error_compare_{sampling}_rho{ρ}.png`：ASA-SVRG，ランダム点と最終点の NFG-SVRG の近似誤差．
+- `e1_summary.md` の「ランダム点の SVRG・NFG-SVRG」の節：random reshuffling の $ \hat{r} $ の比較，独立一様
+  サンプリングの誤差床の比較，ランダム点と最終点の対応のある差，ASA-SVRG とランダム点の NFG-SVRG の近似誤差の比．
 
 ## 5. `document.md` への転記内容（統合時）
 

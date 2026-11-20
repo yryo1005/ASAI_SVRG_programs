@@ -7,6 +7,8 @@ E3（実時間の計測）のプログラムのテスト．
   `time_svrg_full_grad` が0，`elapsed_time` が `time_optimizer + time_svrg_full_grad` であること．
 - SGD の勾配評価回数が1エポックあたり $ N $ であること．
 - タスクの構築（手法ごとのエポック数，順序，保存先の名前）．
+- `--inner-start`（実験計画5.6節）：省略したときの条件名・タスク・既定値が変更前と同じであること，
+  `snapshot` を指定したときに条件名と `inner_start` に反映され，計測付きの学習ループが計測なしと一致すること．
 """
 
 import importlib.util
@@ -44,10 +46,10 @@ def _load_e3_train_module():
     return module
 
 
-def _timed(method, tmp_path):
+def _timed(method, tmp_path, inner_start="last_iterate"):
     """
     概要: 小さな問題で計測付きの学習を3エポック行う．
-    引数: method (str)，tmp_path．
+    引数: method (str)，tmp_path，inner_start (str) = "last_iterate"．
     戻り値: logger (ResultLogger)．
     """
     os.makedirs(tmp_path, exist_ok=True)
@@ -57,23 +59,24 @@ def _timed(method, tmp_path):
     if method == "SGD":
         tt.run_timed_sgd(str(tmp_path), _make_problem([]), RUN_CONFIG, device, 0, logger)
     else:
-        tt.run_timed_variance_reduced(method, "last_iterate", str(tmp_path), _make_problem([]), RUN_CONFIG,
+        tt.run_timed_variance_reduced(method, inner_start, str(tmp_path), _make_problem([]), RUN_CONFIG,
                                       device, 0, logger)
     return logger
 
 
+@pytest.mark.parametrize("inner_start", ["last_iterate", "snapshot"])
 @pytest.mark.parametrize("method", ["SVRG", "NFG_SVRG", "ASAI_SVRG"])
-def test_timed_loop_matches_untimed_loop(method, tmp_path):
+def test_timed_loop_matches_untimed_loop(method, inner_start, tmp_path):
     """
-    概要: 計測付きの学習ループと計測なしの学習ループの記録が一致することを確認する．
-    引数: method (str)，tmp_path．
+    概要: 計測付きの学習ループと計測なしの学習ループの記録が一致することを確認する（両方の内側ループの開始点）．
+    引数: method (str)，inner_start (str)，tmp_path．
     戻り値: なし
     """
-    timed = _timed(method, tmp_path / "timed")
+    timed = _timed(method, tmp_path / "timed", inner_start)
     os.makedirs(tmp_path / "plain", exist_ok=True)
     plain = ResultLogger()
     plain.set_names(*vr.METRIC_NAMES)
-    vr.run_variance_reduced(method, "last_iterate", str(tmp_path / "plain"), _make_problem([]), RUN_CONFIG,
+    vr.run_variance_reduced(method, inner_start, str(tmp_path / "plain"), _make_problem([]), RUN_CONFIG,
                             torch.device("cpu"), 0, plain)
     for key in ("epoch", "oracle_calls", "train_loss", "test_accuracy", "test_correct", "approx_error"):
         assert timed[key] == plain[key], key
@@ -126,3 +129,50 @@ def test_build_tasks():
     assert all(t["run_config"]["record_omega"] is False for t in tasks)
     assert tasks[0]["target_dir"] == "/tmp/out/SGD/inner_none_lr0.001_bs128_lambda0.0005_epochs200/0"
     assert tasks[3]["target_dir"] == "/tmp/out/ASAI_SVRG/inner_last_iterate_lr0.001_bs128_lambda0.0005_epochs100/0"
+
+
+def test_build_tasks_default_inner_start_unchanged():
+    """
+    概要: `inner_start` を省略したときのタスクが，`last_iterate` を明示したときと全く同じであり，
+        既存の試行の条件名（`inner_last_iterate_...`）と一致することを確認する．
+    引数: なし
+    戻り値: なし
+    """
+    train = _load_e3_train_module()
+    default = train.build_tasks(train.METHODS, [0, 1, 2, 3, 4], "/tmp/out")
+    explicit = train.build_tasks(train.METHODS, [0, 1, 2, 3, 4], "/tmp/out", None, "last_iterate")
+    assert default == explicit
+    assert train.condition_name("NFG_SVRG", 100) == "inner_last_iterate_lr0.001_bs128_lambda0.0005_epochs100"
+    assert all(t["inner_start"] == ("last_iterate" if t["method"] != "SGD" else None) for t in default)
+    existing = os.path.join(_REVIEW_ROOT, "outputs", "ex009_e3_imagewoof_walltime")
+    for task in default:
+        rel = os.path.relpath(task["target_dir"], "/tmp/out")
+        if os.path.isdir(os.path.join(existing, os.path.dirname(rel))):
+            assert os.path.exists(os.path.join(existing, rel, "config.json")), rel
+
+
+def test_parse_args_default_inner_start(monkeypatch):
+    """
+    概要: `--inner-start` を省略したときの既定値が `last_iterate` であり，`snapshot` を指定できることを確認する．
+    引数: monkeypatch．
+    戻り値: なし
+    """
+    train = _load_e3_train_module()
+    monkeypatch.setattr(sys, "argv", ["train.py"])
+    assert train.parse_args().inner_start == "last_iterate"
+    monkeypatch.setattr(sys, "argv", ["train.py", "--methods", "NFG_SVRG", "--inner-start", "snapshot"])
+    assert train.parse_args().inner_start == "snapshot"
+
+
+def test_build_tasks_snapshot_inner_start():
+    """
+    概要: `inner_start="snapshot"` のときに，条件名と `inner_start` に反映され，SGD には適用されないことを確認する．
+    引数: なし
+    戻り値: なし
+    """
+    train = _load_e3_train_module()
+    tasks = train.build_tasks(["SGD", "NFG_SVRG"], [0], "/tmp/out", None, "snapshot")
+    assert tasks[0]["target_dir"] == "/tmp/out/SGD/inner_none_lr0.001_bs128_lambda0.0005_epochs200/0"
+    assert tasks[0]["inner_start"] is None
+    assert tasks[1]["target_dir"] == "/tmp/out/NFG_SVRG/inner_snapshot_lr0.001_bs128_lambda0.0005_epochs100/0"
+    assert tasks[1]["inner_start"] == "snapshot"

@@ -12,13 +12,13 @@ NOLTA投稿論文（Manuscript ID: 2027NPP0002，ASA-SVRG）の条件付き採�
   - 著者の判断により，以降の実験は内側ループの開始点を論文のAlgorithm通りとする．
     すなわち `inner_start="snapshot"`（$ {\mathbf w}_{s}^{0} \leftarrow {\mathbf z}_{s} $）である（`.reports/report_044.md`）．
   - 付録Bは `snapshot` で再実施する．`last_iterate` とSGDの結果には既存のログを用いる．
-- E1（Mushroomにおける $ \rho $ の異なる学習率での収束挙動とサンプリング方式の影響，`snapshot`，SGDを含む4手法）．
+- E1（Mushroomにおける $ \rho $ の異なる学習率での収束挙動とサンプリング方式の影響，`snapshot`，SGDを含む4手法と，ランダム点の SVRG・NFG-SVRG（`SVRG_random`，`NFG_SVRG_random`，実験計画 3.4節））．
 - E2（CIFAR-10における，平均勾配を用いる手法のスナップショットと初期値のアブレーション）．E0の6条件に，NFG-final（`NFGSVRGFinalPoint`）とSVRG-average（`SVRGAverage`，`last_iterate`）を加える．
 - E2（旧版の `実験指示E2.md`，別のPCで実施）：スナップショットの選択方法（最終点，ランダム点，平均点）と $ {\mathbf g}_{s} $ の推定方法（全勾配，平均勾配）の2×3の要因配置の6手法．全て `snapshot`（`ex007_e2_cifar10_snapshot_gradient_factorial`，`.reports/report_060.md`）．最終点の手法と SVRG-average（`snapshot`）は，上の E2 のアブレーションの集計（`analysis_e2.py`）にも用いる．
 - E4（付録B.1，a9a の MSE・BCE の再実施．`snapshot`，SGD を含む4手法．CPUのみ．別のPCで実施，`.reports/report_070.md`）．
-- E3（ImageWoofにおける実時間の比較．SGD，SVRG，NFG-SVRG，ASA-SVRG．SVRG系は `last_iterate`．全試行を逐次に実行し，4区間の時間を計測する）．
+- E3（ImageWoofにおける実時間の比較．SGD，SVRG，NFG-SVRG，ASA-SVRG．SVRG・ASA-SVRG は `last_iterate`，NFG-SVRG は E2 の選択規則で最良であった `snapshot`（restart，`実験計画.md` 5.6節．当初の `last_iterate` の計測は確認用に残す）．全試行を逐次に実行し，4区間の時間を計測する）．
 
-2026-11-19の実験計画の改訂により，内側ループの初期値は実験ごとに定める（`実験計画.md` 0.1節）．実験1（E1）と付録B.1（E4）は `snapshot`，実験3（E3）と付録B.2・B.3は `last_iterate`，実験2（E2）は両方を要因とする．付録Bの `snapshot` での再実施（`ex004`，`ex005`）は論文には用いない（`ex005` のバッチサイズ512は途中で中止した）．
+2026-11-19の実験計画の改訂により，内側ループの初期値は実験ごとに定める（`実験計画.md` 0.1節）．実験1（E1）と付録B.1（E4）は `snapshot`，実験3（E3）は SVRG・ASA-SVRG が `last_iterate`，NFG-SVRG が `snapshot`（2026-11-20改訂），付録B.2・B.3は `last_iterate`，実験2（E2）は両方を要因とする．付録Bの `snapshot` での再実施（`ex004`，`ex005`）は論文には用いない（`ex005` のバッチサイズ512は途中で中止した）．
 
 ## 1. ディレクトリ構成
 
@@ -55,7 +55,8 @@ programs_review/
 ├── tests/test_e2_programs.py            # pytest（E2：SVRGAverage，ω，新しい手法）
 ├── tests/test_e2_factorial_programs.py  # pytest（旧版のE2）
 ├── tests/test_e4_programs.py            # pytest（E4．a9a のデータが無い場合は一部を skip）
-├── tests/test_e3_programs.py            # pytest（E3：計測が学習の演算を変えないこと，区間の割り当て）
+├── tests/test_e3_programs.py            # pytest（E3：計測が学習の演算を変えないこと，区間の割り当て，--inner-start）
+├── visualize_result_E3.ipynb            # E3の可視化（analysis_e3.py を呼ぶ）
 ├── visualize_result.ipynb               # 可視化（analysis_e0.py を呼ぶ）
 ├── visualize_result_E1.ipynb            # E1の可視化（analysis_e1.py を呼ぶ）
 ├── visualize_result_E2.ipynb            # E2の可視化（analysis_e2.py を呼ぶ）
@@ -88,7 +89,7 @@ programs_review/
 条件のディレクトリ名は `inner_{inner_start}_...` の形式で，内側ループの開始点を含む．
 E4では `{loss}/{手法}/inner_{inner_start}_eta{η}[_lambda{λ}]_K29304_epochs100` とし，`config.json` に `loss` を追加している．
 旧版のE2の名前は E0 と同じ形式である．同じ実験番号 `ex007` を本PCのE2と旧版のE2が用いているが，ディレクトリ名で区別する．
-E1では `inner_{inner_start}_{sampling}_rho{目標のρ}_eta{η}_lambda{λ}_K{K}_epochs{エポック数}` とし，内側ループの開始点を持たないSGDは `inner_none_...` とする．E1の `config.json` には，`rho`（$ \eta $ から計算し直した実際の縮小率の上界），`target_rho`（目標とした $ \rho $），`sampling`（`random_reshuffle` または `uniform_with_replacement`），`L`，`mu` を追加している．
+E1では `inner_{inner_start}_{sampling}_rho{目標のρ}_eta{η}_lambda{λ}_K{K}_epochs{エポック数}` とし，内側ループの開始点を持たないSGDは `inner_none_...` とする．E1の `config.json` には，`rho`（$ \eta $ から計算し直した実際の縮小率の上界），`target_rho`（目標とした $ \rho $），`sampling`（`random_reshuffle` または `uniform_with_replacement`），`L`，`mu` を追加している．ランダム点の手法（`SVRG_random`，`NFG_SVRG_random`）の `config.json` には，さらに `snapshot_rule`（`"uniform_random"`）と `snapshot_rng_seed`（`[seed, 1]`．スナップショットの選択用の乱数生成器のシード）を加えている．
 
 ## 2. 依存関係
 
@@ -131,6 +132,7 @@ graph TD
     T6 --> M6[ex006 model.py]
     E1A[analysis_e1.py] --> OUT
     NB1[visualize_result_E1.ipynb] --> E1A
+    NB3[visualize_result_E3.ipynb] --> E3A
     NB2[visualize_result_E2.ipynb] --> E2A
     T7F[ex007 factorial train.py] --> R7F[ex007 factorial e2_runner.py]
     R7F --> R
@@ -212,9 +214,10 @@ python ex005_appb_imagewoof_resnet18_layernorm/train.py --batch-sizes 32 --worke
 python ex005_appb_imagewoof_resnet18_layernorm/train.py --batch-sizes 512 --workers 3
 python analysis_appb.py --existing ex004_appb_cifar10_alexnet_layernorm=<既存の outputs>/ex0024_cifar10_alexnet_layernorm_longrun \
     ex005_appb_imagewoof_resnet18_layernorm=<既存の outputs>/ex0051_imagewoof_resnet18_bs128_longrun
-# E1（Mushroom，CPUのみ．7×4×5 + 3×3×5 = 200試行）
-python ex006_e1_mushroom_rho_sampling/train.py --workers 20
-python analysis_e1.py
+# E1（Mushroom，CPUのみ．最終点・ASA-SVRG・SGD の200試行と，ランダム点の SVRG・NFG-SVRG の100試行）
+python ex006_e1_mushroom_rho_sampling/train.py --methods SGD SVRG NFG_SVRG ASAI_SVRG --workers 20
+python ex006_e1_mushroom_rho_sampling/train.py --methods SVRG_random NFG_SVRG_random --workers 32
+python analysis_e1.py   # --this-pc-root ../outputs/_verify/ex006_final_this_pc で PC 間の差も集計する
 # E2（CIFAR-10．既定は NFG_SVRG_final と SVRG_average の last_iterate，各5シード）
 python ex007_e2_cifar10_ablation/train.py --workers 10
 # 任意の条件の例：python ex007_e2_cifar10_ablation/train.py --methods SVRG_average --inner-starts snapshot
@@ -226,8 +229,9 @@ python analysis_e2_factorial.py
 python ex008_e4_a9a/train.py --loss mse bce --workers 20
 python analysis_e4.py --existing mse=<既存の outputs>/ex000_a9a_least_squares bce=<既存の outputs>/ex0001_a9a_logistic
 # E3（逐次に実行．各試行の前に GPU のメモリ使用量が --idle-mib 以下になるまで待つ．他の学習と同時に実行しない）
-python ex009_e3_imagewoof_walltime/train.py            # 5シード × 4手法（完了済みの試行は飛ばす）
-python analysis_e3.py
+python ex009_e3_imagewoof_walltime/train.py            # 5シード × 4手法（完了済みの試行は飛ばす．既定は --inner-start last_iterate）
+python ex009_e3_imagewoof_walltime/train.py --methods NFG_SVRG --inner-start snapshot   # NFG-SVRG の restart（5.6節）
+python analysis_e3.py   # 論文用の条件は analysis_e3.PAPER_CONDITIONS（NFG-SVRG は inner_snapshot_...）
 # 集計と図
 python analysis_e0.py
 # SGD（既存のログ．パスは引数で渡す）との比較
