@@ -1,0 +1,25 @@
+{
+    "experiment": "ex010_e5_sgd_epoch_average",
+    "method": "SGD",
+    "dataset_key": "imagewoof",
+    "seed": 1,
+    "learning_rate": 0.001,
+    "batch_size": 128,
+    "epochs": 200,
+    "reg_lambda": 0.0005,
+    "evaluation_point": "final iterate w^K (train_*, test_*) and epoch average of pre-update iterates (avg_*)",
+    "sampling": "random_reshuffle",
+    "terminated": false,
+    "recorded_epochs": 200,
+    "environment": {
+        "torch": "2.11.0+cu128",
+        "torchvision": "0.26.0+cu128",
+        "cuda": "12.8",
+        "cudnn": 91900,
+        "gpu": "NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition",
+        "pillow": "13.0.0"
+    },
+    "dataset": "ImageWoof (imagewoof2-320)",
+    "model": "ResNet18LayerNorm",
+    "source_experiment": "ex009_e3_imagewoof_walltime"
+}
