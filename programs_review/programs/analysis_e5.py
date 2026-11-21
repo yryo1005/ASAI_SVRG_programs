@@ -211,18 +211,23 @@ def clearly_greater(a: tuple, b: tuple) -> bool:
 def judge(stats: dict) -> str:
     """
     概要: 実験計画8.6節の判断の目安1〜3に照らした判定を文で返す．揺らぎは SGD（平均点）の間隔2の値と
-        ASA-SVRG（間隔2）を比べる．
+        ASA-SVRG の間隔2の値を比べる．ASA-SVRG の評価点はもともと間隔2であるため，その値は `fluct1`
+        である（`fluct2` はさらに間引いた間隔4の値であり，比較に用いない）．揺らぎの条件（目安1）と
+        精度の条件（目安3）が両方成り立つ場合は両方を示す．
     引数: stats (dict)．`setting_statistics` の戻り値．
     戻り値: text (str)．
     """
     avg, asa = stats["SGD_average"], stats["ASA_SVRG"]
     if avg["n"] == 0 or asa["n"] == 0:
         return "判定なし（結果がない）"
+    parts = []
+    if clearly_greater(avg["fluct2"], asa["fluct1"]):
+        parts.append("目安1：SGD（平均点）の揺らぎが ASA-SVRG より明確に大きい（平均 ± 標準誤差が重ならない）")
     if clearly_greater(avg["acc"], asa["acc"]):
-        return "目安3：SGD（平均点）の精度が ASA-SVRG より明確に高い"
-    if clearly_greater(avg["fluct2"], asa["fluct2"]):
-        return "目安1：SGD（平均点）の揺らぎが ASA-SVRG より明確に大きい（平均 ± 標準誤差が重ならない）"
-    return "目安2に該当：SGD（平均点）の揺らぎは ASA-SVRG より明確には大きくない"
+        parts.append("目安3：SGD（平均点）の精度が ASA-SVRG より明確に高い")
+    if parts:
+        return "．かつ，".join(parts)
+    return "目安2に該当：SGD（平均点）の揺らぎは ASA-SVRG より明確には大きくなく，精度も明確には高くない"
 
 
 def _pct(ms: tuple) -> str:

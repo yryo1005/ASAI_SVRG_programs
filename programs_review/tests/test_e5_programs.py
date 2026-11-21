@@ -215,3 +215,22 @@ def test_both_dataset_modules_load_in_one_process():
     assert imagewoof_model is not cifar_model
     assert hasattr(imagewoof_model, "ResNet18LayerNorm") and hasattr(cifar_model, "AlexNetCIFARNorm")
     assert problems.load_source_module("cifar10", "model") is cifar_model
+
+
+def test_judge_compares_asa_at_its_native_interval():
+    """
+    概要: 判定が ASA-SVRG の揺らぎを本来の間隔2の値（`fluct1`）で比べ，間引いた `fluct2` を使わないこと．
+        また，目安1と目安3が両方成り立つ場合に両方を示すこと．
+    """
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "programs"))
+    import analysis_e5
+
+    stats = {
+        "SGD_average": {"n": 5, "fluct2": (0.0023, 0.0001), "acc": (0.537, 0.003)},
+        "ASA_SVRG": {"n": 5, "fluct1": (0.0019, 0.0001), "fluct2": (0.0023, 0.0001), "acc": (0.487, 0.002)},
+    }
+    text = analysis_e5.judge(stats)
+    assert "目安1" in text and "目安3" in text
+    stats["ASA_SVRG"]["fluct1"] = (0.0023, 0.0001)
+    stats["ASA_SVRG"]["acc"] = (0.537, 0.003)
+    assert analysis_e5.judge(stats).startswith("目安2")
