@@ -1,0 +1,31 @@
+{
+    "experiment": "ex015_e10_a9a_bce_uniform",
+    "loss": "bce",
+    "method": "SVRG_random",
+    "inner_start": "snapshot",
+    "sampling": "uniform_with_replacement",
+    "seed": 0,
+    "eta": 0.08543689320388351,
+    "eta_rule": "0.99/(3L)",
+    "L": 3.8625,
+    "reg_lambda": 0.11249999999999999,
+    "mu": 0.11249999999999999,
+    "K": 29304,
+    "epochs": 100,
+    "batch_size": 1,
+    "evaluation_point": "snapshot z_s",
+    "N_train": 29304,
+    "N_test": 3257,
+    "d": 123,
+    "terminated": false,
+    "torch": "2.11.0+cu128",
+    "L0": 3.75,
+    "lambda_ratio": 0.03,
+    "rho": 297.3550382338325,
+    "f_star": 0.4740115090431359,
+    "snapshot_rule": "uniform_random",
+    "snapshot_rng_seed": [
+        0,
+        1
+    ]
+}
