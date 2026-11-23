@@ -5,7 +5,7 @@ NOLTA投稿論文（Manuscript ID: 2027NPP0002，ASA-SVRG）の条件付き採�
 切り出すことを想定しており，本ディレクトリの外のファイルを import・参照しない（既存の結果との比較に
 用いる `programs/compare_with_existing_logs.py` は，既存の結果のパスをコマンドライン引数で受け取る）．
 
-現在実装している実験は次の7つである（E2は2つの実験からなる）．
+現在実装している実験は次の10個である（E2は2つの実験からなる）．
 
 - E0（内側ループの開始点の影響確認）．
 - 付録B（バッチサイズ32・512）の再実施．
@@ -18,8 +18,11 @@ NOLTA投稿論文（Manuscript ID: 2027NPP0002，ASA-SVRG）の条件付き採�
 - E4（付録B.1，a9a の MSE・BCE の再実施．`snapshot`，SGD を含む4手法．CPUのみ．別のPCで実施，`.reports/report_070.md`）．
 - E3（ImageWoofにおける実時間の比較．SGD，SVRG，NFG-SVRG，ASA-SVRG．SVRG・ASA-SVRG は `last_iterate`，NFG-SVRG は E2 の選択規則で最良であった `snapshot`（restart，`実験計画.md` 5.6節．当初の `last_iterate` の計測は確認用に残す）．全試行を逐次に実行し，4区間の時間を計測する）．
 - E5（4.4節の参考，`実験計画.md` 8章）：エポック内の反復の平均点 $ \bar{\mathbf w} = \frac{1}{K}\sum_{k=0}^{K-1}{\mathbf w}^{k} $ でも評価する SGD．ImageWoof・CIFAR-10，バッチサイズ128・512．SGD の更新と最終点の記録は既存の SGD と同一であり，平均点の評価は学習の軌跡に影響しない．ASA-SVRG の比較対象には表IVの元の既存ログ（`reference/` に複写）を用いる．
+- E6（付録の CIFAR-10 の図，バッチサイズ32・512）：最終点のスナップショットの SVRG・NFG-SVRG（`SVRG_final`，`NFG_SVRG_final`）．2手法 × 2バッチサイズ × 5シード（`ex011_e6_cifar10_final_bs32_512`．別のPC（NVIDIA GeForce RTX 4090）で実施，`.reports/report_080.md`．統合は `.reports/report_077.md`）．
+- E7（ImageWoof）：A は最終点の SVRG・NFG-SVRG のバッチサイズ32・128・512（`ex012_e7_imagewoof_final`，30試行）．B は ImageWoof・CIFAR-10 × バッチサイズ32・128・512 × 4手法（ASA-SVRG（continue），NFG-SVRG（最終点），SVRG（最終点），SGD）の1エポックの時間の計測（`ex013_e7_epoch_time`，組ごとに手法を交互に3周，各4エポック，72試行）．`.reports/report_075.md`．
+- E8（付録B.1，a9a の追加実験．CPUのみ）：A は BCE のランダム点の SVRG・NFG-SVRG（`SVRG_random`，`NFG_SVRG_random`，`snapshot`），B は MSE の ASA-SVRG（`last_iterate`）．各5シード（`ex014_e8_a9a_supplement`，`.reports/report_076.md`）．SGD 等の残りの手法は E4 の結果を用いる．
 
-2026-11-19の実験計画の改訂により，内側ループの初期値は実験ごとに定める（`実験計画.md` 0.1節）．実験1（E1）と付録B.1（E4）は `snapshot`，実験3（E3）は SVRG・ASA-SVRG が `last_iterate`，NFG-SVRG が `snapshot`（2026-11-20改訂），付録B.2・B.3は `last_iterate`，実験2（E2）は両方を要因とする．付録Bの `snapshot` での再実施（`ex004`，`ex005`）は論文には用いない（`ex005` のバッチサイズ512は途中で中止した）．
+2026-11-19の実験計画の改訂により，内側ループの初期値は実験ごとに定める（`実験計画.md` 0.1節）．実験1（E1）と付録B.1（E4）は `snapshot`，実験3（E3）は SVRG・ASA-SVRG が `last_iterate`，NFG-SVRG が `snapshot`（2026-11-20改訂），付録B.2・B.3は `last_iterate`，実験2（E2）は両方を要因とする．付録Bの `snapshot` での再実施（`ex004`，`ex005`）は論文には用いない（`ex005` のバッチサイズ512は途中で中止した）．最終点の手法（E6，E7）では開始点の値は結果に影響しないため，`snapshot` とした．
 
 ## 1. ディレクトリ構成
 
@@ -43,6 +46,10 @@ programs_review/
 │   ├── ex008_e4_a9a/                    # E4 a9a の MSE・BCE（data.py，model.py，train.py，compare_e4.py，README.md）
 │   ├── ex009_e3_imagewoof_walltime/     # E3 ImageWoof の実時間の計測（data.py，model.py，timed_training.py，train.py）
 │   ├── ex010_e5_sgd_epoch_average/      # E5 平均点でも評価する SGD（problems.py，e5_training.py，train.py，compare_e5.py，import_reference_logs.py，README.md．データ・モデルは ex009・ex002 のものを読み込む）
+│   ├── ex011_e6_cifar10_final_bs32_512/ # E6 CIFAR-10 の最終点の SVRG・NFG-SVRG（data.py，model.py，e2_training.py，svrg_average.py は ex007 factorial のコピー．e2_runner.py，train.py，README.md）
+│   ├── ex012_e7_imagewoof_final/        # E7 A ImageWoof の最終点の SVRG・NFG-SVRG（data.py，model.py は ex003 のコピー．train.py，README.md）
+│   ├── ex013_e7_epoch_time/             # E7 B 1エポックの時間の計測（data.py，model.py，timed_training.py は ex009，data_cifar10.py，model_cifar10.py は ex007 factorial のコピー．train.py，README.md）
+│   ├── ex014_e8_a9a_supplement/         # E8 a9a の追加実験（data.py，model.py，compare_e4.py は ex008 のコピー．train.py，README.md）
 │   ├── compare_with_existing_logs.py    # 既存の結果との一致の確認
 │   ├── analysis_e0.py                   # E0の図と表の作成
 │   ├── analysis_e0_with_sgd.py          # E0の結果とSGD（既存のログ）の比較
@@ -52,7 +59,10 @@ programs_review/
 │   ├── analysis_e2_factorial.py         # 旧版のE2（要因配置）の図と表
 │   ├── analysis_e4.py                   # E4の図と表（既存の a9a のログとの比較を含む）
 │   ├── analysis_e3.py                   # E3の時間の表と，実時間を横軸とした図
-│   └── analysis_e5.py                   # E5の揺らぎ（表IVと同じ定義）と予算での精度の表，推移の図
+│   ├── analysis_e5.py                   # E5の揺らぎ（表IVと同じ定義）と予算での精度の表，推移の図
+│   ├── analysis_e6.py                   # E6の表と確認用の図（付録B ex004 と比較）
+│   ├── analysis_e7.py                   # E7の表（A：予算での精度，B：1エポックの時間と実行の順序）と A の確認用の図
+│   └── analysis_e8.py                   # E8の表と確認用の図（E4 の結果と合わせる）
 ├── tests/test_e0_programs.py            # pytest（E0，付録B）
 ├── tests/test_e1_programs.py            # pytest（E1）
 ├── tests/test_e2_programs.py            # pytest（E2：SVRGAverage，ω，新しい手法）
@@ -60,6 +70,9 @@ programs_review/
 ├── tests/test_e4_programs.py            # pytest（E4．a9a のデータが無い場合は一部を skip）
 ├── tests/test_e3_programs.py            # pytest（E3：計測が学習の演算を変えないこと，区間の割り当て，--inner-start）
 ├── tests/test_e5_programs.py            # pytest（E5：平均の添字が ASA-SVRG と同じこと，平均点の評価が学習の状態を変えないこと，最終点が E3 の SGD と一致すること）
+├── tests/test_e6_programs.py            # pytest（E6：タスク，コピーしたファイルの同一性）
+├── tests/test_e7_programs.py            # pytest（E7：A・B のタスクと順序，1エポックの時間の定義，集計）
+├── tests/test_e8_programs.py            # pytest（E8：部の選択，ランダム点の規則，E4 との一致）
 ├── visualize_result_E3.ipynb            # E3の可視化（analysis_e3.py を呼ぶ）
 ├── visualize_result_E5.ipynb            # E5の可視化（analysis_e5.py を呼ぶ）
 ├── visualize_result.ipynb               # 可視化（analysis_e0.py を呼ぶ）
@@ -88,6 +101,13 @@ programs_review/
 │   ├── e3_summary.md                    # 集計表（E3）
 │   ├── ex010_e5_sgd_epoch_average/{imagewoof,cifar10}/SGD/lr0.001_bs{B}_lambda0.0005_epochs{E}/{seed}/...  # E5（figures/，reference/（表IVの既存ログの複写），consistency_*.md を含む）
 │   ├── e5_summary.md                    # 集計表（E5）
+│   ├── ex011_e6_cifar10_final_bs32_512/{手法}/{条件}/{seed}/...  # E6（figures/，consistency*.md（統合時の本PCでの確認 consistency_this_pc.md を含む））
+│   ├── e6_summary.md                    # 集計表（E6）
+│   ├── ex012_e7_imagewoof_final/{手法}/{条件}/{seed}/...  # E7 A（figures/，consistency.md を含む）
+│   ├── ex013_e7_epoch_time/{imagewoof,cifar10}/bs{B}/{手法}/rep{周回}/...  # E7 B（consistency.md を含む）
+│   ├── e7_summary.md                    # 集計表（E7）
+│   ├── ex014_e8_a9a_supplement/{bce,mse}/{手法}/{条件}/{seed}/...  # E8（figures/，consistency*.md を含む）
+│   ├── e8_summary.md                    # 集計表（E8）
 │   └── _run_logs/                       # 実行時の標準出力
 ├── requirements_pytorch_gpu.txt
 └── document.md
@@ -164,6 +184,21 @@ graph TD
     CMP8[ex008 compare_e4.py] --> OUT
     E4A[analysis_e4.py] --> OUT
     NB4[visualize_result_E4.ipynb] --> E4A
+    T11[ex011 train.py] --> R11[ex011 e2_runner.py]
+    R11 --> R
+    R11 --> V11[ex011 e2_training.py]
+    V11 --> V
+    V11 --> SA11[ex011 svrg_average.py]
+    E6A[analysis_e6.py] --> A
+    T12[ex012 train.py] --> R
+    T13[ex013 train.py] --> R
+    T13 --> TT13[ex013 timed_training.py] --> V
+    T13 --> D13[ex013 data.py・model.py・data_cifar10.py・model_cifar10.py] --> C
+    E7A[analysis_e7.py] --> OUT
+    T14[ex014 train.py] --> O
+    T14 --> U
+    T14 --> D14[ex014 data.py・model.py]
+    E8A[analysis_e8.py] --> E4A
 ```
 
 ### 学習ループ（SVRG系手法，1つの外側ループ）
@@ -205,7 +240,7 @@ VIRTUAL_ENV=.venv_pytorch uv pip install -r requirements_pytorch_gpu.txt --index
 ```
 
 実行に用いた環境：Python 3.12.15，torch 2.11.0+cu128，torchvision 0.26.0+cu128，cuDNN 9.19，Pillow 13.0.0，
-NVIDIA RTX PRO 6000 Blackwell Max-Q（96GB）．親リポジトリでは `.venv_pytorch` を親リポジトリのルートに置いている．
+NVIDIA RTX PRO 6000 Blackwell Max-Q（96GB）．ただし，E4 は別のPC（Intel Core Ultra 9 285K，CPUのみ），E6 は別のPC（NVIDIA GeForce RTX 4090），旧版のE2 は RTX 3090 で実行した．GPU が異なると，同じプログラムでも1エポック目以降の値は丸め誤差の水準で異なる．親リポジトリでは `.venv_pytorch` を親リポジトリのルートに置いている．
 
 ## 6. 実行方法
 
@@ -252,6 +287,17 @@ python ex010_e5_sgd_epoch_average/train.py --settings imagewoof:128 cifar10:128 
 python ex010_e5_sgd_epoch_average/train.py --settings imagewoof:512 --workers 4
 python ex010_e5_sgd_epoch_average/compare_e5.py --output ../outputs/ex010_e5_sgd_epoch_average/consistency_full_runs.md
 python analysis_e5.py
+# E6（CIFAR-10，バッチサイズ32・512．20試行．別のPCで実施）
+python ex011_e6_cifar10_final_bs32_512/train.py --workers 4
+python analysis_e6.py
+# E7 B（1エポックの時間．逐次に実行し，他の GPU のジョブと同時に実行しない．72試行）
+python ex013_e7_epoch_time/train.py > ../outputs/_run_logs/ex013.log 2>&1
+# E7 A（ImageWoof，30試行．バッチサイズ512は1プロセスで約22GBの GPU メモリを使うため並列数4とする）
+python ex012_e7_imagewoof_final/train.py --workers 4
+python analysis_e7.py
+# E8（a9a，CPUのみ．15試行）
+python ex014_e8_a9a_supplement/train.py --part all --workers 15 > ../outputs/_run_logs/ex014.log 2>&1
+python analysis_e8.py
 # 集計と図
 python analysis_e0.py
 # SGD（既存のログ．パスは引数で渡す）との比較
@@ -271,6 +317,7 @@ cd .. && python -m pytest -q tests
 `approx_cos`（$ {\mathbf g}_{s} $ と $ \nabla f({\mathbf z}_{s}) $ のコサイン類似度），`terminated`（学習損失が
 非有限となり打ち切った外側ループで `true`）である．a9a の MSE（E4）では，目的関数の項目は `objective_value`（$ f({\mathbf z}_{s}) $ の値）である．評価点はスナップショット $ {\mathbf z}_{s} $ である．
 `elapsed_time` は複数の試行を並列に実行した状態での計測であり，実時間の比較には用いない．E3の `log.json` は `time_optimizer`，`time_svrg_full_grad`，`time_diagnostic`，`time_evaluation`（累積［s］）を持ち，`elapsed_time` には実時間 $ t = \mathrm{time\_optimizer} + \mathrm{time\_svrg\_full\_grad} $ を記録する．
+E7 B の `log.json` は E3 と同じ時間の項目を持ち，1エポックの時間は2〜4エポック目の $ \mathrm{time\_optimizer} + \mathrm{time\_svrg\_full\_grad} $ の増分の平均とする（`ex013_e7_epoch_time/README.md`）．
 E5の `log.json` は，最終点の `train_loss`，`train_accuracy`，`test_loss`，`test_accuracy`，`test_correct` と，平均点の同じ項目（接頭辞 `avg_`）を持つ．$ s = 0 $ の平均点は初期パラメータの値である．
 
 

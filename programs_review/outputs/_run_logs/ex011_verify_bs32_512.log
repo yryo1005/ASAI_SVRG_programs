@@ -1,0 +1,412 @@
+タスク数: 2，並列プロセス数: 1，ω の記録: True
+SVRG snapshot bs=32 seed=0:   0%|          | 0/2 [00:00<?, ?it/s]
+SVRG snapshot bs=32 seed=0 ep1:   0%|          | 0/1563 [00:00<?, ?it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   1%|          | 10/1563 [00:00<00:15, 98.42it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   1%|▏         | 20/1563 [00:00<00:15, 98.78it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   2%|▏         | 31/1563 [00:00<00:15, 99.39it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   3%|▎         | 42/1563 [00:00<00:15, 99.74it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   3%|▎         | 53/1563 [00:00<00:15, 100.12it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   4%|▍         | 64/1563 [00:00<00:14, 100.14it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   5%|▍         | 75/1563 [00:00<00:14, 100.01it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   6%|▌         | 86/1563 [00:00<00:14, 99.82it/s] [A
+SVRG snapshot bs=32 seed=0 ep1:   6%|▌         | 96/1563 [00:00<00:14, 99.39it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   7%|▋         | 106/1563 [00:01<00:14, 99.22it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   7%|▋         | 116/1563 [00:01<00:14, 97.70it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   8%|▊         | 127/1563 [00:01<00:14, 98.43it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   9%|▉         | 137/1563 [00:01<00:14, 98.66it/s][A
+SVRG snapshot bs=32 seed=0 ep1:   9%|▉         | 147/1563 [00:01<00:14, 96.59it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  10%|█         | 158/1563 [00:01<00:14, 98.71it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  11%|█         | 168/1563 [00:01<00:14, 98.59it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  11%|█▏        | 178/1563 [00:01<00:14, 98.79it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  12%|█▏        | 188/1563 [00:01<00:13, 98.93it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  13%|█▎        | 198/1563 [00:02<00:13, 98.53it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  13%|█▎        | 208/1563 [00:02<00:13, 98.58it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  14%|█▍        | 218/1563 [00:02<00:13, 97.38it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  15%|█▍        | 229/1563 [00:02<00:13, 98.47it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  15%|█▌        | 239/1563 [00:02<00:13, 98.57it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  16%|█▌        | 249/1563 [00:02<00:13, 98.86it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  17%|█▋        | 260/1563 [00:02<00:13, 99.75it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  17%|█▋        | 270/1563 [00:02<00:12, 99.60it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  18%|█▊        | 281/1563 [00:02<00:12, 99.57it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  19%|█▊        | 291/1563 [00:02<00:12, 99.64it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  19%|█▉        | 301/1563 [00:03<00:12, 99.68it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  20%|█▉        | 311/1563 [00:03<00:12, 99.63it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  21%|██        | 321/1563 [00:03<00:12, 98.51it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  21%|██        | 331/1563 [00:03<00:12, 98.89it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  22%|██▏       | 341/1563 [00:03<00:12, 99.13it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  22%|██▏       | 351/1563 [00:03<00:12, 97.80it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  23%|██▎       | 362/1563 [00:03<00:12, 98.59it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  24%|██▍       | 372/1563 [00:03<00:12, 98.82it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  25%|██▍       | 383/1563 [00:03<00:11, 99.48it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  25%|██▌       | 394/1563 [00:03<00:11, 99.79it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  26%|██▌       | 404/1563 [00:04<00:11, 99.50it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  26%|██▋       | 414/1563 [00:04<00:11, 99.61it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  27%|██▋       | 424/1563 [00:04<00:11, 99.65it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  28%|██▊       | 434/1563 [00:04<00:11, 99.21it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  28%|██▊       | 444/1563 [00:04<00:11, 99.34it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  29%|██▉       | 454/1563 [00:04<00:11, 99.23it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  30%|██▉       | 464/1563 [00:04<00:11, 99.37it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  30%|███       | 474/1563 [00:04<00:10, 99.40it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  31%|███       | 485/1563 [00:04<00:10, 99.79it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  32%|███▏      | 495/1563 [00:04<00:10, 99.58it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  32%|███▏      | 505/1563 [00:05<00:10, 99.50it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  33%|███▎      | 515/1563 [00:05<00:10, 98.90it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  34%|███▎      | 525/1563 [00:05<00:10, 97.42it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  34%|███▍      | 536/1563 [00:05<00:10, 98.71it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  35%|███▍      | 546/1563 [00:05<00:10, 98.82it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  36%|███▌      | 556/1563 [00:05<00:10, 98.05it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  36%|███▌      | 566/1563 [00:05<00:10, 98.37it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  37%|███▋      | 577/1563 [00:05<00:09, 99.08it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  38%|███▊      | 588/1563 [00:05<00:09, 99.09it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  38%|███▊      | 599/1563 [00:06<00:09, 99.95it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  39%|███▉      | 609/1563 [00:06<00:09, 99.41it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  40%|███▉      | 619/1563 [00:06<00:09, 99.35it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  40%|████      | 630/1563 [00:06<00:09, 99.79it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  41%|████      | 641/1563 [00:06<00:09, 100.07it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  42%|████▏     | 652/1563 [00:06<00:09, 99.78it/s] [A
+SVRG snapshot bs=32 seed=0 ep1:  42%|████▏     | 662/1563 [00:06<00:09, 97.62it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  43%|████▎     | 672/1563 [00:06<00:09, 97.70it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  44%|████▎     | 682/1563 [00:06<00:08, 98.26it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  44%|████▍     | 692/1563 [00:06<00:08, 97.09it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  45%|████▍     | 702/1563 [00:07<00:08, 96.26it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  46%|████▌     | 712/1563 [00:07<00:08, 96.82it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  46%|████▌     | 722/1563 [00:07<00:08, 94.92it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  47%|████▋     | 732/1563 [00:07<00:08, 94.61it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  48%|████▊     | 743/1563 [00:07<00:08, 96.03it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  48%|████▊     | 753/1563 [00:07<00:08, 97.11it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  49%|████▉     | 763/1563 [00:07<00:08, 96.85it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  49%|████▉     | 773/1563 [00:07<00:08, 96.50it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  50%|█████     | 783/1563 [00:07<00:08, 97.26it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  51%|█████     | 793/1563 [00:08<00:07, 96.62it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  51%|█████▏    | 804/1563 [00:08<00:07, 97.84it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  52%|█████▏    | 814/1563 [00:08<00:07, 98.25it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  53%|█████▎    | 824/1563 [00:08<00:07, 98.51it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  53%|█████▎    | 834/1563 [00:08<00:07, 98.16it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  54%|█████▍    | 844/1563 [00:08<00:07, 98.21it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  55%|█████▍    | 854/1563 [00:08<00:07, 97.60it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  55%|█████▌    | 864/1563 [00:08<00:07, 97.37it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  56%|█████▌    | 875/1563 [00:08<00:06, 98.35it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  57%|█████▋    | 885/1563 [00:08<00:06, 98.76it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  57%|█████▋    | 895/1563 [00:09<00:06, 97.91it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  58%|█████▊    | 906/1563 [00:09<00:06, 98.87it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  59%|█████▊    | 916/1563 [00:09<00:06, 98.87it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  59%|█████▉    | 926/1563 [00:09<00:06, 98.59it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  60%|█████▉    | 936/1563 [00:09<00:06, 96.27it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  61%|██████    | 946/1563 [00:09<00:06, 96.63it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  61%|██████    | 956/1563 [00:09<00:06, 96.56it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  62%|██████▏   | 966/1563 [00:09<00:06, 96.78it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  62%|██████▏   | 976/1563 [00:09<00:06, 97.26it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  63%|██████▎   | 986/1563 [00:10<00:05, 97.75it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  64%|██████▎   | 996/1563 [00:10<00:05, 97.96it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  64%|██████▍   | 1006/1563 [00:10<00:05, 98.18it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  65%|██████▌   | 1016/1563 [00:10<00:05, 98.67it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  66%|██████▌   | 1026/1563 [00:10<00:05, 98.96it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  66%|██████▋   | 1037/1563 [00:10<00:05, 99.57it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  67%|██████▋   | 1048/1563 [00:10<00:05, 99.44it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  68%|██████▊   | 1058/1563 [00:10<00:05, 99.47it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  68%|██████▊   | 1069/1563 [00:10<00:04, 99.78it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  69%|██████▉   | 1080/1563 [00:10<00:04, 100.33it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  70%|██████▉   | 1091/1563 [00:11<00:04, 100.59it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  71%|███████   | 1102/1563 [00:11<00:04, 100.38it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  71%|███████   | 1113/1563 [00:11<00:04, 100.43it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  72%|███████▏  | 1124/1563 [00:11<00:04, 100.39it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  73%|███████▎  | 1135/1563 [00:11<00:04, 99.13it/s] [A
+SVRG snapshot bs=32 seed=0 ep1:  73%|███████▎  | 1145/1563 [00:11<00:04, 95.70it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  74%|███████▍  | 1155/1563 [00:11<00:04, 96.02it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  75%|███████▍  | 1165/1563 [00:11<00:04, 94.75it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  75%|███████▌  | 1175/1563 [00:11<00:04, 95.25it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  76%|███████▌  | 1185/1563 [00:12<00:03, 96.15it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  76%|███████▋  | 1195/1563 [00:12<00:03, 96.10it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  77%|███████▋  | 1205/1563 [00:12<00:03, 96.29it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  78%|███████▊  | 1215/1563 [00:12<00:03, 95.62it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  78%|███████▊  | 1225/1563 [00:12<00:03, 95.21it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  79%|███████▉  | 1235/1563 [00:12<00:03, 94.69it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  80%|███████▉  | 1245/1563 [00:12<00:03, 94.63it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  80%|████████  | 1255/1563 [00:12<00:03, 94.64it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  81%|████████  | 1265/1563 [00:12<00:03, 93.39it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  82%|████████▏ | 1275/1563 [00:12<00:03, 93.27it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  82%|████████▏ | 1285/1563 [00:13<00:03, 91.06it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  83%|████████▎ | 1295/1563 [00:13<00:02, 91.89it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  83%|████████▎ | 1305/1563 [00:13<00:02, 92.72it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  84%|████████▍ | 1315/1563 [00:13<00:02, 93.97it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  85%|████████▍ | 1325/1563 [00:13<00:02, 93.42it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  85%|████████▌ | 1335/1563 [00:13<00:02, 91.80it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  86%|████████▌ | 1345/1563 [00:13<00:02, 93.93it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  87%|████████▋ | 1355/1563 [00:13<00:02, 91.23it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  87%|████████▋ | 1365/1563 [00:13<00:02, 91.72it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  88%|████████▊ | 1375/1563 [00:14<00:02, 93.58it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  89%|████████▊ | 1385/1563 [00:14<00:01, 93.70it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  89%|████████▉ | 1395/1563 [00:14<00:01, 94.20it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  90%|████████▉ | 1405/1563 [00:14<00:01, 94.44it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  91%|█████████ | 1415/1563 [00:14<00:01, 95.86it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  91%|█████████ | 1425/1563 [00:14<00:01, 96.42it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  92%|█████████▏| 1435/1563 [00:14<00:01, 96.27it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  92%|█████████▏| 1445/1563 [00:14<00:01, 96.83it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  93%|█████████▎| 1455/1563 [00:14<00:01, 96.01it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  94%|█████████▎| 1465/1563 [00:15<00:01, 95.91it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  94%|█████████▍| 1475/1563 [00:15<00:00, 96.19it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  95%|█████████▌| 1485/1563 [00:15<00:00, 96.27it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  96%|█████████▌| 1495/1563 [00:15<00:00, 96.59it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  96%|█████████▋| 1505/1563 [00:15<00:00, 96.94it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  97%|█████████▋| 1515/1563 [00:15<00:00, 97.30it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  98%|█████████▊| 1525/1563 [00:15<00:00, 97.09it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  98%|█████████▊| 1535/1563 [00:15<00:00, 95.40it/s][A
+SVRG snapshot bs=32 seed=0 ep1:  99%|█████████▉| 1546/1563 [00:15<00:00, 96.30it/s][A
+SVRG snapshot bs=32 seed=0 ep1: 100%|█████████▉| 1556/1563 [00:15<00:00, 93.94it/s][A
+                                                                                   [ASVRG snapshot bs=32 seed=0:  50%|█████     | 1/2 [00:24<00:24, 24.88s/it]
+SVRG snapshot bs=32 seed=0 ep2:   0%|          | 0/1563 [00:00<?, ?it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   1%|          | 10/1563 [00:00<00:16, 93.29it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   1%|▏         | 20/1563 [00:00<00:16, 94.99it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   2%|▏         | 31/1563 [00:00<00:15, 97.21it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   3%|▎         | 41/1563 [00:00<00:15, 96.95it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   3%|▎         | 52/1563 [00:00<00:15, 98.42it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   4%|▍         | 62/1563 [00:00<00:15, 98.64it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   5%|▍         | 72/1563 [00:00<00:15, 96.82it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   5%|▌         | 82/1563 [00:00<00:15, 97.63it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   6%|▌         | 92/1563 [00:00<00:14, 98.34it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   7%|▋         | 102/1563 [00:01<00:14, 98.69it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   7%|▋         | 112/1563 [00:01<00:14, 97.97it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   8%|▊         | 122/1563 [00:01<00:14, 98.05it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   9%|▊         | 133/1563 [00:01<00:14, 98.22it/s][A
+SVRG snapshot bs=32 seed=0 ep2:   9%|▉         | 143/1563 [00:01<00:14, 97.66it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  10%|▉         | 153/1563 [00:01<00:14, 97.18it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  10%|█         | 163/1563 [00:01<00:14, 97.34it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  11%|█         | 173/1563 [00:01<00:14, 97.73it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  12%|█▏        | 183/1563 [00:01<00:14, 97.73it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  12%|█▏        | 193/1563 [00:01<00:14, 97.04it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  13%|█▎        | 203/1563 [00:02<00:13, 97.21it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  14%|█▎        | 213/1563 [00:02<00:14, 96.04it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  14%|█▍        | 223/1563 [00:02<00:13, 96.02it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  15%|█▍        | 234/1563 [00:02<00:13, 97.40it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  16%|█▌        | 244/1563 [00:02<00:13, 95.73it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  16%|█▋        | 254/1563 [00:02<00:13, 96.24it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  17%|█▋        | 264/1563 [00:02<00:13, 97.27it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  18%|█▊        | 274/1563 [00:02<00:13, 96.87it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  18%|█▊        | 284/1563 [00:02<00:13, 97.51it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  19%|█▉        | 294/1563 [00:03<00:13, 97.36it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  19%|█▉        | 304/1563 [00:03<00:12, 97.62it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  20%|██        | 314/1563 [00:03<00:12, 97.90it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  21%|██        | 325/1563 [00:03<00:12, 98.63it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  21%|██▏       | 335/1563 [00:03<00:12, 97.75it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  22%|██▏       | 345/1563 [00:03<00:12, 98.18it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  23%|██▎       | 355/1563 [00:03<00:12, 98.40it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  23%|██▎       | 365/1563 [00:03<00:12, 98.79it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  24%|██▍       | 375/1563 [00:03<00:12, 98.27it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  25%|██▍       | 385/1563 [00:03<00:12, 97.60it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  25%|██▌       | 395/1563 [00:04<00:11, 97.78it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  26%|██▌       | 405/1563 [00:04<00:11, 97.07it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  27%|██▋       | 415/1563 [00:04<00:11, 96.71it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  27%|██▋       | 425/1563 [00:04<00:11, 96.73it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  28%|██▊       | 435/1563 [00:04<00:11, 95.82it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  28%|██▊       | 445/1563 [00:04<00:11, 95.41it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  29%|██▉       | 455/1563 [00:04<00:11, 96.17it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  30%|██▉       | 465/1563 [00:04<00:11, 97.17it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  30%|███       | 475/1563 [00:04<00:11, 97.59it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  31%|███       | 485/1563 [00:04<00:11, 97.11it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  32%|███▏      | 495/1563 [00:05<00:10, 97.54it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  32%|███▏      | 505/1563 [00:05<00:10, 98.12it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  33%|███▎      | 515/1563 [00:05<00:10, 98.29it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  34%|███▎      | 525/1563 [00:05<00:10, 98.30it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  34%|███▍      | 535/1563 [00:05<00:10, 98.76it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  35%|███▍      | 545/1563 [00:05<00:10, 98.77it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  36%|███▌      | 556/1563 [00:05<00:10, 99.40it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  36%|███▋      | 567/1563 [00:05<00:10, 99.56it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  37%|███▋      | 577/1563 [00:05<00:10, 97.60it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  38%|███▊      | 587/1563 [00:06<00:09, 98.21it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  38%|███▊      | 597/1563 [00:06<00:09, 98.71it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  39%|███▉      | 607/1563 [00:06<00:09, 98.54it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  39%|███▉      | 617/1563 [00:06<00:09, 97.48it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  40%|████      | 627/1563 [00:06<00:09, 97.21it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  41%|████      | 638/1563 [00:06<00:09, 97.49it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  41%|████▏     | 648/1563 [00:06<00:09, 96.38it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  42%|████▏     | 658/1563 [00:06<00:09, 97.29it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  43%|████▎     | 668/1563 [00:06<00:09, 97.58it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  43%|████▎     | 678/1563 [00:06<00:09, 98.06it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  44%|████▍     | 688/1563 [00:07<00:08, 98.00it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  45%|████▍     | 698/1563 [00:07<00:08, 98.29it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  45%|████▌     | 708/1563 [00:07<00:08, 98.65it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  46%|████▌     | 718/1563 [00:07<00:08, 98.05it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  47%|████▋     | 728/1563 [00:07<00:08, 98.32it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  47%|████▋     | 738/1563 [00:07<00:08, 96.93it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  48%|████▊     | 749/1563 [00:07<00:08, 98.13it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  49%|████▊     | 759/1563 [00:07<00:08, 97.81it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  49%|████▉     | 769/1563 [00:07<00:08, 98.09it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  50%|████▉     | 779/1563 [00:07<00:07, 98.47it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  50%|█████     | 789/1563 [00:08<00:07, 98.58it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  51%|█████     | 799/1563 [00:08<00:07, 98.89it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  52%|█████▏    | 809/1563 [00:08<00:07, 98.87it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  52%|█████▏    | 819/1563 [00:08<00:07, 98.45it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  53%|█████▎    | 829/1563 [00:08<00:07, 97.31it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  54%|█████▎    | 839/1563 [00:08<00:07, 97.94it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  54%|█████▍    | 849/1563 [00:08<00:07, 96.29it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  55%|█████▍    | 859/1563 [00:08<00:07, 97.08it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  56%|█████▌    | 870/1563 [00:08<00:07, 98.50it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  56%|█████▋    | 880/1563 [00:09<00:06, 98.68it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  57%|█████▋    | 890/1563 [00:09<00:06, 98.72it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  58%|█████▊    | 900/1563 [00:09<00:06, 98.78it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  58%|█████▊    | 910/1563 [00:09<00:06, 99.13it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  59%|█████▉    | 920/1563 [00:09<00:06, 99.27it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  60%|█████▉    | 930/1563 [00:09<00:06, 99.20it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  60%|██████    | 940/1563 [00:09<00:06, 99.00it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  61%|██████    | 951/1563 [00:09<00:06, 99.30it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  61%|██████▏   | 961/1563 [00:09<00:06, 98.74it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  62%|██████▏   | 972/1563 [00:09<00:05, 99.39it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  63%|██████▎   | 982/1563 [00:10<00:05, 99.00it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  63%|██████▎   | 992/1563 [00:10<00:05, 99.28it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  64%|██████▍   | 1002/1563 [00:10<00:05, 99.12it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  65%|██████▍   | 1013/1563 [00:10<00:05, 99.52it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  66%|██████▌   | 1024/1563 [00:10<00:05, 99.60it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  66%|██████▌   | 1034/1563 [00:10<00:05, 97.14it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  67%|██████▋   | 1045/1563 [00:10<00:05, 97.77it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  67%|██████▋   | 1055/1563 [00:10<00:05, 96.89it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  68%|██████▊   | 1065/1563 [00:10<00:05, 97.39it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  69%|██████▉   | 1075/1563 [00:10<00:05, 95.30it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  69%|██████▉   | 1085/1563 [00:11<00:04, 96.54it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  70%|███████   | 1095/1563 [00:11<00:04, 96.61it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  71%|███████   | 1105/1563 [00:11<00:04, 96.50it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  71%|███████▏  | 1115/1563 [00:11<00:04, 96.87it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  72%|███████▏  | 1125/1563 [00:11<00:04, 97.15it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  73%|███████▎  | 1135/1563 [00:11<00:04, 97.79it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  73%|███████▎  | 1145/1563 [00:11<00:04, 97.78it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  74%|███████▍  | 1155/1563 [00:11<00:04, 97.63it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  75%|███████▍  | 1165/1563 [00:11<00:04, 97.61it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  75%|███████▌  | 1175/1563 [00:12<00:03, 97.34it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  76%|███████▌  | 1185/1563 [00:12<00:03, 98.08it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  76%|███████▋  | 1195/1563 [00:12<00:03, 97.99it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  77%|███████▋  | 1205/1563 [00:12<00:03, 98.17it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  78%|███████▊  | 1215/1563 [00:12<00:03, 98.48it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  78%|███████▊  | 1226/1563 [00:12<00:03, 98.82it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  79%|███████▉  | 1236/1563 [00:12<00:03, 98.28it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  80%|███████▉  | 1246/1563 [00:12<00:03, 95.32it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  80%|████████  | 1256/1563 [00:12<00:03, 94.59it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  81%|████████  | 1266/1563 [00:12<00:03, 95.81it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  82%|████████▏ | 1276/1563 [00:13<00:02, 96.41it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  82%|████████▏ | 1286/1563 [00:13<00:02, 97.39it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  83%|████████▎ | 1296/1563 [00:13<00:02, 96.27it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  84%|████████▎ | 1306/1563 [00:13<00:02, 96.81it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  84%|████████▍ | 1316/1563 [00:13<00:02, 97.03it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  85%|████████▍ | 1326/1563 [00:13<00:02, 97.48it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  85%|████████▌ | 1336/1563 [00:13<00:02, 97.16it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  86%|████████▌ | 1346/1563 [00:13<00:02, 97.44it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  87%|████████▋ | 1356/1563 [00:13<00:02, 97.56it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  87%|████████▋ | 1366/1563 [00:13<00:02, 97.10it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  88%|████████▊ | 1376/1563 [00:14<00:01, 97.63it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  89%|████████▊ | 1386/1563 [00:14<00:01, 97.29it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  89%|████████▉ | 1396/1563 [00:14<00:01, 96.77it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  90%|█████████ | 1407/1563 [00:14<00:01, 97.18it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  91%|█████████ | 1417/1563 [00:14<00:01, 95.90it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  91%|█████████▏| 1427/1563 [00:14<00:01, 96.39it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  92%|█████████▏| 1437/1563 [00:14<00:01, 95.92it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  93%|█████████▎| 1447/1563 [00:14<00:01, 96.11it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  93%|█████████▎| 1457/1563 [00:14<00:01, 95.82it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  94%|█████████▍| 1467/1563 [00:15<00:00, 96.79it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  94%|█████████▍| 1477/1563 [00:15<00:00, 97.31it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  95%|█████████▌| 1487/1563 [00:15<00:00, 97.28it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  96%|█████████▌| 1498/1563 [00:15<00:00, 98.12it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  96%|█████████▋| 1508/1563 [00:15<00:00, 98.48it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  97%|█████████▋| 1518/1563 [00:15<00:00, 98.28it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  98%|█████████▊| 1528/1563 [00:15<00:00, 98.37it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  98%|█████████▊| 1538/1563 [00:15<00:00, 98.61it/s][A
+SVRG snapshot bs=32 seed=0 ep2:  99%|█████████▉| 1548/1563 [00:15<00:00, 96.76it/s][A
+SVRG snapshot bs=32 seed=0 ep2: 100%|█████████▉| 1558/1563 [00:15<00:00, 97.70it/s][A
+                                                                                   [ASVRG snapshot bs=32 seed=0: 100%|██████████| 2/2 [00:48<00:00, 24.24s/it]                                                                         [done] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/_verify/ex011_bs32_512/SVRG/inner_snapshot_lr0.001_bs32_lambda0.0005_epochs2/0
+SVRG snapshot bs=512 seed=0:   0%|          | 0/2 [00:00<?, ?it/s]
+SVRG snapshot bs=512 seed=0 ep1:   0%|          | 0/98 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep1:   3%|▎         | 3/98 [00:00<00:03, 24.34it/s][A
+SVRG snapshot bs=512 seed=0 ep1:   6%|▌         | 6/98 [00:00<00:04, 20.04it/s][A
+SVRG snapshot bs=512 seed=0 ep1:   9%|▉         | 9/98 [00:00<00:04, 18.98it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  11%|█         | 11/98 [00:00<00:04, 18.59it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  13%|█▎        | 13/98 [00:00<00:04, 18.54it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  15%|█▌        | 15/98 [00:00<00:04, 18.29it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  17%|█▋        | 17/98 [00:00<00:04, 18.23it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  19%|█▉        | 19/98 [00:01<00:04, 18.11it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  21%|██▏       | 21/98 [00:01<00:04, 18.06it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  23%|██▎       | 23/98 [00:01<00:04, 18.00it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  26%|██▌       | 25/98 [00:01<00:04, 18.01it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  28%|██▊       | 27/98 [00:01<00:03, 17.97it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  30%|██▉       | 29/98 [00:02<00:14,  4.72it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  32%|███▏      | 31/98 [00:02<00:11,  6.06it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  34%|███▎      | 33/98 [00:02<00:08,  7.56it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  36%|███▌      | 35/98 [00:02<00:06,  9.15it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  38%|███▊      | 37/98 [00:03<00:05, 10.73it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  40%|███▉      | 39/98 [00:03<00:04, 12.20it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  42%|████▏     | 41/98 [00:03<00:04, 13.50it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  44%|████▍     | 43/98 [00:03<00:03, 14.54it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  46%|████▌     | 45/98 [00:03<00:03, 15.48it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  48%|████▊     | 47/98 [00:03<00:03, 16.17it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  50%|█████     | 49/98 [00:03<00:02, 16.67it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  52%|█████▏    | 51/98 [00:03<00:02, 17.00it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  54%|█████▍    | 53/98 [00:03<00:02, 17.32it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  56%|█████▌    | 55/98 [00:04<00:02, 17.52it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  58%|█████▊    | 57/98 [00:04<00:02, 17.68it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  60%|██████    | 59/98 [00:04<00:02, 17.75it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  62%|██████▏   | 61/98 [00:04<00:02, 17.83it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  64%|██████▍   | 63/98 [00:04<00:01, 17.80it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  66%|██████▋   | 65/98 [00:04<00:01, 17.88it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  68%|██████▊   | 67/98 [00:04<00:01, 17.80it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  70%|███████   | 69/98 [00:04<00:01, 17.87it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  72%|███████▏  | 71/98 [00:04<00:01, 17.88it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  74%|███████▍  | 73/98 [00:05<00:01, 17.89it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  77%|███████▋  | 75/98 [00:05<00:01, 17.92it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  79%|███████▊  | 77/98 [00:05<00:01, 17.93it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  81%|████████  | 79/98 [00:05<00:01, 17.71it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  83%|████████▎ | 81/98 [00:05<00:00, 17.81it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  85%|████████▍ | 83/98 [00:05<00:00, 17.92it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  87%|████████▋ | 85/98 [00:05<00:00, 17.94it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  89%|████████▉ | 87/98 [00:05<00:00, 17.94it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  91%|█████████ | 89/98 [00:05<00:00, 17.93it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  93%|█████████▎| 91/98 [00:06<00:00, 17.96it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  95%|█████████▍| 93/98 [00:06<00:00, 17.96it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  97%|█████████▋| 95/98 [00:06<00:00, 17.97it/s][A
+SVRG snapshot bs=512 seed=0 ep1:  99%|█████████▉| 97/98 [00:06<00:00, 17.97it/s][A
+                                                                                [ASVRG snapshot bs=512 seed=0:  50%|█████     | 1/2 [00:09<00:09,  9.33s/it]
+SVRG snapshot bs=512 seed=0 ep2:   0%|          | 0/98 [00:00<?, ?it/s][A
+SVRG snapshot bs=512 seed=0 ep2:   3%|▎         | 3/98 [00:00<00:03, 24.84it/s][A
+SVRG snapshot bs=512 seed=0 ep2:   6%|▌         | 6/98 [00:00<00:04, 20.51it/s][A
+SVRG snapshot bs=512 seed=0 ep2:   9%|▉         | 9/98 [00:00<00:04, 19.47it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  11%|█         | 11/98 [00:00<00:04, 18.98it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  13%|█▎        | 13/98 [00:00<00:04, 18.69it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  15%|█▌        | 15/98 [00:00<00:04, 18.49it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  17%|█▋        | 17/98 [00:00<00:04, 18.32it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  19%|█▉        | 19/98 [00:01<00:04, 18.19it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  21%|██▏       | 21/98 [00:01<00:04, 18.16it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  23%|██▎       | 23/98 [00:01<00:04, 18.23it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  26%|██▌       | 25/98 [00:01<00:04, 18.20it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  28%|██▊       | 27/98 [00:01<00:03, 18.14it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  30%|██▉       | 29/98 [00:01<00:03, 18.24it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  32%|███▏      | 31/98 [00:01<00:03, 18.15it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  34%|███▎      | 33/98 [00:01<00:03, 18.01it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  36%|███▌      | 35/98 [00:01<00:03, 18.08it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  38%|███▊      | 37/98 [00:02<00:03, 17.98it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  40%|███▉      | 39/98 [00:02<00:03, 18.06it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  42%|████▏     | 41/98 [00:02<00:03, 18.04it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  44%|████▍     | 43/98 [00:02<00:03, 18.04it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  46%|████▌     | 45/98 [00:02<00:02, 18.04it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  48%|████▊     | 47/98 [00:02<00:02, 18.01it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  50%|█████     | 49/98 [00:02<00:02, 18.00it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  52%|█████▏    | 51/98 [00:02<00:02, 18.00it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  54%|█████▍    | 53/98 [00:02<00:02, 17.96it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  56%|█████▌    | 55/98 [00:02<00:02, 17.97it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  58%|█████▊    | 57/98 [00:03<00:02, 18.07it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  60%|██████    | 59/98 [00:03<00:02, 18.10it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  62%|██████▏   | 61/98 [00:03<00:02, 18.19it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  64%|██████▍   | 63/98 [00:03<00:01, 18.14it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  66%|██████▋   | 65/98 [00:03<00:01, 18.14it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  68%|██████▊   | 67/98 [00:03<00:01, 18.04it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  70%|███████   | 69/98 [00:03<00:01, 18.00it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  72%|███████▏  | 71/98 [00:03<00:01, 17.96it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  74%|███████▍  | 73/98 [00:03<00:01, 18.00it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  77%|███████▋  | 75/98 [00:04<00:01, 18.01it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  79%|███████▊  | 77/98 [00:04<00:01, 18.09it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  81%|████████  | 79/98 [00:04<00:01, 18.08it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  83%|████████▎ | 81/98 [00:04<00:00, 18.02it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  85%|████████▍ | 83/98 [00:04<00:00, 18.01it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  87%|████████▋ | 85/98 [00:04<00:00, 18.00it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  89%|████████▉ | 87/98 [00:04<00:00, 17.98it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  91%|█████████ | 89/98 [00:04<00:00, 17.98it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  93%|█████████▎| 91/98 [00:04<00:00, 18.00it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  95%|█████████▍| 93/98 [00:05<00:00, 18.02it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  97%|█████████▋| 95/98 [00:05<00:00, 17.97it/s][A
+SVRG snapshot bs=512 seed=0 ep2:  99%|█████████▉| 97/98 [00:05<00:00, 17.94it/s][A
+                                                                                [ASVRG snapshot bs=512 seed=0: 100%|██████████| 2/2 [00:17<00:00,  8.69s/it]                                                                          [done] /home/user/workspace/ASAI_SVRG_programs/programs_review/outputs/_verify/ex011_bs32_512/SVRG/inner_snapshot_lr0.001_bs512_lambda0.0005_epochs2/0
+全ての学習が終了しました．
