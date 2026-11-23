@@ -9594,3 +9594,9 @@
 ASAI_SVRG snapshot bs=512 seed=4 ep121:  61%|██████    | 11/18 [00:26<00:17,  2.53s/it][A
 ASAI_SVRG snapshot bs=512 seed=4 ep121:  67%|██████▋   | 12/18 [00:28<00:13,  2.31s/it][A
 ASAI_SVRG snapshot bs=512 seed=4 ep121:  72%|███████▏  | 13/18 [00:30<00:11,  2.35s/it][A
+ASAI_SVRG snapshot bs=512 seed=4 ep121:  78%|███████▊  | 14/18 [00:32<00:09,  2.36s/it][A
+ASAI_SVRG snapshot bs=512 seed=4 ep121:  83%|████████▎ | 15/18 [00:34<00:06,  2.24s/it][A
+ASAI_SVRG snapshot bs=512 seed=4 ep121:  89%|████████▉ | 16/18 [00:37<00:04,  2.30s/it][A
+ASAI_SVRG snapshot bs=512 seed=4 ep121:  94%|█████████▍| 17/18 [00:38<00:02,  2.10s/it][A
+ASAI_SVRG snapshot bs=512 seed=4 ep121: 100%|██████████| 18/18 [00:40<00:00,  2.08s/it][A
+                                                                                       [A
