@@ -12,9 +12,10 @@ E1（Mushroomにおける $ \\rho $ の異なる学習率での収束挙動と�
 | 学習率 | $ \\rho \\in \\{0.5, 0.64, 0.8, 1.0, 2.0, 10, 298.4\\} $ に対応する $ \\eta $（大きい側の解） |
 | エポック数 | 100 |
 | 手法 | SGD，SVRG（最終点，`SVRGFinalPoint`），NFG-SVRG（最終点，`NFGSVRGFinalPoint`），ASA-SVRG（`ASAISVRG`），
-  SVRG（ランダム点，`SVRG`，手法名 `SVRG_random`），NFG-SVRG（ランダム点，`NFGSVRG`，手法名 `NFG_SVRG_random`） |
+  SVRG（ランダム点，`SVRG`，手法名 `SVRG_random`），NFG-SVRG（ランダム点，`NFGSVRG`，手法名 `NFG_SVRG_random`），
+  SVRG（平均点，`SVRGAverage`，手法名 `SVRG_average`．E11 で追加） |
 | サンプリング | `random_reshuffle`（全7 $ \\rho $），`uniform_with_replacement`（$ \\rho \\in \\{0.5, 1.0, 298.4\\} $ のみ） |
-| `inner_start` | 既定は `"snapshot"`（論文のAlgorithm通り）．`"last_iterate"` は既存実装との一致確認にのみ使用する |
+| `inner_start` | 既定は `"snapshot"`（reset．論文のAlgorithm通り）．`"last_iterate"` は continue の構成（E11）に使用する |
 | シード | 0〜4 |
 
 $ \\rho = 298.4 $ は $ \\eta = 0.99/(3L) $（論文の図1）に対応するため，この条件だけは二分法ではなく
@@ -35,12 +36,19 @@ $ \\rho = 298.4 $ は $ \\eta = 0.99/(3L) $（論文の図1）に対応するた
 `snapshot_rng = default_rng([seed, 1])` を渡す．最終点と ASA-SVRG は `begin_epoch` で乱数を
 消費しないため，既存の試行の結果は変わらない．
 
+E11（`実験指示E11.md`）での変更（order_114，指導教員の指示．本PCの記録は `.orders/order_084.md`）：
+スナップショット（random，final，average）と内側ループの開始点（reset，continue）の全ての構成を比べるため，
+平均点のスナップショットと全勾配を用いる `SVRG_average`（E2 で追加済みの `SVRGAverage`）を加え，
+`inner_start="last_iterate"`（continue）を本実験の構成として用いる．`SVRGAverage` は `begin_epoch` で
+乱数を消費しないため，既存の試行の添字の列は変わらない．他の学習の計算は変更していない．
+
 実行例:
     python train.py
     python train.py --rhos 0.5 1.0 298.4 --samplings random_reshuffle --methods SGD --seeds 0
     python train.py --methods SVRG_random NFG_SVRG_random --workers 20
     python train.py --inner-starts last_iterate --rhos 298.4 --samplings random_reshuffle \\
         --methods SVRG NFG_SVRG ASAI_SVRG --seeds 0 --output-root ../../outputs/_verify/ex006
+    python train.py --methods SVRG_random NFG_SVRG_random SVRG_average ASAI_SVRG --inner-starts last_iterate
 """
 
 import argparse
@@ -67,7 +75,7 @@ sys.path.insert(0, os.path.join(_PROGRAMS_DIR, "common"))
 sys.path.insert(0, _THIS_DIR)
 
 from machine_learning_utils import ResultLogger, set_seed  # noqa: E402
-from optimizers import ASAISVRG, NFGSVRG, NFGSVRGFinalPoint, SGD, SVRG, SVRGFinalPoint  # noqa: E402
+from optimizers import ASAISVRG, NFGSVRG, NFGSVRGFinalPoint, SGD, SVRG, SVRGAverage, SVRGFinalPoint  # noqa: E402
 
 from data import load_dataloader  # noqa: E402
 from model import compute_accuracy, compute_gradient, compute_loss, load_model, set_model_params  # noqa: E402
@@ -78,9 +86,10 @@ OUTPUT_ROOT = os.path.join(_REVIEW_ROOT, "outputs", EXPERIMENT_NAME)
 INNER_STARTS = ("last_iterate", "snapshot")
 DEFAULT_INNER_STARTS = ["snapshot"]
 SEEDS = [0, 1, 2, 3, 4]
-ALL_METHODS = ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG", "SVRG_random", "NFG_SVRG_random"]
-# スナップショットの勾配を全勾配で計算する手法．
-FULL_GRADIENT_METHODS = ("SVRG", "SVRG_random")
+# E11（order_114，指導教員の指示）で `SVRG_average` を追加した．
+ALL_METHODS = ["SGD", "SVRG", "NFG_SVRG", "ASAI_SVRG", "SVRG_random", "NFG_SVRG_random", "SVRG_average"]
+# スナップショットの勾配を全勾配で計算する手法（1外側ループの評価回数は 3N）．
+FULL_GRADIENT_METHODS = ("SVRG", "SVRG_random", "SVRG_average")
 # スナップショットを内側ループの点から一様ランダムに選ぶ手法（実験計画 3.4節）．
 RANDOM_SNAPSHOT_METHODS = ("SVRG_random", "NFG_SVRG_random")
 ALL_SAMPLINGS = ("random_reshuffle", "uniform_with_replacement")
@@ -113,6 +122,7 @@ _VARIANCE_REDUCED_OPTIMIZER_CLASSES = {
     "ASAI_SVRG": ASAISVRG,
     "SVRG_random": SVRG,
     "NFG_SVRG_random": NFGSVRG,
+    "SVRG_average": SVRGAverage,
 }
 
 
@@ -316,7 +326,7 @@ def run_variance_reduced(method, inner_start, sampling, seed, data, eta, reg_lam
         `begin_epoch(snapshot_rng)`）．`snapshot_rng` は添字の列の `rng` とは別の生成器であり，
         ランダム点の手法だけが乱数を消費する．目的関数誤差が非有限になった外側ループで打ち切る．
     引数:
-        method (str)．"SVRG"，"NFG_SVRG"，"ASAI_SVRG"，"SVRG_random"，"NFG_SVRG_random" のいずれか．
+        method (str)．"SVRG"，"NFG_SVRG"，"ASAI_SVRG"，"SVRG_random"，"NFG_SVRG_random"，"SVRG_average" のいずれか．
         inner_start (str)．"last_iterate" または "snapshot"．
         sampling (str)．"random_reshuffle" または "uniform_with_replacement"．
         seed (int)．乱数シード．

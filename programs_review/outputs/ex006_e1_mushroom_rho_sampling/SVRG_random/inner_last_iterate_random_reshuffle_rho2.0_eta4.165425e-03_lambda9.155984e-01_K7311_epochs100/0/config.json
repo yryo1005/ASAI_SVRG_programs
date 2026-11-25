@@ -1,0 +1,29 @@
+{
+    "experiment": "ex006_e1_mushroom_rho_sampling",
+    "method": "SVRG_random",
+    "inner_start": "last_iterate",
+    "sampling": "random_reshuffle",
+    "seed": 0,
+    "eta": 0.004165424628733395,
+    "rho": 2.0000000000000178,
+    "target_rho": 2.0,
+    "reg_lambda": 0.9155984380710358,
+    "lambda_ratio": 0.03,
+    "K": 7311,
+    "epochs": 100,
+    "batch_size": 1,
+    "evaluation_point": "snapshot z_s",
+    "L": 31.43554637377223,
+    "mu": 0.9155984380710358,
+    "N_train": 7311,
+    "N_test": 813,
+    "d": 22,
+    "f_star": 0.552022386099835,
+    "terminated": false,
+    "torch": "2.11.0+cu128",
+    "snapshot_rule": "uniform_random",
+    "snapshot_rng_seed": [
+        0,
+        1
+    ]
+}
