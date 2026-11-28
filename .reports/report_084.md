@@ -9,6 +9,7 @@
 - `ex006_e1_mushroom_rho_sampling/train.py` に `SVRG_average` を加え，`inner_start="last_iterate"` を continue の構成として用いるように docstring を改めた．学習の計算は変更していない（17行の追加，7行の削除）．
 - 本実行の前の確認では，既存の構成（`SVRG_random`・reset・ρ = 298.4・シード0）が既存のログと**ビット単位で一致**した．`SVRG_average` の `oracle_calls` は $ N + 3Ns $，`approx_error` は厳密に0であった．
 - 集計：`programs_review/outputs/e11_summary.md`（10構成 × 7 ρ の表，一様サンプリングの誤差床，打ち切り，実行の記録）．図は指示書のとおり作っていない．
+- **指示書からの変更（報告の後の追加の指示）**：到達の $ \#\mathrm{grad}/N $ の閾値を，指示書6節の $ 10^{-10} $ から $ \hat{r} $ の回帰範囲の閾値と同じ $ 10^{-12} $ に変えた（10節）．
 - **注意（8節）**：既存の `analysis_e1.py` と，論文側の `make_e1_paper_assets.py` は `inner_start` で試行を絞り込まない．そのため，E11 の結果を加えたディレクトリでそのまま実行すると，ASA-SVRG・`SVRG_random`・`NFG_SVRG_random` の各セルに reset と continue の10試行が混ざる．
 
 ## 1. 実行環境と並列数
@@ -96,8 +97,9 @@ $ \hat{r} $ は指示書6節の定義である．$ s = 1 $ から $ \Delta_{s} >
 | 298.4 | 0.0127 | 0.0135 | 0.0090 | —（注） | 0.0009 | 0.1071 | 0.1108 | 0.0850 | 0.0017 | 0.0025 |
 
 （注）SVRG（average）・reset・ρ = 298.4 は，全てのシードで外側ループ3までに $ \Delta_{s} \le 10^{-12} $ となった．そのため直線をあてはめる点が足りず，$ \hat{r} $ を求めていない（参照先の定義と同じ扱い）．シード0の $ \Delta_{s} $ は $ 2.9\times10^{-5} $，$ 3.9\times10^{-9} $，$ 6.2\times10^{-13} $ であった．
+なお，同じ構成の ρ = 10 は外側ループ3の $ \Delta_{s} $ が $ 2.8\times10^{-12} $〜$ 3.8\times10^{-12} $ とわずかに閾値を上回ったため，全シードで $ s_{\mathrm{end}} = 3 $ の3点から $ \hat{r} $（0.0002）を求めている．点が少ないため，閾値の置き方の影響を受けやすい値である．
 
-標準誤差，$ 10^{-10} $ への到達の $ \#\mathrm{grad}/N $，最後の20外側ループの近似誤差，テスト精度・正解数は `e11_summary.md` 1節にある．
+標準誤差，$ 10^{-12} $ への到達の $ \#\mathrm{grad}/N $，最後の20外側ループの近似誤差，テスト精度・正解数は `e11_summary.md` 1節にある．
 
 ### 5.2 一様サンプリングの誤差床（最後の20外側ループの中央値，5シードの平均）
 
@@ -126,7 +128,7 @@ $ \hat{r} $ は指示書6節の定義である．$ s = 1 $ から $ \Delta_{s} >
 
 - **ASA-SVRG**：continue は小さい ρ で reset より速く，大きい ρ でやや遅い．
   - $ \hat{r} $ は ρ = 0.5 で 0.0034 と 0.0137，ρ = 298.4 で 0.0025 と 0.0017（continue と reset の順）．
-  - $ 10^{-10} $ への到達は，ρ = 0.5 で 10.4 と 13.6，ρ = 298.4 で 10.0 と 9.2 の $ \#\mathrm{grad}/N $ であった．
+  - $ 10^{-12} $ への到達は，ρ = 0.5 で 12.0 と 16.0，ρ = 298.4 で 12.0 と 11.6 の $ \#\mathrm{grad}/N $ であった．
 - **SVRG（average）**：同じ傾向がより大きい．
   - $ \hat{r} $ は ρ = 0.5 で continue 0.0017，reset 0.0144 である．
   - ρ ≥ 2 では reset の方が小さく，ρ = 10 で 0.0002 と 0.0009（reset と continue の順）．
@@ -178,17 +180,30 @@ $ \hat{r} $ は指示書6節の定義である．$ s = 1 $ から $ \Delta_{s} >
 Archive:  E11_results.zip
   Length      Date    Time    Name
 ---------  ---------- -----   ----
-     3268  2026-11-25 09:48   .orders/order_084.md
-    17197  2026-11-25 11:08   .reports/report_084.md
+     3887  2026-11-25 16:50   .orders/order_084.md
+    19481  2026-11-25 16:51   .reports/report_084.md
     31120  2026-11-25 09:49   programs_review/programs/ex006_e1_mushroom_rho_sampling/train.py
-    21344  2026-11-25 11:06   programs_review/programs/analysis_e11.py
-    14807  2026-11-25 09:54   programs_review/tests/test_e11_programs.py
-    15779  2026-11-25 11:06   programs_review/outputs/e11_summary.md
+    21691  2026-11-25 16:47   programs_review/programs/analysis_e11.py
+    14976  2026-11-25 16:47   programs_review/tests/test_e11_programs.py
+    15928  2026-11-25 16:47   programs_review/outputs/e11_summary.md
      3702  2026-11-25 09:55   programs_review/outputs/ex006_e1_mushroom_rho_sampling/consistency_e11.md
   2339729  2026-11-25 10:46   programs_review/outputs/_run_logs/ex006_e11_continue.log
    565708  2026-11-25 11:02   programs_review/outputs/_run_logs/ex006_e11_reset.log
      4273  2026-11-25 09:52   programs_review/outputs/_run_logs/ex006_e11_verify.log
 ---------                     -------
-  9761327                     811 files
+  9764895                     811 files
 （このほか log.json 250 件，config.json 250 件，ディレクトリの項目 301 件）
 ```
+
+## 10. 追加の指示：到達の閾値を $ 10^{-12} $ に変更（報告の後）
+
+指示（`order_084.md` 3節）：「10^-12に変更してください　線形回帰モデルの学習条件とそろえるべきです」．
+
+- 到達の $ \#\mathrm{grad}/N $ の閾値を，指示書6節の $ 10^{-10} $ から，$ \hat{r} $ の回帰範囲の閾値と同じ $ 10^{-12} $ に変えた（`analysis_e11.py` の `REACH_THRESHOLD = HAT_R_THRESHOLD`）．学習は再実行していない．
+- `e11_summary.md` を作り直した．変わったのは到達の列と，その説明だけである（他の列は旧版と一致することを `diff` で確かめた）．
+- $ 10^{-12} $ でも全ての構成・ρ・シードが到達した（「未到達」は無い）．値は $ 10^{-10} $ のときより 0〜6 程度大きい．
+- 構成の間の大小はおおむね同じだが，次の2点が変わった．
+  - ρ = 298.4：ASA-SVRG（reset）と SVRG（average，reset）の大小が逆になった（$ 10^{-10} $ では 9.2 と 10.0，$ 10^{-12} $ では 11.6 と 10.0）．
+  - ρ = 2：SVRG（average）の reset と continue は $ 10^{-10} $ では同じ 13.0 であったが，$ 10^{-12} $ では 13.0 と 14.2 となった．
+- 1外側ループは $ \#\mathrm{grad}/N $ で約3にあたるため，到達の値は約3きざみである．差が3より小さい比較は，閾値の置き方で逆転し得る（推測）．
+- テスト：`test_reach_tail_and_select_by_inner_start` を新しい閾値に合わせて改め，`REACH_THRESHOLD == HAT_R_THRESHOLD == 1e-12` の確認を加えた（テストの数は変わらない）．`pytest tests` は240件全て通過した．

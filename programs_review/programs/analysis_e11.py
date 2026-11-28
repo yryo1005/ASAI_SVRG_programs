@@ -4,7 +4,7 @@ E11（`実験指示E11.md`．Mushroom における全てのスナップショッ
 `outputs/ex006_e1_mushroom_rho_sampling/` の10構成（スナップショット × 全勾配の推定 × 内側ループの開始点）を，
 `config.json` の `inner_start` で区別して読み込み，`outputs/e11_summary.md` に次をまとめる（図は作らない）．
 
-1. random reshuffling の全構成 × 全 $ \\rho $ の表：$ \\hat{r} $，$ f({\\mathbf z}_{s}) - f({\\mathbf w}^{*}) \\le 10^{-10} $ に
+1. random reshuffling の全構成 × 全 $ \\rho $ の表：$ \\hat{r} $，$ f({\\mathbf z}_{s}) - f({\\mathbf w}^{*}) \\le 10^{-12} $ に
    初めて到達する $ \\#\\mathrm{grad}/N $，最後の20外側ループの $ \\|{\\mathbf e}_{s}\\|^{2} $ の中央値，
    最後の外側ループのテスト精度と正解数（5シードの平均 ± 標準誤差，`ddof=1`）．
 2. 一様サンプリング（$ \\rho = 0.5, 1.0, 298.4 $）の目的関数誤差と近似誤差の誤差床（最後の20外側ループの中央値）．
@@ -54,7 +54,8 @@ UNIFORM_RHOS = [0.5, 1.0, 298.4]
 SAMPLINGS = ("random_reshuffle", "uniform_with_replacement")
 SEEDS = [0, 1, 2, 3, 4]
 HAT_R_THRESHOLD = 1e-12
-REACH_THRESHOLD = 1e-10
+# 到達の閾値は $ \\hat{r} $ の回帰範囲の閾値にそろえる（指示書6節の $ 10^{-10} $ から変更．ユーザーの指示，order_084 の追加指示）．
+REACH_THRESHOLD = HAT_R_THRESHOLD
 TAIL_WINDOW = 20
 
 
@@ -186,7 +187,7 @@ def fmt(values, digits: int = 4, sci: bool = False, total: int = None) -> str:
 
 def reach_text(selected: list) -> str:
     """
-    概要: $ 10^{-10} $ への到達の $ \\#\\mathrm{grad}/N $ の文字列（未到達のシードの数を添える）．
+    概要: $ 10^{-12} $ への到達の $ \\#\\mathrm{grad}/N $ の文字列（未到達のシードの数を添える）．
     引数: selected (list of dict)．
     戻り値: text (str)．
     """
@@ -225,7 +226,7 @@ def random_reshuffle_table(runs: list) -> list:
     引数: runs (list of dict)．
     戻り値: lines (list of str)．
     """
-    lines = ["| $\\rho$ | 構成 | 新規 | シード数 | $\\hat{r}$ | $10^{-10}$ 到達の $\\#\\mathrm{grad}/N$ | "
+    lines = ["| $\\rho$ | 構成 | 新規 | シード数 | $\\hat{r}$ | $10^{-12}$ 到達の $\\#\\mathrm{grad}/N$ | "
              "$\\|{\\mathbf e}_s\\|^2$（最後の20の中央値） | テスト精度［%］ | 正解数（/813） |",
              "|---:|---|:---:|---:|---:|---:|---:|---:|---:|"]
     for rho in RHO_CONDITIONS:
@@ -376,8 +377,9 @@ def write_summary(runs: list, workers: int, run_logs: list, path: str = SUMMARY_
         f"- $\\hat{{r}}$：シードごとに，$\\Delta_s > 10^{{-12}}$ が $s = 1$ から続く範囲で $\\log \\Delta_s$ を $s$ に最小二乗で"
         "あてはめた傾き $a_c$ から $\\exp(a_c)$ を求め，シードの間で平均した．$s_{\\mathrm{end}} < 3$ のシードは除いた"
         "（括弧は値のあるシードの数）．",
-        f"- 到達：$f({{\\mathbf z}}_s) - f({{\\mathbf w}}^*) \\le 10^{{-10}}$ に初めてなる評価点の $\\#\\mathrm{{grad}}/N$．"
-        "未到達のシードを除いて平均し，その数を添えた．",
+        f"- 到達：$f({{\\mathbf z}}_s) - f({{\\mathbf w}}^*) \\le 10^{{-12}}$ に初めてなる評価点の $\\#\\mathrm{{grad}}/N$．"
+        "未到達のシードを除いて平均し，その数を添えた．"
+        "閾値は $\\hat{r}$ の回帰範囲の閾値（$10^{-12}$）にそろえた（指示書6節の $10^{-10}$ から変更．ユーザーの指示）．",
         f"- $\\|{{\\mathbf e}}_s\\|^2$：最後の{TAIL_WINDOW}外側ループの中央値（シードごと）．全勾配の構成（SVRG）は0の水準である．",
         "- テスト精度と正解数：最後の外側ループの値．", "",
         *random_reshuffle_table(runs), "",

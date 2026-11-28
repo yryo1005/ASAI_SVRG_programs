@@ -22,3 +22,13 @@
   - $ \hat{r} $ は指示書6節の定義（シードごとの最小二乗の傾き $ a_{c} $，$ \hat{r} = \frac{1}{C}\sum_{c}\exp(a_{c}) $）とする．参照先の `make_report090_e1.hat_r_of` は本PCでは `ASAI_SVRG_Paper/programs/` にあり，`compute_hat_r_lsq` の計算（$ s_{\mathrm{end}} < 3 $ は対象外）を確認した．`programs_review/` の外を import しない規約のため，同じ計算を `analysis_e11.py` に書く．
 - 番号は本PCの次の空き番号 `order_084`／`report_084` とする．既存の結果は変更しない．git の commit・push は行わない．
 - 報告用の zip を作る（新しいログ，実行ログ，集計，consistency，変更したプログラム，テスト）．
+
+## 3. 追加の指示（原文．2026-11-25，報告の後）
+
+> 10^-12に変更してください
+> 線形回帰モデルの学習条件とそろえるべきです
+
+（直前の質問：「#grad/N to reach 10^-10の表だけど、これって10^-12にするべきじゃない？」）
+
+- 到達の $ \#\mathrm{grad}/N $ の閾値を，指示書6節の $ 10^{-10} $ から，$ \hat{r} $ の回帰範囲の閾値と同じ $ 10^{-12} $ に変える．
+- `analysis_e11.py`（`REACH_THRESHOLD = HAT_R_THRESHOLD`），テスト，`e11_summary.md`，`report_084.md`，zip を更新する．学習の再実行はしない．

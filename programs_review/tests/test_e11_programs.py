@@ -277,7 +277,9 @@ def test_hat_r_lsq_matches_hand_calculation():
 def test_reach_tail_and_select_by_inner_start():
     """到達の $ \\#\\mathrm{grad}/N $，最後の20の中央値，`inner_start` による絞り込み，平均 ± 標準誤差．"""
     run = _synthetic_run([1.0, 1e-5, 1e-11, 1e-12])
-    assert analysis_e11.reach_grad_n(run) == pytest.approx(4.0)
+    assert analysis_e11.REACH_THRESHOLD == analysis_e11.HAT_R_THRESHOLD == 1e-12
+    assert analysis_e11.reach_grad_n(run) == pytest.approx(6.0)
+    assert analysis_e11.reach_grad_n(_synthetic_run([1.0, 1e-5, 1e-11, 2e-12])) is None
     assert analysis_e11.reach_grad_n(_synthetic_run([1.0, 1e-5])) is None
     long_run = _synthetic_run([1.0] * 30)
     assert analysis_e11.tail_median(long_run, "approx_error") == pytest.approx(np.median(np.arange(10, 30)))
